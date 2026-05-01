@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Link, Navigate, Route, Routes } from "react-router-dom"
 
 import Dashboard from "@/pages/Dashboard.jsx"
+import LoadManagement from "@/pages/LoadManagement.jsx"
+import FreightsPanel from "./pages/FreightsPanel"
 
 function NotFound() {
   return (
@@ -10,9 +12,17 @@ function NotFound() {
         <div>
           <h1 className="font-medium">Page not found</h1>
           <p>This route does not exist in the current app shell.</p>
-          <Button asChild className="mt-2">
-            <a href="/dashboard">Go to dashboard</a>
-          </Button>
+          <div className="mt-2 flex justify-center gap-2">
+            <Button asChild>
+              <Link to="/dashboard">Go to dashboard</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/load-management">Go to load management</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/freights-panel">Go to freights panel</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -24,6 +34,8 @@ export function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/load-management" element={<LoadManagement />} />
+      <Route path="/freights-panel" element={<FreightsPanel />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
