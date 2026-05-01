@@ -4,6 +4,7 @@ import { Link, Navigate, Route, Routes } from "react-router-dom"
 import Dashboard from "@/pages/Dashboard.jsx"
 import LoadManagement from "@/pages/LoadManagement.jsx"
 import FreightsPanel from "./pages/FreightsPanel"
+import FreightsMural from "./pages/FreightsMural"
 
 function NotFound() {
   return (
@@ -22,6 +23,9 @@ function NotFound() {
             <Button asChild variant="outline">
               <Link to="/freights-panel">Go to freights panel</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/freights-mural">Go to freights mural</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -36,6 +40,7 @@ export function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/load-management" element={<LoadManagement />} />
       <Route path="/freights-panel" element={<FreightsPanel />} />
+      <Route path="/freights-mural" element={<FreightsMural />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

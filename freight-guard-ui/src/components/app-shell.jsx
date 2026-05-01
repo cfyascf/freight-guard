@@ -20,6 +20,11 @@ const navigationItems = [
     to: "/freights-panel",
     icon: Truck,
   },
+  {
+    label: "Mural de Fretes",
+    to: "/freights-mural",
+    icon: Truck,
+  },
 ]
 
 export default function AppShell({ title, actions, children }) {
