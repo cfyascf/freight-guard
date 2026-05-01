@@ -1,4 +1,4 @@
-import { Bell, Box, ChartBar, Shield, User, Truck } from "lucide-react"
+import { Bell, Box, ChartBar, Package, Shield, User, Truck } from "lucide-react"
 import { NavLink } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,11 @@ const navigationItems = [
     label: "Mural de Fretes",
     to: "/freights-mural",
     icon: Truck,
+  },
+  {
+    label: "Gestão de Fretes",
+    to: "/freight-management",
+    icon: Package,
   },
 ]
 

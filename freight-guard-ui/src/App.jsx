@@ -5,6 +5,7 @@ import Dashboard from "@/pages/Dashboard.jsx"
 import LoadManagement from "@/pages/LoadManagement.jsx"
 import FreightsPanel from "./pages/FreightsPanel"
 import FreightsMural from "./pages/FreightsMural"
+import FreightManagement from "./pages/FreightManagement"
 
 function NotFound() {
   return (
@@ -26,6 +27,9 @@ function NotFound() {
             <Button asChild variant="outline">
               <Link to="/freights-mural">Go to freights mural</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/freight-management">Go to freight management</Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -41,6 +45,7 @@ export function App() {
       <Route path="/load-management" element={<LoadManagement />} />
       <Route path="/freights-panel" element={<FreightsPanel />} />
       <Route path="/freights-mural" element={<FreightsMural />} />
+      <Route path="/freight-management" element={<FreightManagement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
