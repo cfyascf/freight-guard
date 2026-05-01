@@ -7,6 +7,7 @@ import FreightsPanel from "./pages/FreightsPanel"
 import FreightsMural from "./pages/FreightsMural"
 import FreightManagement from "./pages/FreightManagement"
 
+// not found component
 function NotFound() {
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
