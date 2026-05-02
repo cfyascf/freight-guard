@@ -61,7 +61,7 @@ export default function FreightManagement() {
 
   return (
     <AppShell
-      title="Gestão de Frota"
+      title="Gestão de Fretes"
       actions={
         <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
           <Plus size={16} className="mr-2" /> Cadastrar Veículo

@@ -6,6 +6,7 @@ import LoadManagement from "@/pages/LoadManagement.jsx"
 import FreightsPanel from "./pages/FreightsPanel"
 import FreightsMural from "./pages/FreightsMural"
 import FreightManagement from "./pages/FreightManagement"
+import RouteManagement from "./pages/RouteManagement"
 
 // not found component
 function NotFound() {
@@ -47,6 +48,7 @@ export function App() {
       <Route path="/freights-panel" element={<FreightsPanel />} />
       <Route path="/freights-mural" element={<FreightsMural />} />
       <Route path="/freight-management" element={<FreightManagement />} />
+       <Route path="/route-management" element={<RouteManagement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

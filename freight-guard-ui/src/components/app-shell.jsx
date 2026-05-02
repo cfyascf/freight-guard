@@ -6,30 +6,38 @@ import { cn } from "@/lib/utils"
 
 const navigationItems = [
   {
-    label: "Dashboard",
+    label: "Visão Geral (contratante)",
     to: "/dashboard",
     icon: ChartBar,
   },
   {
-    label: "Gestão de Cargas",
+    label: "Gestão de Cargas (contratante)",
     to: "/load-management",
     icon: Box,
   },
   {
-    label: "Painel de Leilão",
+    label: "Painel de Leilão (contratante)",
     to: "/freights-panel",
     icon: Truck,
   },
+  
   {
-    label: "Mural de Fretes",
+    label: "Gestão de Rotas (contratante)",
+    to: "/route-management",
+    icon: Package,
+  },
+   {
+    label: "Ofertas de Frete (transportador)",
     to: "/freights-mural",
     icon: Truck,
   },
   {
-    label: "Gestão de Fretes",
+    label: "Gestão de Veículos (transportador)",
     to: "/freight-management",
     icon: Package,
-  },
+  }
+  
+ 
 ]
 
 export default function AppShell({ title, actions, children }) {
@@ -74,8 +82,8 @@ export default function AppShell({ title, actions, children }) {
               <User size={20} />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-semibold text-slate-700">Yasmim</p>
-              <p className="text-xs text-slate-500">Visao: Contratante</p>
+              <p className="text-sm font-semibold text-slate-700">Nome do Usuário</p>
+              <p className="text-xs text-slate-500">Tipo usuário (Contratante ou Transportador)</p>
             </div>
           </div>
         </div>
