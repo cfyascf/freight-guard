@@ -1,4 +1,5 @@
-import { Filter, MoreHorizontal, Plus, Search, Settings2, Truck } from "lucide-react"
+import { Plus, Search, Settings2 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -63,8 +64,10 @@ export default function FreightManagement() {
     <AppShell
       title="Gestão de Fretes"
       actions={
-        <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
-          <Plus size={16} className="mr-2" /> Cadastrar Veículo
+        <Button asChild className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
+          <Link to="/vehicle-form">
+            <Plus size={16} className="mr-2" /> Cadastrar Veículo
+          </Link>
         </Button>
       }
     >
@@ -79,8 +82,10 @@ export default function FreightManagement() {
               className="border-slate-200 bg-white pl-9"
             />
           </div>
-          <Button variant="outline" className="border-slate-200 bg-white">
-            <Settings2 size={16} className="mr-2" /> Atributos
+          <Button asChild variant="outline" className="border-slate-200 bg-white">
+            <Link to="/vehicle-form">
+              <Settings2 size={16} className="mr-2" /> Atributos
+            </Link>
           </Button>
         </div>
 
@@ -124,8 +129,8 @@ export default function FreightManagement() {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1.5">
-                    {veiculo.atributos.map((atr, index) => (
-                      <Badge key={index} variant="outline" className="border-slate-200 text-slate-600 font-normal bg-slate-50">
+                    {veiculo.atributos.map((atr) => (
+                      <Badge key={`${veiculo.placa}-${atr}`} variant="outline" className="border-slate-200 text-slate-600 font-normal bg-slate-50">
                         {atr}
                       </Badge>
                     ))}
@@ -137,8 +142,10 @@ export default function FreightManagement() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-900">
-                    <MoreHorizontal size={18} />
+                  <Button asChild variant="outline" size="sm" className="border-slate-200 text-slate-700 hover:bg-slate-50">
+                    <Link to="/vehicle-form" aria-label={`Editar veículo ${veiculo.placa}`}>
+                      Editar
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>

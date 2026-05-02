@@ -1,4 +1,5 @@
-import { Filter, MoreHorizontal, Plus, Search } from "lucide-react"
+import { Filter, Plus, Search } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -57,8 +58,10 @@ export default function LoadManagement() {
     <AppShell
       title="Gestao de Cargas"
       actions={
-        <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
-          <Plus size={16} className="mr-2" /> Nova Carga
+        <Button asChild className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
+          <Link to="/create-load">
+            <Plus size={16} className="mr-2" /> Nova Carga
+          </Link>
         </Button>
       }
     >
@@ -72,8 +75,10 @@ export default function LoadManagement() {
                   className="pl-9 bg-white border-slate-200"
                 />
               </div>
-              <Button variant="outline" className="bg-white border-slate-200">
-                <Filter size={16} className="mr-2" /> Filtros
+              <Button asChild variant="outline" className="bg-white border-slate-200">
+                <Link to="/product-management">
+                  <Filter size={16} className="mr-2" /> Filtros
+                </Link>
               </Button>
             </div>
           </div>
@@ -116,8 +121,10 @@ export default function LoadManagement() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-600">
-                        <MoreHorizontal size={18} />
+                      <Button asChild variant="outline" size="sm" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                        <Link to="/create-load" aria-label={`Abrir carga ${carga.id}`}>
+                          Abrir
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>

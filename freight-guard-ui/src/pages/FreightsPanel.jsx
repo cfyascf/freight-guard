@@ -7,6 +7,7 @@ import {
   TrendingDown,
   Truck,
 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -63,8 +64,10 @@ export default function FreightsPanel() {
     <AppShell
       title="Painel de Leilão"
       actions={
-        <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
-          <Gavel size={16} className="mr-2" /> Iniciar Novo Leilão
+        <Button asChild className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
+          <Link to="/load-management">
+            <Gavel size={16} className="mr-2" /> Iniciar Novo Leilão
+          </Link>
         </Button>
       }
     >
@@ -157,8 +160,8 @@ export default function FreightsPanel() {
                       />
                     </div>
                     
-                    <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                      Analisar Lances
+                    <Button asChild variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                      <Link to="/transport-overview">Analisar Lances</Link>
                     </Button>
                   </CardFooter>
                 </Card>

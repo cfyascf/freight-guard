@@ -1,4 +1,5 @@
 import { Box, Shield, Truck } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -18,8 +19,8 @@ export default function Dashboard() {
     <AppShell
       title="Painel Geral"
       actions={
-        <Button className="bg-slate-900 text-white hover:bg-slate-800">
-          + Nova Carga
+        <Button asChild className="bg-slate-900 text-white hover:bg-slate-800">
+          <Link to="/create-load">+ Nova Carga</Link>
         </Button>
       }
     >
@@ -65,7 +66,9 @@ export default function Dashboard() {
             <Card className="col-span-2 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-4">
                 <CardTitle className="text-base font-semibold text-slate-800">Status dos Leiloes</CardTitle>
-                <Button variant="link" className="text-blue-600">Ver todas</Button>
+                <Button asChild variant="link" className="text-blue-600">
+                  <Link to="/freights-panel">Ver todas</Link>
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>

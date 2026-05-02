@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { AlertCircle, Box, CheckCircle2, MapPin, Search, ShieldAlert, Truck, Calendar, Clock, Package } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,7 @@ export default function FreightsMural() {
   // Estados para controlar o Modal único
   const [freteSelecionado, setFreteSelecionado] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const navigate = useNavigate()
 
   // Lista estática de dados
   const ofertasDisponiveis = [
@@ -236,7 +238,13 @@ export default function FreightsMural() {
             <Button variant="outline" className="border-slate-200" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => {
+                setIsModalOpen(false)
+                navigate("/transport-overview")
+              }}
+            >
               <CheckCircle2 size={16} className="mr-2" />
               Confirmar Alocação
             </Button>
