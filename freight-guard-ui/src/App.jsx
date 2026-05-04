@@ -7,6 +7,8 @@ import FreightsPanel from "./pages/FreightsPanel"
 import FreightsMural from "./pages/FreightsMural"
 import FreightManagement from "./pages/FreightManagement"
 import RouteManagement from "./pages/RouteManagement"
+import ProductManagement from "./pages/ProductsManagement"
+import TransporterManagement from "./pages/TransporterManagement"
 
 // not found component
 function NotFound() {
@@ -49,6 +51,8 @@ export function App() {
       <Route path="/freights-mural" element={<FreightsMural />} />
       <Route path="/freight-management" element={<FreightManagement />} />
        <Route path="/route-management" element={<RouteManagement />} />
+       <Route path="/products-management" element={<ProductManagement />} />
+       <Route path="/transporters-management" element={<TransporterManagement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

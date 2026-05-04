@@ -26,6 +26,16 @@ const navigationItems = [
     to: "/route-management",
     icon: Package,
   },
+  {
+    label: "Gestão de Produtos (contratante)",
+    to: "/products-management",
+    icon: Package,
+  },
+  {
+    label: "Gestão de Transportadores (contratante)",
+    to: "/transporters-management",
+    icon: Package,
+  },
    {
     label: "Ofertas de Frete (transportador)",
     to: "/freights-mural",
@@ -36,16 +46,14 @@ const navigationItems = [
     to: "/freight-management",
     icon: Package,
   }
-  
- 
 ]
 
 export default function AppShell({ title, actions, children }) {
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
-      <aside className="z-10 flex w-64 flex-col border-r border-slate-200 bg-white shadow-sm">
-        <div className="flex h-16 items-center border-b border-slate-200 px-6">
-          <div className="mr-3 flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white">
+      <aside className="z-10 flex w-64 flex-col border-r border-slate-200 bg-white shadow-sm h-full">
+        <div className="flex h-16 items-center border-b border-slate-200 px-6 shrink-0">
+          <div className="mr-3 flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white shrink-0">
             <Shield size={20} />
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-800">
@@ -53,8 +61,8 @@ export default function AppShell({ title, actions, children }) {
           </span>
         </div>
 
-        <nav className="flex-1 space-y-1.5 overflow-y-auto p-4">
-          <p className="mb-2 mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <nav className="flex-1 overflow-hidden space-y-1 p-3">
+          <p className="mb-2 mt-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
             Menu Principal
           </p>
           {navigationItems.map(({ label, to, icon: Icon }) => (
@@ -63,34 +71,34 @@ export default function AppShell({ title, actions, children }) {
               to={to}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center rounded-lg px-4 py-2.5 transition-colors",
+                  "flex items-center rounded-lg px-3 py-1.5 text-sm transition-colors",
                   isActive
-                    ? "bg-blue-50 font-medium text-blue-700"
+                    ? "bg-blue-50 font-medium text-blue-600"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )
               }
             >
-              <Icon size={18} className="mr-3" />
-              {label}
+              <Icon size={15} className="mr-2 shrink-0" />
+              <span className="">{label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-slate-200 bg-slate-50 p-4">
+        <div className="border-t border-slate-200 bg-slate-50 p-4 shrink-0">
           <div className="flex items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-slate-500">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-slate-500">
               <User size={20} />
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-semibold text-slate-700">Nome do Usuário</p>
-              <p className="text-xs text-slate-500">Tipo usuário (Contratante ou Transportador)</p>
+            <div className="ml-3 overflow-hidden">
+              <p className="text-sm font-semibold text-slate-700 truncate">Nome do Usuário</p>
+              <p className="text-xs text-slate-500 truncate">Tipo usuário</p>
             </div>
           </div>
         </div>
       </aside>
 
       <main className="relative flex flex-1 flex-col overflow-hidden">
-        <header className="z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-8">
+        <header className="z-10 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8">
           <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="relative rounded-full">

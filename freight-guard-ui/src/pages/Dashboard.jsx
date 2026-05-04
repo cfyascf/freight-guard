@@ -103,7 +103,7 @@ export default function Dashboard() {
 
             <Card className="shadow-sm">
               <CardHeader className="border-b border-slate-100 pb-4">
-                <CardTitle className="text-base font-semibold text-slate-800">Auditoria de Restricoes</CardTitle>
+                <CardTitle className="text-base font-semibold text-slate-800">Últimas Cargas Bloqueadas</CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-start">
