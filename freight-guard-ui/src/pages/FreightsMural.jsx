@@ -13,6 +13,8 @@ export default function FreightsMural() {
   // Estados para controlar o Modal único
   const [freteSelecionado, setFreteSelecionado] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [confirmado, setConfirmado] = useState(false);
+  const [veiculoSelecionado, setVeiculoSelecionado] = useState("");
 
   // Lista estática de dados
   const ofertasDisponiveis = [
@@ -199,24 +201,46 @@ export default function FreightsMural() {
               <ShieldAlert size={18} className="mr-2 text-blue-600" />
               Motor de Validação
             </DialogTitle>
+
             <DialogDescription>
-              Selecione o veículo para a rota <strong>{freteSelecionado?.rota.split(' → ')[1]}</strong>. O sistema validará a disponibilidade (ETA) e o volume.
+              Selecione o veículo para a rota{" "}
+              <strong>
+                {freteSelecionado?.rota.split(" → ")[1]}
+              </strong>.
+              O sistema validará a disponibilidade (ETA) e o volume.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
+            
+            {/* Seleção de caminhão */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700">Selecione o Caminhão (Placa)</p>
-              <Select>
+              <p className="text-sm font-medium text-slate-700">
+                Selecione o Caminhão (Placa)
+              </p>
+
+              <Select
+                value={veiculoSelecionado}
+                onValueChange={setVeiculoSelecionado}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione um veículo da frota..." />
                 </SelectTrigger>
+
                 <SelectContent>
                   {minhaFrota.map((veiculo) => (
-                    <SelectItem key={veiculo.placa} value={veiculo.placa}>
+                    <SelectItem
+                      key={veiculo.placa}
+                      value={veiculo.placa}
+                    >
                       <div className="flex items-center">
-                        <Truck size={14} className="mr-2 text-slate-500" />
-                        {veiculo.placa} ({veiculo.modelo}) - {veiculo.capacidade}
+                        <Truck
+                          size={14}
+                          className="mr-2 text-slate-500"
+                        />
+
+                        {veiculo.placa} ({veiculo.modelo}) -{" "}
+                        {veiculo.capacidade}
                       </div>
                     </SelectItem>
                   ))}
@@ -224,19 +248,65 @@ export default function FreightsMural() {
               </Select>
             </div>
 
+            {/* Aviso */}
             <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 flex items-start">
-              <AlertCircle size={16} className="text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+              <AlertCircle
+                size={16}
+                className="text-blue-600 mr-2 mt-0.5 flex-shrink-0"
+              />
+
               <p className="text-xs text-blue-800">
-                Ao confirmar, o <strong>FreightGuard</strong> verificará o limite de <strong>{freteSelecionado?.volume}</strong> usando heurísticas e consultará o OpenRouteService para prevenir overbooking.
+                Ao confirmar, o <strong>FreightGuard</strong>{" "}
+                verificará o limite de{" "}
+                <strong>{freteSelecionado?.volume}</strong>{" "}
+                usando heurísticas e consultará o
+                OpenRouteService para prevenir overbooking.
               </p>
             </div>
+
+            {/* Checkbox de responsabilidade */}
+            <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
+              <label className="flex items-start cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={confirmado}
+                  onChange={(e) =>
+                    setConfirmado(e.target.checked)
+                  }
+                  className="mt-1 mr-3 accent-amber-600"
+                />
+
+                <div>
+                  <p className="text-sm text-amber-900 font-medium">
+                    Declaro que este veículo possui capacidade adequada para realizar o transporte deste frete.
+                  </p>
+
+                  <p className="text-xs text-amber-700 mt-1">
+                    O transportador é responsável por garantir que o veículo suporte o volume de{" "}
+                    <strong>{freteSelecionado?.volume}</strong>.
+                  </p>
+                </div>
+              </label>
+            </div>
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" className="border-slate-200" onClick={() => setIsModalOpen(false)}>
+            <Button
+              variant="outline"
+              className="border-slate-200"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancelar
             </Button>
-            <Button className="bg-blue-600 text-white hover:bg-blue-700">
+
+            <Button
+              disabled={!confirmado || !veiculoSelecionado}
+              className={`text-white transition-colors ${
+                confirmado && veiculoSelecionado
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-slate-400 cursor-not-allowed"
+              }`}
+            >
               <CheckCircle2 size={16} className="mr-2" />
               Confirmar Alocação
             </Button>
