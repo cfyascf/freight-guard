@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Link, Navigate, Route, Routes } from "react-router-dom"
+import { useState } from "react"
 
 import Dashboard from "@/pages/Dashboard.jsx"
 import LoadManagement from "@/pages/LoadManagement.jsx"
@@ -9,9 +10,20 @@ import FreightManagement from "./pages/FreightManagement"
 import RouteManagement from "./pages/RouteManagement"
 import ProductManagement from "./pages/ProductsManagement"
 import TransporterManagement from "./pages/TransporterManagement"
+import Login from "./pages/Login"
+
+function ProtectedRoute({ isAuthenticated, children }) {
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  return children
+}
+
 
 // not found component
 function NotFound() {
+ 
+
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-center text-sm leading-loose">
@@ -42,17 +54,34 @@ function NotFound() {
 }
 
 export function App() {
+ const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("freightguard_auth") === "true"
+  })
+
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/load-management" element={<LoadManagement />} />
-      <Route path="/freights-panel" element={<FreightsPanel />} />
-      <Route path="/freights-mural" element={<FreightsMural />} />
-      <Route path="/freight-management" element={<FreightManagement />} />
-       <Route path="/route-management" element={<RouteManagement />} />
-       <Route path="/products-management" element={<ProductManagement />} />
-       <Route path="/transporters-management" element={<TransporterManagement />} />
+   <Routes>
+      {/* ROTA PÚBLICA (Fora do sistema) */}
+      <Route 
+        path="/login" 
+        element={<Login setIsAuthenticated={setIsAuthenticated} />} 
+      />
+
+      {/* ROTA RAIZ (Redireciona pro dashboard se logado, ou pro login se não) */}
+      <Route 
+        path="/" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} 
+      />
+
+      {/* ROTAS PROTEGIDAS (Só acessa se isAuthenticated for true) */}
+      <Route path="/dashboard" element={<ProtectedRoute isAuthenticated={isAuthenticated}><Dashboard /></ProtectedRoute>} />
+      <Route path="/load-management" element={<ProtectedRoute isAuthenticated={isAuthenticated}><LoadManagement /></ProtectedRoute>} />
+      <Route path="/freights-panel" element={<ProtectedRoute isAuthenticated={isAuthenticated}><FreightsPanel /></ProtectedRoute>} />
+      <Route path="/freights-mural" element={<ProtectedRoute isAuthenticated={isAuthenticated}><FreightsMural /></ProtectedRoute>} />
+      <Route path="/freight-management" element={<ProtectedRoute isAuthenticated={isAuthenticated}><FreightManagement /></ProtectedRoute>} />
+      <Route path="/route-management" element={<ProtectedRoute isAuthenticated={isAuthenticated}><RouteManagement /></ProtectedRoute>} />
+      <Route path="/products-management" element={<ProtectedRoute isAuthenticated={isAuthenticated}><ProductManagement /></ProtectedRoute>} />
+      <Route path="/transporters-management" element={<ProtectedRoute isAuthenticated={isAuthenticated}><TransporterManagement /></ProtectedRoute>} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
