@@ -9,6 +9,9 @@ import FreightManagement from "./pages/FreightManagement"
 import RouteManagement from "./pages/RouteManagement"
 import ProductManagement from "./pages/ProductsManagement"
 import TransporterManagement from "./pages/TransporterManagement"
+import Auth from "./pages/Auth"
+import CarrierManagement from "./pages/CarrierManagement"
+import CreateLoad from "./pages/CreateLoad"
 
 // not found component
 function NotFound() {
