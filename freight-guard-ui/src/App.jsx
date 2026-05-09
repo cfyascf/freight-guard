@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Link, Navigate, Route, Routes } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext" // <-- Importante!
 
 import Dashboard from "@/pages/Dashboard.jsx"
 import LoadManagement from "@/pages/LoadManagement.jsx"
@@ -13,29 +14,26 @@ import Auth from "./pages/Auth"
 import CarrierManagement from "./pages/CarrierManagement"
 import CreateLoad from "./pages/CreateLoad"
 
-// not found component
+// Guarda de Rotas
+const PrivateRoute = ({ children, allowedRoles }) => {
+  const { user } = useAuth()
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />
+  }
+  return children
+}
+
+// not found component (mantido igual ao seu)
 function NotFound() {
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-center text-sm leading-loose">
         <div>
-          <h1 className="font-medium">Page not found</h1>
-          <p>This route does not exist in the current app shell.</p>
-          <div className="mt-2 flex justify-center gap-2">
+          <h1 className="font-medium">Página não encontrada</h1>
+          <p>Esta rota não existe ou não tens permissão para aceder.</p>
+          <div className="mt-4 flex justify-center gap-2">
             <Button asChild>
-              <Link to="/dashboard">Go to dashboard</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/load-management">Go to load management</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/freights-panel">Go to freights panel</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/freights-mural">Go to freights mural</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/freight-management">Go to freight management</Link>
+              <Link to="/dashboard">Voltar ao Início</Link>
             </Button>
           </div>
         </div>
@@ -50,15 +48,83 @@ export function App() {
       <Route path="/auth" element={<Auth />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/carrier-management" element={<CarrierManagement />} />
-      <Route path="/load-management" element={<LoadManagement />} />
-      <Route path="/create-load" element={<CreateLoad />} />
-      <Route path="/freights-panel" element={<FreightsPanel />} />
-      <Route path="/freights-mural" element={<FreightsMural />} />
-      <Route path="/freight-management" element={<FreightManagement />} />
-       <Route path="/route-management" element={<RouteManagement />} />
-       <Route path="/products-management" element={<ProductManagement />} />
-       <Route path="/transporters-management" element={<TransporterManagement />} />
+
+      {/* --- ROTAS DA EMPRESA CONTRATANTE --- */}
+      <Route
+        path="/load-management"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <LoadManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/create-load"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <CreateLoad />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/freights-panel"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <FreightsPanel />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/route-management"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <RouteManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/products-management"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <ProductManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/transporters-management"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <TransporterManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/carrier-management"
+        element={
+          <PrivateRoute allowedRoles={["contractor"]}>
+            <CarrierManagement />
+          </PrivateRoute>
+        }
+      />
+
+      {/* --- ROTAS DA TRANSPORTADORA --- */}
+      <Route
+        path="/freights-mural"
+        element={
+          <PrivateRoute allowedRoles={["carrier"]}>
+            <FreightsMural />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/freight-management"
+        element={
+          <PrivateRoute allowedRoles={["carrier"]}>
+            <FreightManagement />
+          </PrivateRoute>
+        }
+      />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

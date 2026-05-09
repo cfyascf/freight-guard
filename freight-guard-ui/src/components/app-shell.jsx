@@ -1,115 +1,235 @@
-import { Bell, Box, ChartBar, Package, Shield, User, Truck } from "lucide-react"
+import {
+  Bell,
+  Box,
+  ChartBar,
+  Package,
+  Shield,
+  User,
+  Truck,
+  Settings,
+  Palette,
+  ArrowRightLeft,
+} from "lucide-react"
 import { NavLink } from "react-router-dom"
-
+import { useAuth } from "@/contexts/AuthContext"
+import { useBrand } from "@/contexts/BrandContext"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-
-const navigationItems = [
-  {
-    label: "Visão Geral (contratante)",
-    to: "/dashboard",
-    icon: ChartBar,
-  },
-  {
-    label: "Gestão de Cargas (contratante)",
-    to: "/load-management",
-    icon: Box,
-  },
-  {
-    label: "Painel de Leilão (contratante)",
-    to: "/freights-panel",
-    icon: Truck,
-  },
-  
-  {
-    label: "Gestão de Rotas (contratante)",
-    to: "/route-management",
-    icon: Package,
-  },
-  {
-    label: "Gestão de Produtos (contratante)",
-    to: "/products-management",
-    icon: Package,
-  },
-  {
-    label: "Gestão de Transportadores (contratante)",
-    to: "/transporters-management",
-    icon: Package,
-  },
-   {
-    label: "Ofertas de Frete (transportador)",
-    to: "/freights-mural",
-    icon: Truck,
-  },
-  {
-    label: "Gestão de Veículos (transportador)",
-    to: "/freight-management",
-    icon: Package,
-  }
-]
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AppShell({ title, actions, children }) {
+  const { user, toggleRole } = useAuth()
+  const { brand, setBrand, currentKey, availableThemes } = useBrand()
+
+  const isContractor = user.role === "contractor"
+
+  const contractorMenus = [
+    { label: "Visão Geral", to: "/dashboard", icon: ChartBar },
+    { label: "Gestão de Cargas", to: "/load-management", icon: Box },
+    { label: "Painel de Leilão", to: "/freights-panel", icon: Truck },
+    { label: "Gestão de Rotas", to: "/route-management", icon: Package },
+    { label: "Gestão de Produtos", to: "/products-management", icon: Package },
+  ]
+
+  const carrierMenus = [
+    { label: "Visão Geral", to: "/dashboard", icon: ChartBar },
+    { label: "Ofertas de Frete", to: "/freights-mural", icon: Truck },
+    { label: "Gestão de Veículos", to: "/freight-management", icon: Package },
+  ]
+
+  const activeMenus = isContractor ? contractorMenus : carrierMenus
+
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
-      <aside className="z-10 flex w-64 flex-col border-r border-slate-200 bg-white shadow-sm h-full">
-        <div className="flex h-16 items-center border-b border-slate-200 px-6 shrink-0">
-          <div className="mr-3 flex h-8 w-8 items-center justify-center rounded bg-blue-600 text-white shrink-0">
-            <Shield size={20} />
+    <div className="flex h-screen overflow-hidden bg-slate-100 font-sans">
+      {/* SIDEBAR COM TEMA DINÂMICO */}
+      <aside
+        className={cn(
+          "z-20 flex h-full w-64 shrink-0 flex-col border-r shadow-2xl transition-all duration-500",
+          brand.sidebarBg,
+          brand.sidebarBorder
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-16 shrink-0 items-center border-b px-6 transition-colors duration-500",
+            brand.sidebarBorder
+          )}
+        >
+          <div
+            className={cn(
+              "mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm transition-colors duration-500",
+              brand.brandBg,
+              brand.brandIcon
+            )}
+          >
+            <Shield size={18} strokeWidth={2.5} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-800">
-            Freight<span className="text-blue-600">Guard</span>
+          <span
+            className={cn("text-xl font-black tracking-tight", brand.textMain)}
+          >
+            Freight
+            <span
+              className={cn("transition-colors duration-500", brand.accent)}
+            >
+              Guard
+            </span>
           </span>
         </div>
 
-        <nav className="flex-1 overflow-hidden space-y-1 p-3">
-          <p className="mb-2 mt-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Menu Principal
+        <nav className="flex-1 space-y-1.5 overflow-y-auto p-4 text-xs">
+          <p
+            className={cn(
+              "mb-3 px-2 text-[10px] font-bold tracking-widest uppercase opacity-60",
+              brand.textMuted
+            )}
+          >
+            {isContractor ? "Painel Contratante" : "Painel Transportador"}
           </p>
-          {navigationItems.map(({ label, to, icon: Icon }) => (
+          {activeMenus.map(({ label, to, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center rounded-lg px-3 py-1.5 text-sm transition-colors",
-                  isActive
-                    ? "bg-blue-50 font-medium text-blue-600"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  "flex items-center rounded-lg px-3 py-2.5 transition-all duration-300",
+                  isActive ? brand.navActive : cn(brand.navText, brand.navHover)
                 )
               }
             >
-              <Icon size={15} className="mr-2 shrink-0" />
-              <span className="">{label}</span>
+              <Icon size={18} className="mr-3 shrink-0" />
+              <span className="text-sm font-medium">{label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-slate-200 bg-slate-50 p-4 shrink-0">
-          <div className="flex items-center">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-200 text-slate-500">
-              <User size={20} />
+        {/* Rodapé da Sidebar - Botão de Mudar Role */}
+        <div
+          className={cn(
+            "flex shrink-0 flex-col gap-3 border-t p-4 transition-colors duration-500",
+            brand.sidebarBorder,
+            brand.footerBg
+          )}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "w-full border-transparent text-[10px] font-bold shadow-sm",
+              brand.navHover,
+              brand.textMuted,
+              brand.footerBg
+            )}
+            onClick={toggleRole}
+          >
+            <ArrowRightLeft size={14} className="mr-2" />
+            Alternar Perfil (Dev)
+          </Button>
+
+          <div className="mt-2 flex items-center">
+            <div
+              className={cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-full shadow-inner",
+                brand.footerBg,
+                brand.textMain
+              )}
+            >
+              <User size={18} />
             </div>
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-semibold text-slate-700 truncate">Nome do Usuário</p>
-              <p className="text-xs text-slate-500 truncate">Tipo usuário</p>
+            <div className={cn("ml-3 overflow-hidden", brand.textMain)}>
+              <p className="truncate text-sm font-bold">{user.name}</p>
+              <p
+                className={cn(
+                  "text-[10px] font-black uppercase opacity-70",
+                  brand.accent
+                )}
+              >
+                {isContractor ? "Contratante" : "Transportador"}
+              </p>
             </div>
           </div>
         </div>
       </aside>
 
+      {/* ÁREA PRINCIPAL */}
       <main className="relative flex flex-1 flex-col overflow-hidden">
-        <header className="z-10 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8">
-          <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
+        {/* HEADER COM ENGRENAGEM (Menu iterado dinamicamente) */}
+        <header
+          className={cn(
+            "z-10 flex h-16 shrink-0 items-center justify-between border-b px-8 shadow-sm transition-colors duration-500",
+            brand.headerBg,
+            brand.sidebarBorder,
+            brand.textMain
+          )}
+        >
+          <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="relative rounded-full">
-              <Bell size={20} className="text-slate-500" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border border-white bg-red-500"></span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("hover:bg-black/5", brand.textMuted)}
+            >
+              <Bell size={20} />
             </Button>
+
+            {/* Menu de Configurações (Engrenagem) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("hover:bg-black/5", brand.textMuted)}
+                >
+                  <Settings size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                  Personalizar Tema
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                {/* Iterando sobre os temas disponíveis no Contexto */}
+                {availableThemes.map((t) => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    onClick={() => setBrand(t.id)}
+                    className={cn(
+                      "cursor-pointer font-medium",
+                      currentKey === t.id &&
+                        "bg-blue-50 text-blue-600 focus:bg-blue-100 focus:text-blue-700"
+                    )}
+                  >
+                    <Palette
+                      size={16}
+                      className={cn(
+                        "mr-2",
+                        currentKey === t.id ? "text-blue-600" : "text-slate-400"
+                      )}
+                    />
+                    {t.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {actions}
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto bg-slate-50/50 p-8">{children}</div>
+        {/* Conteúdo */}
+        <div className="flex-1 overflow-auto bg-slate-50 p-8">
+          <div className="mx-auto max-w-7xl animate-in duration-500 fade-in">
+            {children}
+          </div>
+        </div>
       </main>
     </div>
   )

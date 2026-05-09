@@ -5,7 +5,7 @@ const AuthContext = createContext()
 export function AuthProvider({ children }) {
   const [user, setUser] = useState({
     name: "Pedro Netto",
-    role: "contractor",
+    role: "contractor", // 'contractor' (contratante) ou 'carrier' (transportador)
   })
 
   const toggleRole = () => {
