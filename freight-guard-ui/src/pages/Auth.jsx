@@ -19,7 +19,8 @@ export default function Auth() {
   const handleLogin = (e) => {
     e.preventDefault()
     login({ role: accountType })
-    navigate("/dashboard", { replace: true })
+    const nextPath = location.state?.from?.pathname || "/dashboard"
+    navigate(nextPath, { replace: true })
   }
 
   return (

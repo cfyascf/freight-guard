@@ -23,7 +23,6 @@ import {
 } from "lucide-react"
 
 import AuthPage from "@/pages/Auth"
-import Login from "@/pages/Login"
 import Dashboard from "@/pages/Dashboard"
 import RouteOverview from "@/pages/RouteOverview"
 import TransportOverview from "@/pages/TransportOverview"
@@ -45,7 +44,7 @@ export const ROUTES = [
   // Public only (unauthenticated access only)
   { path: "/",        element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
   { path: "/auth",    element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
-  { path: "/login",   element: <Login />,     access: AuthAccess.PUBLIC, nav: false },
+  { path: "/login",   element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
   { path: "/register",element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
 
 
