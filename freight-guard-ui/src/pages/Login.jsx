@@ -1,27 +1,31 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { Shield, Lock, User as UserIcon, AlertCircle } from "lucide-react"
 
+import { useAuth } from "@/contexts/AuthContext"
+import { ROLES } from "@/constants/roles"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
-export default function Login({ setIsAuthenticated }) {
+export default function Login() {
   const [usuario, setUsuario] = useState("")
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState(false)
-  
+
+  const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogin = (e) => {
-    e.preventDefault() // Evita o recarregamento da página
+    e.preventDefault()
 
-    // Validação Hardcoded para o TCC
     if (usuario === "teste" && senha === "1111") {
       setErro(false)
-      setIsAuthenticated(true)
-      localStorage.setItem("freightguard_auth", "true") // Salva a sessão
-      navigate("/dashboard") // Redireciona para o painel principal
+      login({ name: "Pedro Netto", role: ROLES.DEVELOPER })
+
+      const nextPath = location.state?.from?.pathname || "/dashboard"
+      navigate(nextPath, { replace: true })
     } else {
       setErro(true)
     }

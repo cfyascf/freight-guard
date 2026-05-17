@@ -1,5 +1,7 @@
-import { createContext, useContext, useState } from "react"
+/* eslint-disable react/prop-types */
+import { createContext, useCallback, useContext, useMemo, useState } from "react"
 import { useAuth } from "./AuthContext"
+import { ROLES } from "@/constants/roles"
 
 const BrandContext = createContext()
 
@@ -9,7 +11,11 @@ export function BrandProvider({ children }) {
   const [brandPrefs, setBrandPrefs] = useState(() => {
     const stored = localStorage.getItem("fg-brand-prefs")
     if (stored) return JSON.parse(stored)
-    return { contractor: "corporate", carrier: "industrial" }
+    return {
+      [ROLES.CONTRACTOR]: "corporate",
+      [ROLES.CARRIER]: "industrial",
+      [ROLES.DEVELOPER]: "midnight",
+    }
   })
 
   const styles = {
@@ -83,21 +89,27 @@ export function BrandProvider({ children }) {
   const currentThemeKey = brandPrefs[user.role] || "midnight"
   const currentBrandStyle = styles[currentThemeKey]
 
-  const setBrand = (styleKey) => {
-    const newPrefs = { ...brandPrefs, [user.role]: styleKey }
-    setBrandPrefs(newPrefs)
-    localStorage.setItem("fg-brand-prefs", JSON.stringify(newPrefs))
-  }
+  const setBrand = useCallback(
+    (styleKey) => {
+      const newPrefs = { ...brandPrefs, [user.role]: styleKey }
+      setBrandPrefs(newPrefs)
+      localStorage.setItem("fg-brand-prefs", JSON.stringify(newPrefs))
+    },
+    [brandPrefs, user.role]
+  )
+
+  const value = useMemo(
+    () => ({
+      brand: currentBrandStyle,
+      setBrand,
+      currentKey: currentThemeKey,
+      availableThemes: Object.values(styles),
+    }),
+    [currentBrandStyle, setBrand, currentThemeKey, styles]
+  )
 
   return (
-    <BrandContext.Provider
-      value={{
-        brand: currentBrandStyle,
-        setBrand,
-        currentKey: currentThemeKey,
-        availableThemes: Object.values(styles), 
-      }}
-    >
+    <BrandContext.Provider value={value}>
       {children}
     </BrandContext.Provider>
   )

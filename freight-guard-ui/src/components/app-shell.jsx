@@ -1,5 +1,7 @@
+/* eslint-disable react/prop-types */
 import {
   Bell,
+  Check,
   Box,
   ChartBar,
   Package,
@@ -8,12 +10,13 @@ import {
   Truck,
   Settings,
   Palette,
-  ArrowRightLeft,
+  ChevronDown,
 } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useBrand } from "@/contexts/BrandContext"
 import { Button } from "@/components/ui/button"
+import { ROLE_OPTIONS, ROLES } from "@/constants/roles"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -25,10 +28,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export default function AppShell({ title, actions, children }) {
-  const { user, toggleRole } = useAuth()
+  const { user, setRole } = useAuth()
   const { brand, setBrand, currentKey, availableThemes } = useBrand()
 
-  const isContractor = user.role === "contractor"
+  const isContractor = user.role === ROLES.CONTRACTOR
+  const isDeveloper = user.role === ROLES.DEVELOPER
 
   const contractorMenus = [
     { label: "Visão Geral", to: "/dashboard", icon: ChartBar },
@@ -44,7 +48,21 @@ export default function AppShell({ title, actions, children }) {
     { label: "Gestão de Veículos", to: "/freight-management", icon: Package },
   ]
 
-  const activeMenus = isContractor ? contractorMenus : carrierMenus
+  const developerMenus = [...contractorMenus, ...carrierMenus.filter((item) => item.to !== "/dashboard")]
+
+  let activeMenus = carrierMenus
+  let panelLabel = "Painel Transportador"
+  let roleLabel = "Transportador"
+
+  if (isDeveloper) {
+    activeMenus = developerMenus
+    panelLabel = "Painel Desenvolvedor"
+    roleLabel = "Desenvolvedor"
+  } else if (isContractor) {
+    activeMenus = contractorMenus
+    panelLabel = "Painel Contratante"
+    roleLabel = "Contratante"
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100 font-sans">
@@ -74,7 +92,7 @@ export default function AppShell({ title, actions, children }) {
           <span
             className={cn("text-xl font-black tracking-tight", brand.textMain)}
           >
-            Freight
+            Freight{" "}
             <span
               className={cn("transition-colors duration-500", brand.accent)}
             >
@@ -90,7 +108,7 @@ export default function AppShell({ title, actions, children }) {
               brand.textMuted
             )}
           >
-            {isContractor ? "Painel Contratante" : "Painel Transportador"}
+            {panelLabel}
           </p>
           {activeMenus.map(({ label, to, icon: Icon }) => (
             <NavLink
@@ -117,20 +135,45 @@ export default function AppShell({ title, actions, children }) {
             brand.footerBg
           )}
         >
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "w-full border-transparent text-[10px] font-bold shadow-sm",
-              brand.navHover,
-              brand.textMuted,
-              brand.footerBg
-            )}
-            onClick={toggleRole}
-          >
-            <ArrowRightLeft size={14} className="mr-2" />
-            Alternar Perfil (Dev)
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "w-full border-transparent text-[10px] font-bold shadow-sm",
+                  brand.navHover,
+                  brand.textMuted,
+                  brand.footerBg
+                )}
+              >
+                <span>Perfil: {roleLabel}</span>
+                <ChevronDown size={14} className="ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52">
+                <DropdownMenuLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                  Alternar Perfil
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {ROLE_OPTIONS.map((roleOption) => (
+                  <DropdownMenuItem
+                    key={roleOption.value}
+                    onClick={() => setRole(roleOption.value)}
+                    className="cursor-pointer text-xs font-semibold"
+                  >
+                    <Check
+                      size={14}
+                      className={cn(
+                        "mr-2",
+                        user.role === roleOption.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {roleOption.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           <div className="mt-2 flex items-center">
             <div
@@ -150,7 +193,7 @@ export default function AppShell({ title, actions, children }) {
                   brand.accent
                 )}
               >
-                {isContractor ? "Contratante" : "Transportador"}
+                {roleLabel}
               </p>
             </div>
           </div>

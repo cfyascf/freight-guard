@@ -1,22 +1,25 @@
 import { useState } from "react"
 import { Building2, Shield, Truck } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
+import { useAuth } from "@/contexts/AuthContext"
+import { ROLES } from "@/constants/roles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function Auth() {
-  const [accountType, setAccountType] = useState("contractor")
+  const [accountType, setAccountType] = useState(ROLES.CONTRACTOR)
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login, register } = useAuth()
 
-  // Simulação de login para o TCC (Redirecionamento)
+  const activeTab = location.pathname === "/register" ? "register" : "login"
+
   const handleLogin = (e) => {
     e.preventDefault()
-    // No mundo real, aqui você faria o POST para a sua API .NET
-    // e ela devolveria um JWT (Token) com a role do usuário.
-    // Para a apresentação, vamos redirecionar fixo para o dashboard executivo.
-    navigate("/") 
+    login({ role: accountType })
+    navigate("/dashboard", { replace: true })
   }
 
   return (
@@ -47,7 +50,7 @@ export default function Auth() {
       <div className="flex w-full flex-col justify-center px-8 sm:px-16 lg:w-1/2 xl:px-32">
         <div className="mx-auto w-full max-w-md">
           
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={activeTab} className="w-full">
             <TabsList className="mb-8 grid w-full grid-cols-2 bg-slate-200/50 p-1">
               <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 Entrar
@@ -94,35 +97,47 @@ export default function Auth() {
               <form className="space-y-4">
                 {/* Seleção de Perfil (Role) */}
                 <div className="grid grid-cols-2 gap-4 pb-2">
-                  <div 
-                    onClick={() => setAccountType("contractor")}
+                  <button
+                    type="button"
+                    onClick={() => setAccountType(ROLES.CONTRACTOR)}
                     className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${
-                      accountType === "contractor" 
-                        ? "border-blue-600 bg-blue-50/50 shadow-sm" 
+                      accountType === ROLES.CONTRACTOR
+                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
-                    <Building2 size={24} className={`mx-auto mb-2 ${accountType === "contractor" ? "text-blue-600" : "text-slate-400"}`} />
-                    <p className={`text-sm font-medium ${accountType === "contractor" ? "text-blue-900" : "text-slate-700"}`}>
-                      Operador Logístico
+                    <Building2
+                      size={24}
+                      className={`mx-auto mb-2 ${accountType === ROLES.CONTRACTOR ? "text-blue-600" : "text-slate-400"}`}
+                    />
+                    <p
+                      className={`text-sm font-medium ${accountType === ROLES.CONTRACTOR ? "text-blue-900" : "text-slate-700"}`}
+                    >
+                      Operador Logistico
                     </p>
                     <p className="mt-1 text-[10px] text-slate-500">Contratar fretes</p>
-                  </div>
+                  </button>
 
-                  <div 
-                    onClick={() => setAccountType("carrier")}
+                  <button
+                    type="button"
+                    onClick={() => setAccountType(ROLES.CARRIER)}
                     className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${
-                      accountType === "carrier" 
-                        ? "border-blue-600 bg-blue-50/50 shadow-sm" 
+                      accountType === ROLES.CARRIER
+                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
-                    <Truck size={24} className={`mx-auto mb-2 ${accountType === "carrier" ? "text-blue-600" : "text-slate-400"}`} />
-                    <p className={`text-sm font-medium ${accountType === "carrier" ? "text-blue-900" : "text-slate-700"}`}>
+                    <Truck
+                      size={24}
+                      className={`mx-auto mb-2 ${accountType === ROLES.CARRIER ? "text-blue-600" : "text-slate-400"}`}
+                    />
+                    <p
+                      className={`text-sm font-medium ${accountType === ROLES.CARRIER ? "text-blue-900" : "text-slate-700"}`}
+                    >
                       Transportadora
                     </p>
                     <p className="mt-1 text-[10px] text-slate-500">Realizar fretes</p>
-                  </div>
+                  </button>
                 </div>
 
                 <div className="space-y-2">
@@ -143,7 +158,10 @@ export default function Auth() {
                 <Button
                   type="button"
                   className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-2"
-                  onClick={() => navigate("/")}
+                  onClick={() => {
+                    register({ role: accountType })
+                    navigate("/dashboard", { replace: true })
+                  }}
                 >
                   Criar Conta
                 </Button>

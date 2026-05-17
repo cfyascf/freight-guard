@@ -309,6 +309,7 @@ export default function FreightsMural() {
                   : "bg-slate-400 cursor-not-allowed"
               }`}
             >
+            </Button>
             <Button
               className="bg-blue-600 text-white hover:bg-blue-700"
               onClick={() => {
