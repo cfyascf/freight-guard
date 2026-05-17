@@ -29,6 +29,8 @@ import TransportOverview from "@/pages/TransportOverview"
 import VehicleForm from "@/pages/VehicleForm"
 import LoadManagement from "@/pages/LoadManagement"
 import CreateLoad from "@/pages/CreateLoad"
+import CreateRoute from "@/pages/CreateRoute"
+import CreateProduct from "@/pages/CreateProduct"
 import FreightsPanel from "@/pages/FreightsPanel"
 import RouteManagement from "@/pages/RouteManagement"
 import ProductManagement from "@/pages/ProductsManagement"
@@ -72,6 +74,8 @@ export const ROUTES = [
     nav: true,
   },
   { path: "/create-load", element: <CreateLoad />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
   {
     path: "/freights-panel",
     element: <FreightsPanel />,

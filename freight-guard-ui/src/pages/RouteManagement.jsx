@@ -117,12 +117,12 @@ export default function RouteManagement() {
           <Input 
             type="text" 
             placeholder="Buscar por ID, origem ou destino..." 
-            className="border-slate-200 bg-white pl-9 shadow-sm"
+            className="border-slate-200 bg-white pl-9"
           />
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>

@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function AppShell({ title, actions, children }) {
+export default function AppShell({ title, children }) {
   const { user, setRole } = useAuth()
   const { brand, setBrand, currentKey, availableThemes } = useBrand()
 
@@ -47,7 +47,7 @@ export default function AppShell({ title, actions, children }) {
       {/* SIDEBAR COM TEMA DINÂMICO */}
       <aside
         className={cn(
-          "z-20 flex h-full w-64 shrink-0 flex-col border-r shadow-2xl transition-all duration-500",
+          "z-20 flex h-full w-64 shrink-0 flex-col border-r transition-all duration-500",
           brand.sidebarBg,
           brand.sidebarBorder
         )}
@@ -183,7 +183,7 @@ export default function AppShell({ title, actions, children }) {
         {/* HEADER COM ENGRENAGEM (Menu iterado dinamicamente) */}
         <header
           className={cn(
-            "z-10 flex h-16 shrink-0 items-center justify-between border-b px-8 shadow-sm transition-colors duration-500",
+            "z-10 flex h-16 shrink-0 items-center justify-between border-b px-8 transition-colors duration-500",
             brand.headerBg,
             brand.sidebarBorder,
             brand.textMain
@@ -241,7 +241,6 @@ export default function AppShell({ title, actions, children }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {actions}
           </div>
         </header>
 

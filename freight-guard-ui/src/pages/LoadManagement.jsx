@@ -55,16 +55,7 @@ export default function LoadManagement() {
   }
 
   return (
-    <AppShell
-      title="Gestao de Cargas"
-      actions={
-        <Button asChild className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
-          <Link to="/create-load">
-            <Plus size={16} className="mr-2" /> Nova Carga
-          </Link>
-        </Button>
-      }
-    >
+    <AppShell title="Gestao de Cargas">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
             <div className="flex items-center space-x-3 w-full md:w-auto">
               <div className="relative w-full md:w-80">
@@ -80,10 +71,15 @@ export default function LoadManagement() {
                   <Filter size={16} className="mr-2" /> Filtros
                 </Link>
               </Button>
+              <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+                <Link to="/create-load">
+                  <Plus size={16} className="mr-2" /> Nova Carga
+                </Link>
+              </Button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow>
@@ -108,8 +104,8 @@ export default function LoadManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1.5">
-                        {carga.requisitos.map((req, index) => (
-                          <Badge key={index} variant="secondary" className="bg-slate-100 text-slate-600 font-normal hover:bg-slate-200">
+                        {carga.requisitos.map((req) => (
+                          <Badge key={`${carga.id}-${req}`} variant="secondary" className="bg-slate-100 text-slate-600 font-normal hover:bg-slate-200">
                             {req}
                           </Badge>
                         ))}

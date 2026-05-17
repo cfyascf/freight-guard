@@ -1,9 +1,11 @@
 import { useState } from "react"
-import { Box, MoreHorizontal, Pencil, Plus, Trash2, AlertTriangle, Package, Scale } from "lucide-react"
+import { Box, MoreHorizontal, Pencil, Plus, Trash2, AlertTriangle, Search, Filter } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
@@ -50,25 +52,32 @@ export default function ProductManagement() {
   }
 
   return (
-    <AppShell 
-      title="Gestão de Produtos"
-      actions={
-        <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
-          <Plus size={16} className="mr-2" /> 
-          Novo Produto
-        </Button>
-      }
-    >
-      <div className="flex flex-col space-y-6 p-2 md:p-6">
+    <AppShell title="Gestão de Produtos">
+      <div className="flex flex-col space-y-6">
+        <div className="mb-6 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
+          <div className="flex w-full items-center space-x-3 md:w-auto">
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                type="text"
+                placeholder="Buscar por SKU, nome ou tipo..."
+                className="border-slate-200 bg-white pl-9"
+              />
+            </div>
+            <Button asChild variant="outline" className="border-slate-200 bg-white">
+              <Link to="/product-management">
+                <Filter size={16} className="mr-2" /> Filtros
+              </Link>
+            </Button>
+            <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+              <Link to="/create-product">
+                <Plus size={16} className="mr-2" /> Novo Produto
+              </Link>
+            </Button>
+          </div>
+        </div>
         
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
-            <CardTitle className="text-lg font-semibold flex items-center text-slate-800">
-              <Package size={18} className="mr-2 text-blue-600" />
-              Catálogo de Produtos
-            </CardTitle>
-          </CardHeader>
-          
+        <Card className="gap-0 border-slate-200 py-0">
           <CardContent className="p-0">
             <Table>
               <TableHeader className="bg-slate-50">
