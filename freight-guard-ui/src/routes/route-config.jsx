@@ -32,6 +32,7 @@ import CreateLoad from "@/pages/CreateLoad"
 import LoadDetails from "@/pages/LoadDetails"
 import CreateRoute from "@/pages/CreateRoute"
 import CreateProduct from "@/pages/CreateProduct"
+import CreateFreightAuction from "@/pages/CreateFreightAuction"
 import AuctionBids from "@/pages/AuctionBids"
 import FreightsPanel from "@/pages/FreightsPanel"
 import RouteManagement from "@/pages/RouteManagement"
@@ -79,6 +80,7 @@ export const ROUTES = [
   { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids/:loadId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
   {

@@ -97,8 +97,8 @@ export default function LoadManagement() {
 
   return (
     <AppShell title="Gestao de Cargas">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-3 w-full md:w-auto">
+          <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-3 md:w-auto">
               <div className="relative w-full md:w-80">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
                 <Input 
@@ -107,17 +107,19 @@ export default function LoadManagement() {
                   className="pl-9 bg-white border-slate-200"
                 />
               </div>
+
               <Button asChild variant="outline" className="bg-white border-slate-200">
                 <Link to="/product-management">
                   <Filter size={16} className="mr-2" /> Filtros
                 </Link>
               </Button>
-              <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
-                <Link to="/create-load">
-                  <Plus size={16} className="mr-2" /> Nova Carga
-                </Link>
-              </Button>
             </div>
+
+            <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+              <Link to="/create-load">
+                <Plus size={16} className="mr-2" /> Nova Carga
+              </Link>
+            </Button>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">

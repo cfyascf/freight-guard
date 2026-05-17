@@ -3,6 +3,7 @@ import { Box, MoreHorizontal, Pencil, Plus, Trash2, AlertTriangle, Search, Filte
 import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,20 +43,52 @@ export default function ProductManagement() {
       fragil: true,
     }
   ])
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [draftProduct, setDraftProduct] = useState(null)
 
   const handleDelete = (idParaDeletar) => {
     setProdutos(produtos.filter(produto => produto.id !== idParaDeletar))
   }
 
   const handleEdit = (produto) => {
-    alert(`Abrir modal de edição para o produto: ${produto.nome}`)
+    setSelectedProduct(produto)
+    setDraftProduct(produto)
+    setIsEditOpen(true)
+  }
+
+  const handleDraftChange = (field, value) => {
+    setDraftProduct((current) => ({
+      ...current,
+      [field]: field === "fragil" ? value === "true" : value,
+    }))
+  }
+
+  const handleSaveEdit = () => {
+    if (!draftProduct) {
+      return
+    }
+
+    setProdutos((currentProdutos) => currentProdutos.map((produto) => (produto.id === draftProduct.id ? draftProduct : produto)))
+    setIsEditOpen(false)
+    setSelectedProduct(null)
+    setDraftProduct(null)
+  }
+
+  const handleCloseEdit = (open) => {
+    setIsEditOpen(open)
+
+    if (!open) {
+      setSelectedProduct(null)
+      setDraftProduct(null)
+    }
   }
 
   return (
     <AppShell title="Gestão de Produtos">
       <div className="flex flex-col space-y-6">
-        <div className="mb-6 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
-          <div className="flex w-full items-center space-x-3 md:w-auto">
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="flex w-full items-center gap-3 md:w-auto">
             <div className="relative w-full md:w-96">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
               <Input
@@ -64,17 +97,19 @@ export default function ProductManagement() {
                 className="border-slate-200 bg-white pl-9"
               />
             </div>
+
             <Button asChild variant="outline" className="border-slate-200 bg-white">
               <Link to="/product-management">
                 <Filter size={16} className="mr-2" /> Filtros
               </Link>
             </Button>
-            <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
-              <Link to="/create-product">
-                <Plus size={16} className="mr-2" /> Novo Produto
-              </Link>
-            </Button>
           </div>
+
+          <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+            <Link to="/create-product">
+              <Plus size={16} className="mr-2" /> Novo Produto
+            </Link>
+          </Button>
         </div>
         
         <Card className="gap-0 border-slate-200 py-0">
@@ -165,6 +200,71 @@ export default function ProductManagement() {
             </Table>
           </CardContent>
         </Card>
+
+        <Dialog open={isEditOpen} onOpenChange={handleCloseEdit}>
+          <DialogContent className="sm:max-w-[520px]">
+            <DialogHeader>
+              <DialogTitle>Editar Produto</DialogTitle>
+              <DialogDescription>
+                Atualize os dados do produto {selectedProduct?.id} e salve para refletir na tabela.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-2">
+              <div className="space-y-2">
+                <label htmlFor="product-sku" className="text-sm font-medium text-slate-700">SKU</label>
+                <Input
+                  id="product-sku"
+                  value={draftProduct?.sku || ""}
+                  onChange={(e) => handleDraftChange("sku", e.target.value)}
+                  className="border-slate-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="product-name" className="text-sm font-medium text-slate-700">Nome</label>
+                <Input
+                  id="product-name"
+                  value={draftProduct?.nome || ""}
+                  onChange={(e) => handleDraftChange("nome", e.target.value)}
+                  className="border-slate-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="product-type" className="text-sm font-medium text-slate-700">Categoria / Tipo</label>
+                <Input
+                  id="product-type"
+                  value={draftProduct?.tipo || ""}
+                  onChange={(e) => handleDraftChange("tipo", e.target.value)}
+                  className="border-slate-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="product-fragil" className="text-sm font-medium text-slate-700">Cuidado especial</label>
+                <select
+                  id="product-fragil"
+                  value={draftProduct?.fragil ? "true" : "false"}
+                  onChange={(e) => handleDraftChange("fragil", e.target.value)}
+                  className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-300"
+                >
+                  <option value="false">Não frágil</option>
+                  <option value="true">Frágil</option>
+                </select>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => handleCloseEdit(false)}>
+                Cancelar
+              </Button>
+              <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={handleSaveEdit}>
+                Salvar alterações
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </AppShell>

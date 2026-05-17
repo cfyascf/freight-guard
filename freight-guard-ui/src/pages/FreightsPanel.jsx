@@ -3,6 +3,7 @@ import {
   Box,
   Clock,
   Gavel,
+  Plus,
   TrendingDown,
 } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -91,25 +92,25 @@ export default function FreightsPanel() {
   return (
     <AppShell
       title="Painel de Leilão"
-      actions={
-        <Button asChild className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
-          <Link to="/load-management">
-            <Gavel size={16} className="mr-2" /> Iniciar Novo Leilão
-          </Link>
-        </Button>
-      }
     >
       <div className="flex flex-col space-y-6">
-        
         <Tabs defaultValue="ativos" className="w-full">
-          <TabsList className="mb-4 bg-white border border-slate-200">
-            <TabsTrigger value="ativos" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-              Leilões Ativos (3)
-            </TabsTrigger>
-            <TabsTrigger value="historico" className="data-[state=active]:bg-slate-100">
-              Histórico e Encerrados
-            </TabsTrigger>
-          </TabsList>
+          <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+            <TabsList className="bg-white border border-slate-200">
+              <TabsTrigger value="ativos" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
+                Leilões Ativos (3)
+              </TabsTrigger>
+              <TabsTrigger value="historico" className="data-[state=active]:bg-slate-100">
+                Histórico e Encerrados
+              </TabsTrigger>
+            </TabsList>
+
+            <Button asChild className="self-start bg-blue-600 text-white hover:bg-blue-700 md:ml-auto md:self-auto">
+              <Link to="/create-freight-auction">
+                <Plus size={16} className="mr-2" /> Novo Leilão
+              </Link>
+            </Button>
+          </div>
 
           <TabsContent value="ativos" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
