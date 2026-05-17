@@ -2,12 +2,8 @@
 import {
   Bell,
   Check,
-  Box,
-  ChartBar,
-  Package,
   Shield,
   User,
-  Truck,
   Settings,
   Palette,
   ChevronDown,
@@ -17,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useBrand } from "@/contexts/BrandContext"
 import { Button } from "@/components/ui/button"
 import { ROLE_OPTIONS, ROLES } from "@/constants/roles"
+import { getNavItems } from "@/routes/route-config"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -31,35 +28,16 @@ export default function AppShell({ title, actions, children }) {
   const { user, setRole } = useAuth()
   const { brand, setBrand, currentKey, availableThemes } = useBrand()
 
-  const isContractor = user.role === ROLES.CONTRACTOR
-  const isDeveloper = user.role === ROLES.DEVELOPER
+  // Derive nav items and labels from role — no hardcoded menus
+  const activeMenus = getNavItems(user.role)
 
-  const contractorMenus = [
-    { label: "Visão Geral", to: "/dashboard", icon: ChartBar },
-    { label: "Gestão de Cargas", to: "/load-management", icon: Box },
-    { label: "Painel de Leilão", to: "/freights-panel", icon: Truck },
-    { label: "Gestão de Rotas", to: "/route-management", icon: Package },
-    { label: "Gestão de Produtos", to: "/products-management", icon: Package },
-  ]
-
-  const carrierMenus = [
-    { label: "Visão Geral", to: "/dashboard", icon: ChartBar },
-    { label: "Ofertas de Frete", to: "/freights-mural", icon: Truck },
-    { label: "Gestão de Veículos", to: "/freight-management", icon: Package },
-  ]
-
-  const developerMenus = [...contractorMenus, ...carrierMenus.filter((item) => item.to !== "/dashboard")]
-
-  let activeMenus = carrierMenus
   let panelLabel = "Painel Transportador"
   let roleLabel = "Transportador"
 
-  if (isDeveloper) {
-    activeMenus = developerMenus
+  if (user.role === ROLES.DEVELOPER) {
     panelLabel = "Painel Desenvolvedor"
     roleLabel = "Desenvolvedor"
-  } else if (isContractor) {
-    activeMenus = contractorMenus
+  } else if (user.role === ROLES.CONTRACTOR) {
     panelLabel = "Painel Contratante"
     roleLabel = "Contratante"
   }
@@ -110,10 +88,10 @@ export default function AppShell({ title, actions, children }) {
           >
             {panelLabel}
           </p>
-          {activeMenus.map(({ label, to, icon: Icon }) => (
+          {activeMenus.map(({ label, path, icon: Icon }) => (
             <NavLink
-              key={to}
-              to={to}
+              key={path}
+              to={path}
               className={({ isActive }) =>
                 cn(
                   "flex items-center rounded-lg px-3 py-2.5 transition-all duration-300",
