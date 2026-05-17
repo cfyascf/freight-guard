@@ -1,49 +1,64 @@
 import { Filter, Plus, Search } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { RISK } from "@/constants/risk"
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table"
 
 export default function LoadManagement() {
+  const navigate = useNavigate()
+
   const cargasMock = [
     {
       id: "CRG-1042",
       rota: "Curitiba, PR → São Paulo, SP",
-      peso: "12 Ton",
-      volume: "45 m³",
+      janelaColeta: "18/05/2026 08:00 - 10:00",
+      transportadora: "TransLog Sul",
+      valorFrete: 4800,
+      risk: RISK.NORMAL,
       status: "Disponível",
-      requisitos: ["Refrigerado", "Alimentício"] 
     },
     {
       id: "CRG-1043",
       rota: "Joinville, SC → Campinas, SP",
-      peso: "1.5 Ton",
-      volume: "10 m³",
+      janelaColeta: "18/05/2026 11:00 - 13:30",
+      transportadora: "Aguardando definição",
+      valorFrete: 5350,
+      risk: RISK.WARNING,
       status: "Em Leilão",
-      requisitos: ["Frágil", "Express"]
     },
     {
       id: "CRG-1044",
       rota: "Ponta Grossa, PR → Santos, SP",
-      peso: "28 Ton",
-      volume: "60 m³",
+      janelaColeta: "19/05/2026 07:30 - 09:00",
+      transportadora: "RodoMax Cargo",
+      valorFrete: 7250,
+      risk: RISK.CRITIC,
       status: "Alocada",
-      requisitos: ["Grãos", "Carga Seca"]
     },
     {
       id: "CRG-1045",
       rota: "Araucária, PR → Rio de Janeiro, RJ",
-      peso: "8 Ton",
-      volume: "25 m³",
+      janelaColeta: "19/05/2026 14:00 - 16:00",
+      transportadora: "Aguardando definição",
+      valorFrete: 6100,
+      risk: RISK.WARNING,
       status: "Disponível",
-      requisitos: ["Produto Químico", "Inflamável"]
     }
   ]
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
+  }
+
+  const getTransportadoraLabel = (carga) => {
+    return carga.status === "Alocada" ? carga.transportadora : "Em Leilão"
+  }
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -51,6 +66,32 @@ export default function LoadManagement() {
       case 'Em Leilão': return 'bg-blue-100 text-blue-800';
       case 'Alocada': return 'bg-slate-100 text-slate-800';
       default: return 'bg-slate-100 text-slate-800';
+    }
+  }
+
+  const getRiskBorderClass = (risk) => {
+    switch (risk) {
+      case RISK.NORMAL:
+        return "border-l-4 border-l-emerald-500"
+      case RISK.WARNING:
+        return "border-l-4 border-l-amber-500"
+      case RISK.CRITIC:
+        return "border-l-4 border-l-rose-600"
+      default:
+        return "border-l-4 border-l-slate-200"
+    }
+  }
+
+  const getRiskBadgeClass = (risk) => {
+    switch (risk) {
+      case RISK.NORMAL:
+        return "bg-emerald-100 text-emerald-800"
+      case RISK.WARNING:
+        return "bg-amber-100 text-amber-800"
+      case RISK.CRITIC:
+        return "bg-rose-100 text-rose-800"
+      default:
+        return "bg-slate-100 text-slate-700"
     }
   }
 
@@ -85,43 +126,43 @@ export default function LoadManagement() {
                 <TableRow>
                   <TableHead className="w-[120px]">ID Carga</TableHead>
                   <TableHead>Origem → Destino</TableHead>
-                  <TableHead>Dimensões</TableHead>
-                  <TableHead>Requisitos Específicos (JSONB)</TableHead>
+                  <TableHead>Janela de Coleta</TableHead>
+                  <TableHead>Transportadora</TableHead>
+                  <TableHead>Valor do Frete</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {cargasMock.map((carga) => (
-                  <TableRow key={carga.id} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium text-slate-900">{carga.id}</TableCell>
+                  <TableRow
+                    key={carga.id}
+                    className="cursor-pointer hover:bg-slate-50/50"
+                    tabIndex={0}
+                    role="link"
+                    onClick={() => navigate(`/load-details/${carga.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        navigate(`/load-details/${carga.id}`)
+                      }
+                    }}
+                  >
+                    <TableCell className={`font-medium text-slate-900 ${getRiskBorderClass(carga.risk)}`}>
+                      <div className="flex flex-col gap-1">
+                        <span>{carga.id}</span>
+                        <Badge className={`w-fit border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(carga.risk)}`}>
+                          {carga.risk}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-slate-600">{carga.rota}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-800">{carga.peso}</span>
-                        <span className="text-xs text-slate-500">{carga.volume}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1.5">
-                        {carga.requisitos.map((req) => (
-                          <Badge key={`${carga.id}-${req}`} variant="secondary" className="bg-slate-100 text-slate-600 font-normal hover:bg-slate-200">
-                            {req}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
+                    <TableCell className="text-slate-700">{carga.janelaColeta}</TableCell>
+                    <TableCell className="text-slate-700">{getTransportadoraLabel(carga)}</TableCell>
+                    <TableCell className="font-medium text-emerald-700">{formatCurrency(carga.valorFrete)}</TableCell>
                     <TableCell>
                       <Badge className={`font-medium border-none ${getStatusColor(carga.status)}`}>
                         {carga.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm" className="border-blue-200 text-blue-700 hover:bg-blue-50">
-                        <Link to="/create-load" aria-label={`Abrir carga ${carga.id}`}>
-                          Abrir
-                        </Link>
-                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

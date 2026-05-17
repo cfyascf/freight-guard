@@ -9,6 +9,33 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RISK } from "@/constants/risk"
+
+const getRiskBorderClass = (risk) => {
+  switch (risk) {
+    case RISK.NORMAL:
+      return "border-l-4 border-l-emerald-500"
+    case RISK.WARNING:
+      return "border-l-4 border-l-amber-500"
+    case RISK.CRITIC:
+      return "border-l-4 border-l-rose-600"
+    default:
+      return "border-l-4 border-l-slate-200"
+  }
+}
+
+const getRiskBadgeClass = (risk) => {
+  switch (risk) {
+    case RISK.NORMAL:
+      return "bg-emerald-100 text-emerald-800"
+    case RISK.WARNING:
+      return "bg-amber-100 text-amber-800"
+    case RISK.CRITIC:
+      return "bg-rose-100 text-rose-800"
+    default:
+      return "bg-slate-100 text-slate-700"
+  }
+}
 
 export default function FreightsMural() {
   // Estados para controlar o Modal único
@@ -25,11 +52,12 @@ export default function FreightsMural() {
       contratante: "Volvo Cars do Brasil",
       nomeCarga: "Peças Automotivas",
       tipoCarga: "Manufaturados",
+      risk: RISK.WARNING,
       rota: "Curitiba, PR → São Paulo, SP",
       tempoRetirada: "03/05/2026 08:00",
       previsaoChegada: "04/05/2026 12:00",
       distancia: "408 km",
-      valor: 2500.00,
+      valor: 2500,
       peso: "12 Ton",
       volume: "45 m³",
       requisitos: ["Refrigerado"],
@@ -41,11 +69,12 @@ export default function FreightsMural() {
       contratante: "Industrias Alpha",
       nomeCarga: "Bobinas de Aço",
       tipoCarga: "Pesada / Siderurgia",
+      risk: RISK.NORMAL,
       rota: "Ponta Grossa, PR → Joinville, SC",
       tempoRetirada: "05/05/2026 06:00",
       previsaoChegada: "05/05/2026 18:00",
       distancia: "215 km",
-      valor: 1600.00,
+      valor: 1600,
       peso: "28 Ton",
       volume: "60 m³",
       requisitos: ["Carga Seca"],
@@ -57,11 +86,12 @@ export default function FreightsMural() {
       contratante: "TechLogistics",
       nomeCarga: "Lote de Servidores",
       tipoCarga: "Eletrônicos Sensíveis",
+      risk: RISK.CRITIC,
       rota: "Araucária, PR → Rio de Janeiro, RJ",
       tempoRetirada: "04/05/2026 14:00",
       previsaoChegada: "06/05/2026 09:00",
       distancia: "850 km",
-      valor: 4200.00,
+      valor: 4200,
       peso: "8 Ton",
       volume: "25 m³",
       requisitos: ["Produto Químico"],
@@ -103,7 +133,7 @@ export default function FreightsMural() {
       {/* Grid de Ofertas - Renderização Dinâmica e Enxuta */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {ofertasDisponiveis.map((oferta) => (
-          <Card key={oferta.id} className="flex flex-col border-slate-200 transition-shadow hover:shadow-md">
+          <Card key={oferta.id} className={`flex flex-col border-slate-200 transition-shadow hover:shadow-md ${getRiskBorderClass(oferta.risk)}`}>
             
             <CardHeader className="border-b border-slate-50 pb-4">
               <div className="flex items-start justify-between">
@@ -116,6 +146,9 @@ export default function FreightsMural() {
                   </CardTitle>
                 </div>
                 <div className="flex flex-col items-end gap-2">
+                  <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(oferta.risk)}`}>
+                    {oferta.risk}
+                  </Badge>
                   {oferta.urgencia === "Alta" && (
                     <Badge variant="destructive" className="bg-red-50 text-red-600 border-none hover:bg-red-100">
                       Urgente ⚠
@@ -268,8 +301,9 @@ export default function FreightsMural() {
 
             {/* Checkbox de responsabilidade */}
             <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
-              <label className="flex items-start cursor-pointer">
+              <div className="flex items-start">
                 <input
+                  id="freight-acceptance"
                   type="checkbox"
                   checked={confirmado}
                   onChange={(e) =>
@@ -279,16 +313,16 @@ export default function FreightsMural() {
                 />
 
                 <div>
-                  <p className="text-sm text-amber-900 font-medium">
+                  <label htmlFor="freight-acceptance" className="cursor-pointer text-sm font-medium text-amber-900">
                     Declaro que este veículo possui capacidade adequada para realizar o transporte deste frete.
-                  </p>
+                  </label>
 
                   <p className="text-xs text-amber-700 mt-1">
                     O transportador é responsável por garantir que o veículo suporte o volume de{" "}
                     <strong>{freteSelecionado?.volume}</strong>.
                   </p>
                 </div>
-              </label>
+              </div>
             </div>
           </div>
 

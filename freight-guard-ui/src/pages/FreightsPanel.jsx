@@ -3,9 +3,7 @@ import {
   Box,
   Clock,
   Gavel,
-  Plus,
   TrendingDown,
-  Truck,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -17,6 +15,33 @@ import {
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RISK } from "@/constants/risk"
+
+const getRiskBorderClass = (risk) => {
+  switch (risk) {
+    case RISK.NORMAL:
+      return "border-l-4 border-l-emerald-500"
+    case RISK.WARNING:
+      return "border-l-4 border-l-amber-500"
+    case RISK.CRITIC:
+      return "border-l-4 border-l-rose-600"
+    default:
+      return "border-l-4 border-l-slate-200"
+  }
+}
+
+const getRiskBadgeClass = (risk) => {
+  switch (risk) {
+    case RISK.NORMAL:
+      return "bg-emerald-100 text-emerald-800"
+    case RISK.WARNING:
+      return "bg-amber-100 text-amber-800"
+    case RISK.CRITIC:
+      return "bg-rose-100 text-rose-800"
+    default:
+      return "bg-slate-100 text-slate-700"
+  }
+}
 
 export default function FreightsPanel() {
   // Simulando a junção das tabelas OfertaFrete + Carga + Lances (Top 1)
@@ -24,9 +49,10 @@ export default function FreightsPanel() {
     {
       id_oferta: "OFT-9921",
       id_carga: "CRG-1042",
+      risk: RISK.WARNING,
       rota: "Curitiba, PR → São Paulo, SP",
-      valor_teto: 2500.00,
-      melhor_lance: 2150.00,
+      valor_teto: 2500,
+      melhor_lance: 2150,
       transportadora_vencendo: "Expresso Sul Ltda",
       total_lances: 8,
       tempo_restante_min: 45,
@@ -35,8 +61,9 @@ export default function FreightsPanel() {
     {
       id_oferta: "OFT-9922",
       id_carga: "CRG-1043",
+      risk: RISK.NORMAL,
       rota: "Joinville, SC → Campinas, SP",
-      valor_teto: 1800.00,
+      valor_teto: 1800,
       melhor_lance: null, // Ainda sem lances
       transportadora_vencendo: null,
       total_lances: 0,
@@ -46,9 +73,10 @@ export default function FreightsPanel() {
     {
       id_oferta: "OFT-9923",
       id_carga: "CRG-1045",
+      risk: RISK.CRITIC,
       rota: "Araucária, PR → Rio de Janeiro, RJ",
-      valor_teto: 4200.00,
-      melhor_lance: 3900.00,
+      valor_teto: 4200,
+      melhor_lance: 3900,
       transportadora_vencendo: "Logística Alpha",
       total_lances: 3,
       tempo_restante_min: 15,
@@ -87,13 +115,18 @@ export default function FreightsPanel() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               
               {leiloesAtivos.map((leilao) => (
-                <Card key={leilao.id_oferta} className="flex flex-col hover:shadow-md transition-shadow border-slate-200">
+                <Card key={leilao.id_oferta} className={`flex flex-col hover:shadow-md transition-shadow border-slate-200 ${getRiskBorderClass(leilao.risk)}`}>
                   <CardHeader className="pb-3 border-b border-slate-50">
                     <div className="flex justify-between items-start">
                       <div>
-                        <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 mb-2">
-                          {leilao.id_oferta}
-                        </Badge>
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                            {leilao.id_oferta}
+                          </Badge>
+                          <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(leilao.risk)}`}>
+                            {leilao.risk}
+                          </Badge>
+                        </div>
                         <CardTitle className="text-base font-bold text-slate-800 flex items-center">
                           {leilao.rota.split(' → ')[0]} 
                           <ArrowRight size={14} className="mx-2 text-slate-400" /> 
@@ -126,7 +159,7 @@ export default function FreightsPanel() {
                       </div>
 
                       {/* Status de quem está ganhando */}
-                      {leilao.melhor_lance && (
+                      {Boolean(leilao.melhor_lance) && (
                         <div className="flex items-center text-xs text-slate-600 bg-white border border-slate-100 p-2 rounded">
                           <TrendingDown size={14} className="text-emerald-500 mr-2" />
                           <span className="font-medium mr-1">{leilao.transportadora_vencendo}</span> liderando 
@@ -159,9 +192,9 @@ export default function FreightsPanel() {
                         indicatorColor={leilao.progresso_tempo > 90 ? 'bg-red-500' : 'bg-blue-500'}
                       />
                     </div>
-                    
+
                     <Button asChild variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                      <Link to="/transport-overview">Analisar Lances</Link>
+                      <Link to="/auction-bids">Analisar Lances</Link>
                     </Button>
                   </CardFooter>
                 </Card>

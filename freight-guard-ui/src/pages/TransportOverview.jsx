@@ -1,8 +1,7 @@
-import { Calendar, CheckCircle2, MapPin, Search, Truck } from "lucide-react"
+import { Calendar, CheckCircle2, Search, Truck } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,7 +15,7 @@ export default function MyTransports() {
       route: "Curitiba, PR → São Paulo, SP",
       status: "Em Trânsito",
       eta: "Hoje, 18:30",
-      value: 2150.00
+      value: 2150,
     },
     {
       id: "TRP-8822",
@@ -25,7 +24,7 @@ export default function MyTransports() {
       route: "Joinville, SC → Campinas, SP",
       status: "Carregando",
       eta: "Amanhã, 10:00",
-      value: 1800.00
+      value: 1800,
     }
   ]
 
@@ -37,7 +36,7 @@ export default function MyTransports() {
       route: "Araucária, PR → Santos, SP",
       status: "Entregue",
       deliveryDate: "10/05/2026",
-      value: 3200.00
+      value: 3200,
     },
     {
       id: "TRP-8809",
@@ -46,7 +45,7 @@ export default function MyTransports() {
       route: "Curitiba, PR → Ponta Grossa, PR",
       status: "Entregue",
       deliveryDate: "08/05/2026",
-      value: 950.00
+      value: 950,
     }
   ]
 
@@ -84,7 +83,6 @@ export default function MyTransports() {
                 <TableRow>
                   <TableHead className="w-[120px]">ID Transporte</TableHead>
                   <TableHead>Veículo</TableHead>
-                  <TableHead>Trajeto</TableHead>
                   <TableHead>Status Operacional</TableHead>
                   <TableHead>Previsão (ETA)</TableHead>
                   <TableHead className="text-right">Valor do Frete</TableHead>
@@ -102,7 +100,6 @@ export default function MyTransports() {
                         <Truck size={12} className="mr-1 text-slate-400" /> {trip.vehicle}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-700 font-medium">{trip.route}</TableCell>
                     <TableCell>
                       <Badge className="bg-blue-100 text-blue-800 border-none hover:bg-blue-200">
                         {trip.status}
@@ -126,7 +123,6 @@ export default function MyTransports() {
                 <TableRow>
                   <TableHead className="w-[120px]">ID Transporte</TableHead>
                   <TableHead>Veículo</TableHead>
-                  <TableHead>Trajeto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data de Entrega</TableHead>
                   <TableHead className="text-right">Valor Faturado</TableHead>
@@ -144,7 +140,6 @@ export default function MyTransports() {
                         {trip.vehicle}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-700">{trip.route}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none flex w-max items-center">
                         <CheckCircle2 size={12} className="mr-1 text-emerald-500" /> {trip.status}
