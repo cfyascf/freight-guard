@@ -1,4 +1,4 @@
-import { ArrowLeft, Box, PlusCircle, Save } from "lucide-react"
+import { ArrowLeft, Box, PlusCircle, Save, Waypoints } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { productOptionsMock } from "@/constants/products-mock"
-import { routeOptionsMock } from "@/constants/routes-mock"
 
 export default function CreateLoad() {
   return (
@@ -81,27 +80,30 @@ export default function CreateLoad() {
 
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-bold text-slate-800">Detalhes da Rota</CardTitle>
-                <CardDescription>Defina a origem e destino baseados nas rotas cadastradas.</CardDescription>
+                <CardTitle className="text-lg font-bold text-slate-800 flex items-center">
+                  <Waypoints size={18} className="mr-2 text-blue-600" /> Detalhes do Trecho
+                </CardTitle>
+                <CardDescription>Associe esta carga a um trecho (origem-destino) específico.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-700">Rota Selecionada</p>
+                    <p className="text-sm font-medium text-slate-700">Trecho Selecionado</p>
                     <Button asChild variant="outline" size="sm" className="border-slate-200">
-                      <Link to="/create-route">
-                        <PlusCircle size={14} className="mr-1" /> New Route
+                      {/* Aponta para o novo ecrã que criámos */}
+                      <Link to="/create-stretch">
+                        <PlusCircle size={14} className="mr-1" /> Novo Trecho
                       </Link>
                     </Button>
                   </div>
                   <Select>
                     <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Selecione uma rota..." />
+                      <SelectValue placeholder="Selecione um trecho cadastrado..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {routeOptionsMock.map((route) => (
-                        <SelectItem key={route.id} value={route.value}>{route.label}</SelectItem>
-                      ))}
+                      {/* Exemplos estáticos - no futuro virão da API */}
+                      <SelectItem value="tr1">Curitiba, PR ➔ São Paulo, SP</SelectItem>
+                      <SelectItem value="tr2">São Paulo, SP ➔ Rio de Janeiro, RJ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -118,6 +120,7 @@ export default function CreateLoad() {
                 </div>
               </CardContent>
             </Card>
+            
           </div>
         </div>
       </div>
