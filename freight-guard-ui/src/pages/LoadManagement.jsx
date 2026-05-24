@@ -1,13 +1,31 @@
-import { Filter, Plus, Search } from "lucide-react"
+import {
+  Filter,
+  Plus,
+  Search,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { RISK } from "@/constants/risk"
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table"
 
 export default function LoadManagement() {
@@ -49,11 +67,14 @@ export default function LoadManagement() {
       valorFrete: 6100,
       risk: RISK.WARNING,
       status: "Disponível",
-    }
+    },
   ]
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value)
   }
 
   const getTransportadoraLabel = (carga) => {
@@ -61,11 +82,15 @@ export default function LoadManagement() {
   }
 
   const getStatusColor = (status) => {
-    switch(status) {
-      case 'Disponível': return 'bg-emerald-100 text-emerald-800';
-      case 'Em Leilão': return 'bg-blue-100 text-blue-800';
-      case 'Alocada': return 'bg-slate-100 text-slate-800';
-      default: return 'bg-slate-100 text-slate-800';
+    switch (status) {
+      case "Disponível":
+        return "bg-emerald-100 text-emerald-800"
+      case "Em Leilão":
+        return "bg-blue-100 text-blue-800"
+      case "Alocada":
+        return "bg-slate-100 text-slate-800"
+      default:
+        return "bg-slate-100 text-slate-800"
     }
   }
 
@@ -95,83 +120,150 @@ export default function LoadManagement() {
     }
   }
 
+  const handleEdit = (id) => {
+    // navigate(`/edit-load/${id}`);
+    console.log(`Navegar para edição da carga: ${id}`)
+  }
+
+  const handleDelete = (id) => {
+    const shouldDelete = globalThis.confirm(
+      `Tem certeza que deseja excluir a carga ${id}?`
+    )
+    if (shouldDelete) {
+      console.log(`Excluir carga: ${id}`)
+    }
+  }
+
   return (
-    <AppShell title="Gestao de Cargas">
-          <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-            <div className="flex w-full items-center gap-3 md:w-auto">
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                <Input 
-                  type="text" 
-                  placeholder="Buscar por ID, Rota ou Status..." 
-                  className="pl-9 bg-white border-slate-200"
-                />
-              </div>
-
-              <Button asChild variant="outline" className="bg-white border-slate-200">
-                <Link to="/product-management">
-                  <Filter size={16} className="mr-2" /> Filtros
-                </Link>
-              </Button>
-            </div>
-
-            <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
-              <Link to="/create-load">
-                <Plus size={16} className="mr-2" /> Nova Carga
-              </Link>
-            </Button>
+    <AppShell title="Gestão de Cargas">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex w-full items-center gap-3 md:w-auto">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Buscar por ID, Rota ou Status..."
+              className="border-slate-200 bg-white pl-9"
+            />
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <Table>
-              <TableHeader className="bg-slate-50">
-                <TableRow>
-                  <TableHead className="w-[120px]">ID Carga</TableHead>
-                  <TableHead>Origem → Destino</TableHead>
-                  <TableHead>Janela de Coleta</TableHead>
-                  <TableHead>Transportadora</TableHead>
-                  <TableHead>Valor do Frete</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cargasMock.map((carga) => (
-                  <TableRow
-                    key={carga.id}
-                    className="cursor-pointer hover:bg-slate-50/50"
-                    tabIndex={0}
-                    role="link"
-                    onClick={() => navigate(`/load-details/${carga.id}`)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault()
-                        navigate(`/load-details/${carga.id}`)
-                      }
-                    }}
+          <Button
+            asChild
+            variant="outline"
+            className="border-slate-200 bg-white"
+          >
+            <Link to="/product-management">
+              <Filter size={16} className="mr-2" /> Filtros
+            </Link>
+          </Button>
+        </div>
+
+        <Button asChild className="bg-blue-600 text-white hover:bg-blue-700">
+          <Link to="/create-load">
+            <Plus size={16} className="mr-2" /> Nova Carga
+          </Link>
+        </Button>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <Table>
+          <TableHeader className="bg-slate-50">
+            <TableRow>
+              <TableHead className="w-[120px]">ID Carga</TableHead>
+              <TableHead>Origem → Destino</TableHead>
+              <TableHead>Janela de Coleta</TableHead>
+              <TableHead>Transportadora</TableHead>
+              <TableHead>Valor do Frete</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="w-[64px] text-right">
+                <span className="sr-only">Ações</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {cargasMock.map((carga) => (
+              <TableRow
+                key={carga.id}
+                className="cursor-pointer hover:bg-slate-50/50"
+                tabIndex={0}
+                role="link"
+                onClick={() => navigate(`/load-details/${carga.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    navigate(`/load-details/${carga.id}`)
+                  }
+                }}
+              >
+                <TableCell
+                  className={`font-medium text-slate-900 ${getRiskBorderClass(carga.risk)}`}
+                >
+                  <div className="flex flex-col gap-1">
+                    <span>{carga.id}</span>
+                    <Badge
+                      className={`w-fit border-none text-[10px] font-bold tracking-wide uppercase ${getRiskBadgeClass(carga.risk)}`}
+                    >
+                      {carga.risk}
+                    </Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="text-slate-600">{carga.rota}</TableCell>
+                <TableCell className="text-slate-700">
+                  {carga.janelaColeta}
+                </TableCell>
+                <TableCell className="text-slate-700">
+                  {getTransportadoraLabel(carga)}
+                </TableCell>
+                <TableCell className="font-medium text-emerald-700">
+                  {formatCurrency(carga.valorFrete)}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    className={`border-none font-medium ${getStatusColor(carga.status)}`}
                   >
-                    <TableCell className={`font-medium text-slate-900 ${getRiskBorderClass(carga.risk)}`}>
-                      <div className="flex flex-col gap-1">
-                        <span>{carga.id}</span>
-                        <Badge className={`w-fit border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(carga.risk)}`}>
-                          {carga.risk}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-slate-600">{carga.rota}</TableCell>
-                    <TableCell className="text-slate-700">{carga.janelaColeta}</TableCell>
-                    <TableCell className="text-slate-700">{getTransportadoraLabel(carga)}</TableCell>
-                    <TableCell className="font-medium text-emerald-700">{formatCurrency(carga.valorFrete)}</TableCell>
-                    <TableCell>
-                      <Badge className={`font-medium border-none ${getStatusColor(carga.status)}`}>
-                        {carga.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
+                    {carga.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  {/* O onClick={e => e.stopPropagation()} impede que ao clicar no menu a linha seja ativada levando aos Detalhes */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0 hover:bg-slate-200"
+                        >
+                          <span className="sr-only">Abrir menu</span>
+                          <MoreHorizontal
+                            size={16}
+                            className="text-slate-600"
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px]">
+                        <DropdownMenuItem
+                          className="cursor-pointer text-slate-700"
+                          onClick={() => handleEdit(carga.id)}
+                        >
+                          <Pencil size={14} className="mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700"
+                          onClick={() => handleDelete(carga.id)}
+                        >
+                          <Trash2 size={14} className="mr-2" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </AppShell>
   )
 }
