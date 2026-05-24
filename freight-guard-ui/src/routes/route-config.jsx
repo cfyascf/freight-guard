@@ -53,14 +53,24 @@ import CreateStretch from "@/pages/CreateStretch"
 
 import { ROLES } from "@/constants/roles"
 import { Auth as AuthAccess } from "@/constants/auth"
+import LoadVisualizationTest from "@/pages/test/LoadVisualizationTest"
+
 
 export const ROUTES = [
+  
   // Public only (unauthenticated access only)
   { path: "/",        element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
   { path: "/auth",    element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
   { path: "/login",   element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
   { path: "/register",element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
 
+  //TESTES - NÃO DEFINITIVO
+  { 
+  path: "/test-visualization", 
+  element: <LoadVisualizationTest />, 
+  access: [ROLES.CONTRACTOR, ROLES.DEVELOPER], 
+  nav: false 
+  },
 
   // Authenticated only (all roles)
   {
