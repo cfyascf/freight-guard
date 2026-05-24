@@ -78,6 +78,24 @@ export const ROUTES = [
 
   // Contractor only
   {
+    path: "/freights-panel",
+    element: <FreightsPanel />,
+    label: "Painel de Leilão",
+    icon: Gavel,
+    access: [ROLES.CONTRACTOR],
+    nav: true,
+  },
+  {
+    path: "/products-management",
+    element: <ProductManagement />,
+    label: "Gestão de Produtos",
+    icon: Tags,
+    access: [ROLES.CONTRACTOR],
+    nav: true,
+  },
+  { path: "/product-management",      element: <ProductManagement />,      access: [ROLES.CONTRACTOR], nav: false },
+  
+  {
     path: "/load-management",
     element: <LoadManagement />,
     label: "Gestão de Cargas",
@@ -92,14 +110,16 @@ export const ROUTES = [
   { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids/:loadId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
+  
   {
-    path: "/freights-panel",
-    element: <FreightsPanel />,
-    label: "Painel de Leilão",
-    icon: Gavel,
+    path: "/stretch-management",
+    element: <StretchManagement />,
+    label: "Gestão de Trechos",
+    icon: Waypoints,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
+  { path: "/create-stretch", element: <CreateStretch />, access: [ROLES.CONTRACTOR], nav: false },
   {
     path: "/route-management",
     element: <RouteManagement />,
@@ -108,40 +128,10 @@ export const ROUTES = [
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
-  {
-    path: "/products-management",
-    element: <ProductManagement />,
-    label: "Gestão de Produtos",
-    icon: Tags,
-    access: [ROLES.CONTRACTOR],
-    nav: true,
-  },
+  { path: "/edit-stretch/:stretchId", element: <EditStretch />, access: [ROLES.CONTRACTOR], nav: false },
   
-  // NOVAS ROTAS INSERIDAS AQUI:
-  {
-    path: "/stretch-management",
-    element: <StretchManagement />,
-    label: "Gestão de Trechos",
-    icon: Waypoints,
-    access: [ROLES.CONTRACTOR],
-    nav: true, // Visível no menu lateral para o Contractor
-  },
-  { 
-    path: "/create-stretch", 
-    element: <CreateStretch />, 
-    access: [ROLES.CONTRACTOR], 
-    nav: false // Acedido por links e botões, invisível na barra lateral
-  },
-  { 
-    path: "/edit-stretch/:stretchId", 
-    element: <EditStretch />, 
-    access: [ROLES.CONTRACTOR], 
-    nav: false 
-  },
-
-  { path: "/product-management",      element: <ProductManagement />,      access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/transporters-management", element: <TransporterManagement />,  access: [ROLES.CONTRACTOR], nav: false },
   { path: "/carrier-management",      element: <CarrierManagement />,      access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/transporters-management", element: <TransporterManagement />,  access: [ROLES.CONTRACTOR], nav: false },
 
   
   // Carrier only
