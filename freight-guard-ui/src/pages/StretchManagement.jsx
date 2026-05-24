@@ -51,7 +51,7 @@ export default function StretchManagement() {
     const timer = setTimeout(() => {
       setStretches(MOCK_STRETCHES)
       setIsLoading(false)
-    }, 400)
+    }, 0)
 
     return () => clearTimeout(timer)
   }, [])
@@ -92,7 +92,7 @@ export default function StretchManagement() {
               Trechos Base
             </CardTitle>
             <CardDescription>
-              Lista de rotas parciais (trechos) disponíveis para associação nas
+              Lista de rotas trechos disponíveis para associação nas
               cargas.
             </CardDescription>
           </CardHeader>

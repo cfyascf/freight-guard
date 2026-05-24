@@ -175,9 +175,6 @@ export default function LoadManagement() {
               <TableHead>Transportadora</TableHead>
               <TableHead>Valor do Frete</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[64px] text-right">
-                <span className="sr-only">Ações</span>
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -223,41 +220,6 @@ export default function LoadManagement() {
                   >
                     {carga.status}
                   </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {/* O onClick={e => e.stopPropagation()} impede que ao clicar no menu a linha seja ativada levando aos Detalhes */}
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-slate-200"
-                        >
-                          <span className="sr-only">Abrir menu</span>
-                          <MoreHorizontal
-                            size={16}
-                            className="text-slate-600"
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem
-                          className="cursor-pointer text-slate-700"
-                          onClick={() => handleEdit(carga.id)}
-                        >
-                          <Pencil size={14} className="mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700"
-                          onClick={() => handleDelete(carga.id)}
-                        >
-                          <Trash2 size={14} className="mr-2" />
-                          Excluir
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
                 </TableCell>
               </TableRow>
             ))}

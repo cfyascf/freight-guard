@@ -81,9 +81,9 @@ export default function CreateLoad() {
             <Card className="border-slate-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-bold text-slate-800 flex items-center">
-                  <Waypoints size={18} className="mr-2 text-blue-600" /> Detalhes do Trecho
+                  <Waypoints size={18} className="mr-2 text-blue-600" /> Detalhes da Rota
                 </CardTitle>
-                <CardDescription>Associe esta carga a um trecho (origem-destino) específico.</CardDescription>
+                <CardDescription>Associe esta carga a um ou mais trechos para criar uma rota.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
