@@ -7,6 +7,7 @@ import {
   Settings,
   Palette,
   ChevronDown,
+  Truck,
 } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
@@ -65,16 +66,16 @@ export default function AppShell({ title, children }) {
               brand.brandIcon
             )}
           >
-            <Shield size={18} strokeWidth={2.5} />
+            <Truck size={18} strokeWidth={2.5} />
           </div>
           <span
             className={cn("text-xl font-black tracking-tight", brand.textMain)}
           >
-            Freight{" "}
+            SIG{" "}
             <span
               className={cn("transition-colors duration-500", brand.accent)}
             >
-              Guard
+              LOC
             </span>
           </span>
         </div>
@@ -129,29 +130,31 @@ export default function AppShell({ title, children }) {
                 <ChevronDown size={14} className="ml-2" />
               </Button>
             </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-52">
-                <DropdownMenuLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Alternar Perfil
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {ROLE_OPTIONS.map((roleOption) => (
-                  <DropdownMenuItem
-                    key={roleOption.value}
-                    onClick={() => setRole(roleOption.value)}
-                    className="cursor-pointer text-xs font-semibold"
-                  >
-                    <Check
-                      size={14}
-                      className={cn(
-                        "mr-2",
-                        user.role === roleOption.value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {roleOption.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuLabel className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                Alternar Perfil
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ROLE_OPTIONS.map((roleOption) => (
+                <DropdownMenuItem
+                  key={roleOption.value}
+                  onClick={() => setRole(roleOption.value)}
+                  className="cursor-pointer text-xs font-semibold"
+                >
+                  <Check
+                    size={14}
+                    className={cn(
+                      "mr-2",
+                      user.role === roleOption.value
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  {roleOption.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="mt-2 flex items-center">
             <div
@@ -240,7 +243,6 @@ export default function AppShell({ title, children }) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
           </div>
         </header>
 
