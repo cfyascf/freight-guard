@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Building2, Shield, Truck } from "lucide-react"
+import { Building2, Shield, Truck, Package } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/contexts/AuthContext"
@@ -7,6 +7,8 @@ import { ROLES } from "@/constants/roles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+// Função de redirecionamento dinâmico que criamos
+import { getDefaultRouteForRole } from "@/routes/route-guards"
 
 export default function Auth() {
   const [accountType, setAccountType] = useState(ROLES.CONTRACTOR)
@@ -14,165 +16,225 @@ export default function Auth() {
   const location = useLocation()
   const { login, register } = useAuth()
 
+  // Mantém na aba certa dependendo de qual URL o usuário acessou (/login ou /register)
   const activeTab = location.pathname === "/register" ? "register" : "login"
 
+  // CORREÇÃO: Redirecionamento inteligente de Login
   const handleLogin = (e) => {
     e.preventDefault()
+
+    // Simula o login passando o role selecionado
     login({ role: accountType })
-    const nextPath = location.state?.from?.pathname || "/dashboard"
+
+    // Descobre para onde o usuário deve ir
+    const defaultRoute = getDefaultRouteForRole(accountType)
+
+    // Se ele tentou acessar um link privado antes de logar, manda pra lá. Se não, manda pra Home dele.
+    const nextPath = location.state?.from?.pathname || defaultRoute
+
     navigate(nextPath, { replace: true })
+  }
+
+  // CORREÇÃO: Redirecionamento inteligente ao Criar Conta
+  const handleRegister = (e) => {
+    e.preventDefault()
+
+    register({ role: accountType })
+
+    // Manda direto para o dashboard correto
+    navigate(getDefaultRouteForRole(accountType), { replace: true })
   }
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
-      
-      {/* Lado Esquerdo: Branding / Apresentação */}
+      {/* Banner Esquerdo - Branding (Oculto no Mobile) */}
       <div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-12 text-white lg:flex">
         <div>
-          <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
-            <Shield size={28} className="text-white" />
+          <div className="flex items-center gap-2 text-3xl font-bold">
+            <Package className="h-10 w-10 text-blue-500" />
+            SIGLOC
           </div>
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">
-            Freight<span className="text-blue-500">Guard</span>
-          </h1>
-          <p className="max-w-md text-lg text-slate-400">
-            A plataforma definitiva de consolidação de cargas e prevenção de overbooking. 
-            Conectando operadores logísticos a transportadoras com eficiência e segurança.
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-slate-400">
+            Sistema Inteligente de Gestão Logística de Cargas. Otimize sua
+            frota, evite overbooking e potencialize a rentabilidade das suas
+            operações.
           </p>
         </div>
-        
-        <div className="space-y-4 text-sm text-slate-500">
-          <p>&copy; 2026 FreightGuard Systems.</p>
-          <p>TCC Engineering Project</p>
+        <div className="text-sm font-medium text-slate-500">
+          © 2026 SIGLOC. Todos os direitos reservados.
         </div>
       </div>
 
-      {/* Lado Direito: Formulários */}
+      {/* Painel Direito - Formulários */}
       <div className="flex w-full flex-col justify-center px-8 sm:px-16 lg:w-1/2 xl:px-32">
         <div className="mx-auto w-full max-w-md">
-          
           <Tabs defaultValue={activeTab} className="w-full">
             <TabsList className="mb-8 grid w-full grid-cols-2 bg-slate-200/50 p-1">
-              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                Entrar
+              <TabsTrigger
+                value="login"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Login
               </TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="register"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
                 Criar Conta
               </TabsTrigger>
             </TabsList>
 
-            {/* ABA DE LOGIN */}
-            <TabsContent value="login" className="space-y-6">
-              <div className="space-y-2 text-center lg:text-left">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Bem-vindo de volta</h2>
-                <p className="text-sm text-slate-500">Insira suas credenciais para acessar o painel.</p>
+            {/* Seleção de Perfil (Aparece em ambas as abas) */}
+            <div className="mb-8">
+              <p className="mb-4 text-center text-xs font-bold tracking-wider text-slate-500 uppercase">
+                Selecione seu perfil de acesso
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div
+                  className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border p-4 transition-all ${
+                    accountType === ROLES.CONTRACTOR
+                      ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                  onClick={() => setAccountType(ROLES.CONTRACTOR)}
+                >
+                  <Building2 className="mb-2 h-6 w-6" />
+                  <span className="text-center text-sm font-semibold">
+                    Operador Logístico
+                  </span>
+                </div>
+
+                <div
+                  className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border p-4 transition-all ${
+                    accountType === ROLES.CARRIER
+                      ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                      : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                  onClick={() => setAccountType(ROLES.CARRIER)}
+                >
+                  <Truck className="mb-2 h-6 w-6" />
+                  <span className="text-center text-sm font-semibold">
+                    Transportador
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo Aba Login */}
+            <TabsContent
+              value="login"
+              className="animate-in space-y-6 duration-500 fade-in-50"
+            >
+              <div className="space-y-2 text-center md:text-left">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                  Bem-vindo de volta
+                </h1>
+                <p className="text-sm text-slate-500">
+                  Insira suas credenciais para acessar o painel.
+                </p>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="email">Email Corporativo</label>
-                  <Input id="email" type="email" placeholder="nome@empresa.com" required className="border-slate-200" />
+              <form onSubmit={handleLogin} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    E-mail corporativo
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="nome@empresa.com"
+                    required
+                    className="border-slate-300"
+                  />
                 </div>
-                
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-slate-700" htmlFor="password">Senha</label>
-                    <Link to="/auth" className="text-xs font-medium text-blue-600 hover:underline">Esqueceu a senha?</Link>
+                    <label className="text-sm font-semibold text-slate-700">
+                      Senha
+                    </label>
+                    <Link
+                      to="#"
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                    >
+                      Esqueceu a senha?
+                    </Link>
                   </div>
-                  <Input id="password" type="password" required className="border-slate-200" />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    className="border-slate-300"
+                  />
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700 mt-2">
+                <Button
+                  type="submit"
+                  className="mt-4 h-11 w-full bg-slate-900 text-base text-white shadow-sm hover:bg-slate-800"
+                >
                   Entrar no Sistema
                 </Button>
               </form>
             </TabsContent>
 
-            {/* ABA DE REGISTRO */}
-            <TabsContent value="register" className="space-y-6">
-              <div className="space-y-2 text-center lg:text-left">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Nova Conta</h2>
-                <p className="text-sm text-slate-500">Selecione seu perfil e preencha os dados.</p>
+            {/* Conteúdo Aba Criar Conta */}
+            <TabsContent
+              value="register"
+              className="animate-in space-y-6 duration-500 fade-in-50"
+            >
+              <div className="space-y-2 text-center md:text-left">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                  Crie sua conta
+                </h1>
+                <p className="text-sm text-slate-500">
+                  Preencha os dados abaixo para iniciar no SIGLOC.
+                </p>
               </div>
 
-              <form className="space-y-4">
-                {/* Seleção de Perfil (Role) */}
-                <div className="grid grid-cols-2 gap-4 pb-2">
-                  <button
-                    type="button"
-                    onClick={() => setAccountType(ROLES.CONTRACTOR)}
-                    className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${
-                      accountType === ROLES.CONTRACTOR
-                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <Building2
-                      size={24}
-                      className={`mx-auto mb-2 ${accountType === ROLES.CONTRACTOR ? "text-blue-600" : "text-slate-400"}`}
-                    />
-                    <p
-                      className={`text-sm font-medium ${accountType === ROLES.CONTRACTOR ? "text-blue-900" : "text-slate-700"}`}
-                    >
-                      Operador Logistico
-                    </p>
-                    <p className="mt-1 text-[10px] text-slate-500">Contratar fretes</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAccountType(ROLES.CARRIER)}
-                    className={`cursor-pointer rounded-xl border p-4 text-center transition-all ${
-                      accountType === ROLES.CARRIER
-                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <Truck
-                      size={24}
-                      className={`mx-auto mb-2 ${accountType === ROLES.CARRIER ? "text-blue-600" : "text-slate-400"}`}
-                    />
-                    <p
-                      className={`text-sm font-medium ${accountType === ROLES.CARRIER ? "text-blue-900" : "text-slate-700"}`}
-                    >
-                      Transportadora
-                    </p>
-                    <p className="mt-1 text-[10px] text-slate-500">Realizar fretes</p>
-                  </button>
+              <form onSubmit={handleRegister} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Nome da Empresa / Razão Social
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: Rumo Transportes LTDA"
+                    required
+                    className="border-slate-300"
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="companyName">Nome da Empresa</label>
-                  <Input id="companyName" type="text" placeholder="Razão Social" required className="border-slate-200" />
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    E-mail corporativo
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="nome@empresa.com"
+                    required
+                    className="border-slate-300"
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="regEmail">Email Corporativo</label>
-                  <Input id="regEmail" type="email" placeholder="nome@empresa.com" required className="border-slate-200" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700" htmlFor="regPassword">Senha</label>
-                  <Input id="regPassword" type="password" required className="border-slate-200" />
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Senha
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Crie uma senha forte"
+                    required
+                    className="border-slate-300"
+                  />
                 </div>
 
                 <Button
-                  type="button"
-                  className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-2"
-                  onClick={() => {
-                    register({ role: accountType })
-                    navigate("/dashboard", { replace: true })
-                  }}
+                  type="submit"
+                  className="mt-4 h-11 w-full bg-slate-900 text-base text-white shadow-sm hover:bg-slate-800"
                 >
                   Criar Conta
                 </Button>
               </form>
             </TabsContent>
-
           </Tabs>
         </div>
       </div>
-      
     </div>
   )
 }
