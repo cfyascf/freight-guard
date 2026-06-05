@@ -1,230 +1,208 @@
-import { Clock, Layers, TrendingUp, Truck } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, ExternalLink, ShieldCheck, Scale, Box } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 const kpis = [
-  {
-    title: "Trechos Avulsos",
-    value: "14",
-    helper: "Aguardando composição de rota",
-    icon: Layers,
-    tone: "amber",
-  },
-  {
-    title: "Leilões Próximos ao Fim",
-    value: "3",
-    helper: "Encerramento nas próximas 2 horas",
-    icon: Clock,
-    tone: "rose",
-  },
-  {
-    title: "Rotas em Trânsito",
-    value: "8",
-    helper: "Monitoramento de execução ativo",
-    icon: Truck,
-    tone: "sky",
-  },
-  {
-    title: "Economia Gerada (Mês)",
-    value: "R$ 18.450",
-    helper: "Redução via Continuous Move",
-    icon: TrendingUp,
-    tone: "emerald",
-  },
+  { title: "Trechos Avulsos", value: "14", style: "text-slate-900" },
+  { title: "Leilões Ativos", value: "3", style: "text-blue-600" },
+  { title: "Em Trânsito", value: "8", style: "text-emerald-600" },
 ]
 
-const efficiencyBars = [
-  { label: "Curitiba → SP", avulso: 92, consolidado: 64 },
-  { label: "SP → Campinas", avulso: 76, consolidado: 48 },
-  { label: "Campinas → RJ", avulso: 88, consolidado: 56 },
-  { label: "Sul → Sudeste", avulso: 97, consolidado: 58 },
+const auctionFinance = [
+  { id: "ROT-9921", label: "Curitiba → São Paulo", current: 4280, target: 4100, status: "ACIMA" },
+  { id: "ROT-9922", label: "Joinville → Campinas", current: 3680, target: 3600, status: "ACIMA" },
+  { id: "ROT-9923", label: "Londrina → Contagem", current: 3100, target: 3500, status: "ABAIXO" },
+  { id: "ROT-9924", label: "Maringá → Serra", current: 4050, target: 4400, status: "ABAIXO" },
 ]
 
 const slaAlerts = [
-  {
-    risk: "CRÍTICO",
-    segmentId: "TRC-1042",
-    route: "Curitiba ➔ São Paulo",
-    timeRemaining: "Coleta limite em 45 min",
-  },
-  {
-    risk: "CRÍTICO",
-    segmentId: "TRC-1045",
-    route: "Ribeirão Preto ➔ Uberlândia",
-    timeRemaining: "Coleta limite em 1h 10 min",
-  },
-  {
-    risk: "ATENÇÃO",
-    segmentId: "TRC-1043",
-    route: "São Paulo ➔ Campinas",
-    timeRemaining: "Coleta limite em 2h 20 min",
-  },
+  { id: "TRC-1042", route: "CWB ➔ SP", action: "COLETA", time: "45 min", critical: true },
+  { id: "TRC-1045", route: "RAO ➔ UDI", action: "COLETA", time: "1h 10m", critical: true },
+  { id: "TRC-1043", route: "SP ➔ CPQ", action: "TRANSBORDO", time: "2h 20m", critical: false },
+  { id: "TRC-1051", route: "CPQ ➔ RJ", action: "DESCARGA", time: "3h 05m", critical: false },
 ]
 
-const getKpiToneClass = (tone) => {
-  switch (tone) {
-    case "amber":
-      return {
-        icon: "bg-amber-50 text-amber-700",
-        border: "border-amber-100",
-      }
-    case "rose":
-      return {
-        icon: "bg-rose-50 text-rose-700",
-        border: "border-rose-100",
-      }
-    case "emerald":
-      return {
-        icon: "bg-emerald-50 text-emerald-700",
-        border: "border-emerald-100",
-      }
-    default:
-      return {
-        icon: "bg-sky-50 text-sky-700",
-        border: "border-sky-100",
-      }
-  }
+const fleetUtilization = {
+  weightEfficiency: 88,
+  volumeEfficiency: 74,
+  continuousMoveSuccess: 92,
 }
 
-const getAlertClasses = (risk) => {
-  if (risk === "CRÍTICO") {
-    return {
-      container: "border-l-4 border-l-rose-600 bg-rose-50/50",
-      badge: "bg-rose-100 text-rose-800 hover:bg-rose-100",
-      time: "text-rose-700",
-    }
-  }
-
-  return {
-    container: "border-l-4 border-l-amber-500 bg-amber-50/40",
-    badge: "bg-amber-100 text-amber-800 hover:bg-amber-100",
-    time: "text-amber-700",
-  }
+function formatCurrency(value) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
+
   return (
-    <AppShell title="Torre de Controle Operacional">
-      <div className="mx-auto max-w-7xl space-y-6 bg-slate-50/70">
-        <div className="space-y-1 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Torre de Controle Operacional</h1>
-          <p className="text-sm text-slate-600">
-            Consolidado diário para o planejador logístico priorizar composição, acompanhar leilões críticos e comprovar a eficiência das rotas estruturadas.
-          </p>
-        </div>
-
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {kpis.map((kpi) => {
-            const Icon = kpi.icon
-            const tone = getKpiToneClass(kpi.tone)
-
-            return (
-              <Card key={kpi.title} className={`border ${tone.border} bg-white shadow-sm`}>
-                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
-                  <div>
-                    <CardTitle className="text-sm font-medium text-slate-500">{kpi.title}</CardTitle>
-                  </div>
-                  <div className={`rounded-2xl p-2.5 ${tone.icon}`}>
-                    <Icon size={18} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-semibold tracking-tight text-slate-900">{kpi.value}</div>
-                  <p className="mt-2 text-sm text-slate-500">{kpi.helper}</p>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </section>
-
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="text-lg font-semibold text-slate-900">Painel de Eficiência</CardTitle>
-              <CardDescription>
-                Comparativo visual entre o custo de fretes avulsos e o custo de rotas consolidadas em corredores de maior recorrência.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Tese operacional</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Em todos os fluxos monitorados, a rota consolidada reduz custo unitário e melhora previsibilidade de execução.
-                  </p>
+    <AppShell title="Operações">
+      {/* Container mestre rígido na viewport para eliminar scroll da página */}
+      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col overflow-hidden">
+        
+        {/* O GRANDE CARD BRANCO UNIFICADOR DE TODA A TORRE DE CONTROLE */}
+        <div className="flex-1 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col min-h-0 overflow-hidden">
+          
+          {/* SEÇÃO 1: LINHA DE CONTADORES (KPIs MACROS) */}
+          <section className="flex items-center justify-between border-b border-slate-100 pb-5 mb-5">
+            <div className="flex gap-16">
+              {kpis.map((kpi) => (
+                <div key={kpi.title}>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{kpi.title}</p>
+                  <p className={`text-2xl font-black ${kpi.style} mt-0.5`}>{kpi.value}</p>
                 </div>
-                <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Média avulso</p>
-                    <p className="mt-1 text-lg font-semibold text-slate-900">R$ 9.420</p>
+              ))}
+            </div>
+            
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 tracking-wide">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              SISTEMA ATIVO
+            </div>
+          </section>
+
+          {/* SEÇÃO 2: EFICIÊNCIA FÍSICA DA MALHA (Subiu para o Topo como Diagnóstico) */}
+          <section className="border-b border-slate-100 pb-5 mb-5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Eficiência Física da Malha (Média Atual)</h2>
+            <div className="grid grid-cols-3 gap-8">
+              
+              {/* Peso Médio */}
+              <div className="flex items-center gap-3 bg-slate-50/60 p-3 rounded-lg border border-slate-100">
+                <div className="p-2 bg-white rounded-md text-slate-600 border border-slate-100">
+                  <Scale size={16} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-slate-500">Ocupação de Peso</span>
+                    <span className="text-sm font-black text-slate-800">{fleetUtilization.weightEfficiency}%</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Média consolidado</p>
-                    <p className="mt-1 text-lg font-semibold text-emerald-700">R$ 6.110</p>
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                    <div className="bg-slate-700 h-full rounded-full" style={{ width: `${fleetUtilization.weightEfficiency}%` }} />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {efficiencyBars.map((row) => (
-                  <div key={row.label} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-slate-700">{row.label}</span>
-                      <span className="text-xs text-slate-400">redução média de {Math.round(((row.avulso - row.consolidado) / row.avulso) * 100)}%</span>
+              {/* Volume Médio */}
+              <div className="flex items-center gap-3 bg-slate-50/60 p-3 rounded-lg border border-slate-100">
+                <div className="p-2 bg-white rounded-md text-slate-600 border border-slate-100">
+                  <Box size={16} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-slate-500">Ocupação de Volume</span>
+                    <span className="text-sm font-black text-slate-800">{fleetUtilization.volumeEfficiency}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                    <div className="bg-slate-700 h-full rounded-full" style={{ width: `${fleetUtilization.volumeEfficiency}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Acoplamento Continuous Move */}
+              <div className="flex items-center gap-3 bg-slate-50/60 p-3 rounded-lg border border-slate-100">
+                <div className="p-2 bg-white rounded-md text-emerald-600 border border-slate-100">
+                  <ShieldCheck size={16} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-slate-500">Aproveitamento de Rotas</span>
+                    <span className="text-sm font-black text-emerald-600">{fleetUtilization.continuousMoveSuccess}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${fleetUtilization.continuousMoveSuccess}%` }} />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* SEÇÃO 3: DETALHES DE OPERAÇÃO (CUSTOS E SLAs NO BLOCO INFERIOR) */}
+          <div className="flex-1 grid grid-cols-[1.2fr_1fr] gap-12 min-h-0 overflow-hidden">
+            
+            {/* Coluna Esquerda: Desvio de Custo */}
+            <div className="flex flex-col min-h-0">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Desvio de Custo (Atual vs Alvo)</h2>
+                <Button 
+                  variant="ghost" size="sm" 
+                  className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
+                  onClick={() => navigate("/route-management")}
+                >
+                  Ver Detalhes <ExternalLink size={12} />
+                </Button>
+              </div>
+              
+              <div className="flex-1 divide-y divide-slate-100 overflow-hidden">
+                {auctionFinance.slice(0, 4).map((item) => {
+                  const isAbove = item.status === "ACIMA"
+                  const diff = Math.abs(item.current - item.target)
+
+                  return (
+                    <div key={item.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-400">{item.id}</span>
+                          <span className="text-sm font-semibold text-slate-800">{item.label}</span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-0.5">Alvo: {formatCurrency(item.target)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-slate-900">{formatCurrency(item.current)}</p>
+                        <div className={`mt-0.5 flex items-center justify-end gap-1 text-xs font-bold ${isAbove ? "text-rose-600" : "text-emerald-600"}`}>
+                          {isAbove ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                          <span>{formatCurrency(diff)} ({isAbove ? "+" : "-"})</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="w-28 text-xs font-medium text-slate-500">Frete avulso</span>
-                        <div className="h-3 flex-1 rounded-full bg-slate-100">
-                          <div className="h-3 rounded-full bg-slate-500" style={{ width: `${row.avulso}%` }} />
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Coluna Direito: Próximos Marcos de SLA */}
+            <div className="flex flex-col min-h-0 border-l border-slate-100 pl-10">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Próximos Marcos de SLA</h2>
+                <Button 
+                  variant="ghost" size="sm" 
+                  className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
+                  onClick={() => navigate("/load-management")}
+                >
+                  Gerenciar Trechos <ExternalLink size={12} />
+                </Button>
+              </div>
+
+              <div className="flex-1 divide-y divide-slate-100 overflow-hidden">
+                {slaAlerts.slice(0, 4).map((alert) => (
+                  <div key={alert.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full ${alert.critical ? "bg-rose-600 animate-pulse" : "bg-amber-500"}`} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-400">{alert.id}</span>
+                          <span className="text-sm font-bold text-slate-800">{alert.route}</span>
                         </div>
+                        <span className="inline-block mt-0.5 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-500 tracking-wide">
+                          {alert.action}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="w-28 text-xs font-medium text-slate-500">Rota consolidada</span>
-                        <div className="h-3 flex-1 rounded-full bg-emerald-50">
-                          <div className="h-3 rounded-full bg-emerald-500" style={{ width: `${row.consolidado}%` }} />
-                        </div>
-                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-black font-mono ${alert.critical ? "text-rose-600" : "text-slate-700"}`}>
+                        {alert.time}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Restante</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-100 pb-4">
-              <CardTitle className="text-lg font-semibold text-slate-900">Alertas de SLA (Janelas Críticas)</CardTitle>
-              <CardDescription>
-                Trechos que exigem decisão rápida para evitar perda de coleta, quebra de janela ou impacto direto no planejamento do dia.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-6">
-              {slaAlerts.map((alert) => {
-                const styles = getAlertClasses(alert.risk)
+          </div>
 
-                return (
-                  <div key={alert.segmentId} className={`rounded-2xl border border-slate-200 p-4 ${styles.container}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge className={`border-none ${styles.badge}`}>{alert.risk}</Badge>
-                          <span className="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
-                            {alert.segmentId}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium text-slate-800">{alert.route}</p>
-                      </div>
-                    </div>
-                    <p className={`mt-3 text-sm font-medium ${styles.time}`}>{alert.timeRemaining}</p>
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
-        </section>
+        </div>
       </div>
     </AppShell>
   )
