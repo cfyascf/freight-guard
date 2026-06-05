@@ -1,125 +1,231 @@
-import { Box, Shield, Truck } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Clock, Layers, TrendingUp, Truck } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+const kpis = [
+  {
+    title: "Trechos Avulsos",
+    value: "14",
+    helper: "Aguardando composição de rota",
+    icon: Layers,
+    tone: "amber",
+  },
+  {
+    title: "Leilões Próximos ao Fim",
+    value: "3",
+    helper: "Encerramento nas próximas 2 horas",
+    icon: Clock,
+    tone: "rose",
+  },
+  {
+    title: "Rotas em Trânsito",
+    value: "8",
+    helper: "Monitoramento de execução ativo",
+    icon: Truck,
+    tone: "sky",
+  },
+  {
+    title: "Economia Gerada (Mês)",
+    value: "R$ 18.450",
+    helper: "Redução via Continuous Move",
+    icon: TrendingUp,
+    tone: "emerald",
+  },
+]
+
+const efficiencyBars = [
+  { label: "Curitiba → SP", avulso: 92, consolidado: 64 },
+  { label: "SP → Campinas", avulso: 76, consolidado: 48 },
+  { label: "Campinas → RJ", avulso: 88, consolidado: 56 },
+  { label: "Sul → Sudeste", avulso: 97, consolidado: 58 },
+]
+
+const slaAlerts = [
+  {
+    risk: "CRÍTICO",
+    segmentId: "TRC-1042",
+    route: "Curitiba ➔ São Paulo",
+    timeRemaining: "Coleta limite em 45 min",
+  },
+  {
+    risk: "CRÍTICO",
+    segmentId: "TRC-1045",
+    route: "Ribeirão Preto ➔ Uberlândia",
+    timeRemaining: "Coleta limite em 1h 10 min",
+  },
+  {
+    risk: "ATENÇÃO",
+    segmentId: "TRC-1043",
+    route: "São Paulo ➔ Campinas",
+    timeRemaining: "Coleta limite em 2h 20 min",
+  },
+]
+
+const getKpiToneClass = (tone) => {
+  switch (tone) {
+    case "amber":
+      return {
+        icon: "bg-amber-50 text-amber-700",
+        border: "border-amber-100",
+      }
+    case "rose":
+      return {
+        icon: "bg-rose-50 text-rose-700",
+        border: "border-rose-100",
+      }
+    case "emerald":
+      return {
+        icon: "bg-emerald-50 text-emerald-700",
+        border: "border-emerald-100",
+      }
+    default:
+      return {
+        icon: "bg-sky-50 text-sky-700",
+        border: "border-sky-100",
+      }
+  }
+}
+
+const getAlertClasses = (risk) => {
+  if (risk === "CRÍTICO") {
+    return {
+      container: "border-l-4 border-l-rose-600 bg-rose-50/50",
+      badge: "bg-rose-100 text-rose-800 hover:bg-rose-100",
+      time: "text-rose-700",
+    }
+  }
+
+  return {
+    container: "border-l-4 border-l-amber-500 bg-amber-50/40",
+    badge: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+    time: "text-amber-700",
+  }
+}
 
 export default function Dashboard() {
   return (
-    <AppShell
-      title="Painel Geral"
-      actions={
-        <Button asChild className="bg-slate-900 text-white hover:bg-slate-800">
-          <Link to="/create-load">+ Nova Carga</Link>
-        </Button>
-      }
-    >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-slate-500">Cargas em Transito</CardTitle>
-                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Truck size={20} /></div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-800">84</div>
-                <p className="text-xs text-emerald-600 mt-1 font-medium flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span> 100% no prazo
-                </p>
-              </CardContent>
-            </Card>
+    <AppShell title="Torre de Controle Operacional">
+      <div className="mx-auto max-w-7xl space-y-6 bg-slate-50/70">
+        <div className="space-y-1 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Torre de Controle Operacional</h1>
+          <p className="text-sm text-slate-600">
+            Consolidado diário para o planejador logístico priorizar composição, acompanhar leilões críticos e comprovar a eficiência das rotas estruturadas.
+          </p>
+        </div>
 
-            <Card className="border-red-100 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-red-50 rounded-bl-full -z-10"></div>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-slate-500">Overbookings Bloqueados</CardTitle>
-                <div className="p-2 bg-red-50 rounded-lg text-red-600"><Shield size={20} /></div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-800">12</div>
-                <p className="text-xs text-red-600 mt-1 font-medium">Prevencao de falha de SLA nesta semana</p>
-              </CardContent>
-            </Card>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {kpis.map((kpi) => {
+            const Icon = kpi.icon
+            const tone = getKpiToneClass(kpi.tone)
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-slate-500">Otimizacao de Volume</CardTitle>
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><Box size={20} /></div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-800">92%</div>
-                <p className="text-xs text-emerald-600 mt-1 font-medium">Aproveitamento cubico medio</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="col-span-2 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-4">
-                <CardTitle className="text-base font-semibold text-slate-800">Status dos Leiloes</CardTitle>
-                <Button asChild variant="link" className="text-blue-600">
-                  <Link to="/freights-panel">Ver todas</Link>
-                </Button>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader className="bg-slate-50">
-                    <TableRow>
-                      <TableHead>Remessa / Rota</TableHead>
-                      <TableHead>Volume</TableHead>
-                      <TableHead>Lances</TableHead>
-                      <TableHead>Status do Motor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <p className="font-semibold text-slate-900">#CRG-882</p>
-                        <p className="text-xs text-slate-500">Curitiba, PR - Sao Paulo, SP</p>
-                      </TableCell>
-                      <TableCell className="text-sm">12 Ton - 45m3</TableCell>
-                      <TableCell><Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">3 Lances</Badge></TableCell>
-                      <TableCell className="text-emerald-600 font-medium text-sm">Aguardando Aceite</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>
-                        <p className="font-semibold text-slate-900">#CRG-883</p>
-                        <p className="text-xs text-slate-500">Joinville, SC - Campinas, SP</p>
-                      </TableCell>
-                      <TableCell className="text-sm">1.5 Ton - 10m3</TableCell>
-                      <TableCell><Badge variant="outline" className="text-slate-600">Sem lances</Badge></TableCell>
-                      <TableCell className="text-slate-500 text-sm">No mercado</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader className="border-b border-slate-100 pb-4">
-                <CardTitle className="text-base font-semibold text-slate-800">Últimas Cargas Bloqueadas</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <div className="flex items-start">
-                  <div className="w-2 h-2 mt-1.5 rounded-full bg-red-500 mr-3 flex-shrink-0"></div>
+            return (
+              <Card key={kpi.title} className={`border ${tone.border} bg-white shadow-sm`}>
+                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Bloqueio de ETA Acionado</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Veiculo ABC-1234 tentou alocacao simultanea.</p>
+                    <CardTitle className="text-sm font-medium text-slate-500">{kpi.title}</CardTitle>
+                  </div>
+                  <div className={`rounded-2xl p-2.5 ${tone.icon}`}>
+                    <Icon size={18} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-semibold tracking-tight text-slate-900">{kpi.value}</div>
+                  <p className="mt-2 text-sm text-slate-500">{kpi.helper}</p>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+          <Card className="border-slate-200 bg-white shadow-sm">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg font-semibold text-slate-900">Painel de Eficiência</CardTitle>
+              <CardDescription>
+                Comparativo visual entre o custo de fretes avulsos e o custo de rotas consolidadas em corredores de maior recorrência.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5 pt-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Tese operacional</p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Em todos os fluxos monitorados, a rota consolidada reduz custo unitário e melhora previsibilidade de execução.
+                  </p>
+                </div>
+                <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Média avulso</p>
+                    <p className="mt-1 text-lg font-semibold text-slate-900">R$ 9.420</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Média consolidado</p>
+                    <p className="mt-1 text-lg font-semibold text-emerald-700">R$ 6.110</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
 
+              <div className="space-y-4">
+                {efficiencyBars.map((row) => (
+                  <div key={row.label} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-700">{row.label}</span>
+                      <span className="text-xs text-slate-400">redução média de {Math.round(((row.avulso - row.consolidado) / row.avulso) * 100)}%</span>
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="w-28 text-xs font-medium text-slate-500">Frete avulso</span>
+                        <div className="h-3 flex-1 rounded-full bg-slate-100">
+                          <div className="h-3 rounded-full bg-slate-500" style={{ width: `${row.avulso}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-28 text-xs font-medium text-slate-500">Rota consolidada</span>
+                        <div className="h-3 flex-1 rounded-full bg-emerald-50">
+                          <div className="h-3 rounded-full bg-emerald-500" style={{ width: `${row.consolidado}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 bg-white shadow-sm">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <CardTitle className="text-lg font-semibold text-slate-900">Alertas de SLA (Janelas Críticas)</CardTitle>
+              <CardDescription>
+                Trechos que exigem decisão rápida para evitar perda de coleta, quebra de janela ou impacto direto no planejamento do dia.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-6">
+              {slaAlerts.map((alert) => {
+                const styles = getAlertClasses(alert.risk)
+
+                return (
+                  <div key={alert.segmentId} className={`rounded-2xl border border-slate-200 p-4 ${styles.container}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge className={`border-none ${styles.badge}`}>{alert.risk}</Badge>
+                          <span className="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
+                            {alert.segmentId}
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-slate-800">{alert.route}</p>
+                      </div>
+                    </div>
+                    <p className={`mt-3 text-sm font-medium ${styles.time}`}>{alert.timeRemaining}</p>
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+        </section>
+      </div>
     </AppShell>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowLeft, CalendarRange, Gavel, MapPin, Package, Plus } from "lucide-react"
+import { ArrowLeft, CalendarRange, Gavel, MapPin, Package, Plus, Route, Workflow } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -8,41 +8,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const loadsMock = [
-  {
-    id: "CRG-1042",
-    name: "Peças Automotivas",
-    route: "Curitiba, PR → São Paulo, SP",
-    cargoType: "Manufaturados",
-    risk: "WARNING",
-  },
-  {
-    id: "CRG-1043",
-    name: "Bobinas de Aço",
-    route: "Joinville, SC → Campinas, SP",
-    cargoType: "Pesada / Siderurgia",
-    risk: "NORMAL",
-  },
-  {
-    id: "CRG-1045",
-    name: "Lote de Servidores",
-    route: "Araucária, PR → Rio de Janeiro, RJ",
-    cargoType: "Eletrônicos Sensíveis",
-    risk: "CRITIC",
-  },
-]
+import { cargoItemsMock, getSegmentById, segmentPlansMock } from "@/constants/logistics-mock"
 
 export default function CreateFreightAuction() {
   const navigate = useNavigate()
-  const [selectedLoadId, setSelectedLoadId] = useState("")
+  const [selectedSegmentId, setSelectedSegmentId] = useState("TRC-201")
   const [minimumBid, setMinimumBid] = useState("")
   const [auctionDeadline, setAuctionDeadline] = useState("")
   const [auctionDuration, setAuctionDuration] = useState("24h")
   const [notes, setNotes] = useState("")
   const [isPublished, setIsPublished] = useState(false)
 
-  const selectedLoad = loadsMock.find((load) => load.id === selectedLoadId)
+  const selectedSegment = getSegmentById(selectedSegmentId)
+  const selectedItems = cargoItemsMock.filter((item) => selectedSegment?.items.includes(item.id))
 
   const handlePublish = () => {
     setIsPublished(true)
@@ -50,7 +28,7 @@ export default function CreateFreightAuction() {
   }
 
   return (
-    <AppShell title="Criar Novo Leilão de Frete">
+    <AppShell title="Publicar Trecho em Leilão">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <Link to="/freights-panel">
@@ -76,23 +54,23 @@ export default function CreateFreightAuction() {
                 <Gavel size={18} className="text-blue-600" /> Dados do Leilão
               </CardTitle>
               <CardDescription>
-                Selecione a carga e defina as condições iniciais do leilão.
+                Selecione o trecho planejado e defina as condições comerciais da publicação.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
-                <label htmlFor="auction-load" className="text-sm font-medium text-slate-700">Carga base</label>
-                <Select value={selectedLoadId} onValueChange={setSelectedLoadId}>
-                  <SelectTrigger id="auction-load" className="border-slate-200 bg-white">
-                    <SelectValue placeholder="Selecione a carga para o leilão" />
+                <label htmlFor="auction-segment" className="text-sm font-medium text-slate-700">Trecho base</label>
+                <Select value={selectedSegmentId} onValueChange={setSelectedSegmentId}>
+                  <SelectTrigger id="auction-segment" className="border-slate-200 bg-white">
+                    <SelectValue placeholder="Selecione o trecho para o leilão" />
                   </SelectTrigger>
                   <SelectContent>
-                    {loadsMock.map((load) => (
-                      <SelectItem key={load.id} value={load.id}>
+                    {segmentPlansMock.map((segment) => (
+                      <SelectItem key={segment.id} value={segment.id}>
                         <div className="flex items-center gap-2">
-                          <Package size={14} className="text-slate-500" />
-                          {load.id} - {load.name}
+                          <Route size={14} className="text-slate-500" />
+                          {segment.id} - {segment.name}
                         </div>
                       </SelectItem>
                     ))}
@@ -100,18 +78,17 @@ export default function CreateFreightAuction() {
                 </Select>
               </div>
 
-              {selectedLoad && (
+              {selectedSegment && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-800">{selectedLoad.id}</Badge>
-                    <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
-                      {selectedLoad.risk}
-                    </Badge>
+                    <Badge className="bg-blue-100 text-blue-800">{selectedSegment.id}</Badge>
+                    <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">{selectedSegment.itemCount} itens</Badge>
+                    <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">{selectedSegment.legCount} pernas</Badge>
                   </div>
                   <div className="mt-3 space-y-2 text-sm text-slate-700">
-                    <p className="font-semibold text-slate-900">{selectedLoad.name}</p>
-                    <p className="flex items-center gap-2"><MapPin size={14} className="text-slate-400" /> {selectedLoad.route}</p>
-                    <p className="flex items-center gap-2"><Package size={14} className="text-slate-400" /> {selectedLoad.cargoType}</p>
+                    <p className="font-semibold text-slate-900">{selectedSegment.name}</p>
+                    <p className="flex items-center gap-2"><MapPin size={14} className="text-slate-400" /> {selectedSegment.stops.join(" → ")}</p>
+                    <p className="flex items-center gap-2"><Package size={14} className="text-slate-400" /> {selectedSegment.totalWeight} • {selectedSegment.totalVolume}</p>
                   </div>
                 </div>
               )}
@@ -169,6 +146,20 @@ export default function CreateFreightAuction() {
                   className="min-h-[140px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-slate-300"
                 />
               </div>
+
+              <div className="rounded-xl border border-dashed border-slate-200 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                  <Workflow size={16} className="text-blue-600" /> Itens incluídos na publicação
+                </div>
+                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                  {selectedItems.map((item) => (
+                    <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-3">
+                      <p className="text-sm font-medium text-slate-800">{item.id} • {item.productName}</p>
+                      <p className="mt-1 text-xs text-slate-500">{item.quantityLabel} • {item.routeLabel}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -179,8 +170,8 @@ export default function CreateFreightAuction() {
               </CardHeader>
               <CardContent className="space-y-4 p-6">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Carga selecionada</p>
-                  <p className="mt-1 text-sm font-medium text-slate-800">{selectedLoad?.name || "Nenhuma selecionada"}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Trecho selecionado</p>
+                  <p className="mt-1 text-sm font-medium text-slate-800">{selectedSegment?.name || "Nenhum selecionado"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Duração</p>
@@ -194,6 +185,10 @@ export default function CreateFreightAuction() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Encerramento</p>
                   <p className="mt-1 text-sm font-medium text-slate-800">{auctionDeadline || "Não definido"}</p>
                 </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Cobertura</p>
+                  <p className="mt-1 text-sm font-medium text-slate-800">{selectedSegment?.coverage || "Não definido"}</p>
+                </div>
               </CardContent>
             </Card>
 
@@ -203,7 +198,7 @@ export default function CreateFreightAuction() {
               </CardHeader>
               <CardContent className="space-y-4 p-6">
                 <p className="text-sm text-slate-600">
-                  Ao publicar, o leilão ficará visível no Painel de Leilão para análise das transportadoras.
+                  Ao publicar, o trecho completo ficará visível para as transportadoras com sua composição, paradas e itens envolvidos.
                 </p>
                 <Button className="w-full bg-blue-600 text-white hover:bg-blue-700" onClick={handlePublish}>
                   <Plus size={16} className="mr-2" /> Publicar agora

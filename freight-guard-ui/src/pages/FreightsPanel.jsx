@@ -1,8 +1,9 @@
 import {
-  ArrowRight,
+  CalendarRange,
   Box,
   Clock,
   Gavel,
+  MapPin,
   Plus,
   TrendingDown,
 } from "lucide-react"
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { segmentPlansMock } from "@/constants/logistics-mock"
 import { RISK } from "@/constants/risk"
 
 const getRiskBorderClass = (risk) => {
@@ -45,45 +47,7 @@ const getRiskBadgeClass = (risk) => {
 }
 
 export default function FreightsPanel() {
-  // Simulando a junção das tabelas OfertaFrete + Carga + Lances (Top 1)
-  const leiloesAtivos = [
-    {
-      id_oferta: "OFT-9921",
-      id_carga: "CRG-1042",
-      risk: RISK.WARNING,
-      rota: "Curitiba, PR → São Paulo, SP",
-      valor_teto: 2500,
-      melhor_lance: 2150,
-      transportadora_vencendo: "Expresso Sul Ltda",
-      total_lances: 8,
-      tempo_restante_min: 45,
-      progresso_tempo: 80, // 80% do tempo já passou
-    },
-    {
-      id_oferta: "OFT-9922",
-      id_carga: "CRG-1043",
-      risk: RISK.NORMAL,
-      rota: "Joinville, SC → Campinas, SP",
-      valor_teto: 1800,
-      melhor_lance: null, // Ainda sem lances
-      transportadora_vencendo: null,
-      total_lances: 0,
-      tempo_restante_min: 120,
-      progresso_tempo: 30,
-    },
-    {
-      id_oferta: "OFT-9923",
-      id_carga: "CRG-1045",
-      risk: RISK.CRITIC,
-      rota: "Araucária, PR → Rio de Janeiro, RJ",
-      valor_teto: 4200,
-      melhor_lance: 3900,
-      transportadora_vencendo: "Logística Alpha",
-      total_lances: 3,
-      tempo_restante_min: 15,
-      progresso_tempo: 95, // Urgente
-    }
-  ]
+  const leiloesAtivos = segmentPlansMock.filter((segment) => segment.status !== "Em montagem")
 
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
@@ -91,14 +55,14 @@ export default function FreightsPanel() {
 
   return (
     <AppShell
-      title="Painel de Leilão"
+      title="Painel de Leilões de Trechos"
     >
       <div className="flex flex-col space-y-6">
         <Tabs defaultValue="ativos" className="w-full">
           <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
             <TabsList className="bg-white border border-slate-200">
               <TabsTrigger value="ativos" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                Leilões Ativos (3)
+                Leilões Ativos ({leiloesAtivos.length})
               </TabsTrigger>
               <TabsTrigger value="historico" className="data-[state=active]:bg-slate-100">
                 Histórico e Encerrados
@@ -115,26 +79,27 @@ export default function FreightsPanel() {
           <TabsContent value="ativos" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               
-              {leiloesAtivos.map((leilao) => (
-                <Card key={leilao.id_oferta} className={`flex flex-col hover:shadow-md transition-shadow border-slate-200 ${getRiskBorderClass(leilao.risk)}`}>
+              {leiloesAtivos.map((leilao) => {
+                const progressValue = leilao.totalBids > 0 ? Math.min(95, 35 + leilao.totalBids * 7) : 18
+
+                return (
+                <Card key={leilao.id} className={`flex flex-col hover:shadow-md transition-shadow border-slate-200 ${getRiskBorderClass(leilao.risk)}`}>
                   <CardHeader className="pb-3 border-b border-slate-50">
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="mb-2 flex flex-wrap items-center gap-2">
                           <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
-                            {leilao.id_oferta}
+                            {leilao.id}
                           </Badge>
                           <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(leilao.risk)}`}>
                             {leilao.risk}
                           </Badge>
                         </div>
-                        <CardTitle className="text-base font-bold text-slate-800 flex items-center">
-                          {leilao.rota.split(' → ')[0]} 
-                          <ArrowRight size={14} className="mx-2 text-slate-400" /> 
-                          {leilao.rota.split(' → ')[1]}
+                        <CardTitle className="text-base font-bold text-slate-800">
+                          {leilao.name}
                         </CardTitle>
-                        <p className="text-xs text-slate-500 mt-1 flex items-center">
-                          <Box size={12} className="mr-1" /> Ref: Carga {leilao.id_carga}
+                        <p className="mt-1 text-xs text-slate-500 flex items-center">
+                          <MapPin size={12} className="mr-1" /> {leilao.stops.join(" → ")}
                         </p>
                       </div>
                     </div>
@@ -146,31 +111,42 @@ export default function FreightsPanel() {
                       {/* Valores */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <p className="text-[10px] uppercase font-semibold text-slate-400 mb-1">Valor Teto</p>
-                          <p className="text-sm font-medium text-slate-700">{formatarMoeda(leilao.valor_teto)}</p>
+                          <p className="text-[10px] uppercase font-semibold text-slate-400 mb-1">Tarifa-alvo</p>
+                          <p className="text-sm font-medium text-slate-700">{formatarMoeda(leilao.targetFare)}</p>
                         </div>
-                        <div className={`p-3 rounded-lg border ${leilao.melhor_lance ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                          <p className={`text-[10px] uppercase font-semibold mb-1 ${leilao.melhor_lance ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <div className={`p-3 rounded-lg border ${leilao.bestBid ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                          <p className={`text-[10px] uppercase font-semibold mb-1 ${leilao.bestBid ? 'text-emerald-600' : 'text-slate-400'}`}>
                             Melhor Lance
                           </p>
-                          <p className={`text-sm font-bold ${leilao.melhor_lance ? 'text-emerald-700' : 'text-slate-500'}`}>
-                            {leilao.melhor_lance ? formatarMoeda(leilao.melhor_lance) : 'Nenhum lance'}
+                          <p className={`text-sm font-bold ${leilao.bestBid ? 'text-emerald-700' : 'text-slate-500'}`}>
+                            {leilao.bestBid ? formatarMoeda(leilao.bestBid) : 'Nenhum lance'}
                           </p>
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-2 gap-3 text-xs text-slate-500">
+                        <div className="rounded-lg border border-slate-100 bg-white p-3">
+                          <p className="font-semibold uppercase tracking-wide text-slate-400">Composição</p>
+                          <p className="mt-1 text-sm font-medium text-slate-700">{leilao.itemCount} itens • {leilao.legCount} pernas</p>
+                        </div>
+                        <div className="rounded-lg border border-slate-100 bg-white p-3">
+                          <p className="font-semibold uppercase tracking-wide text-slate-400">Cobertura</p>
+                          <p className="mt-1 text-sm font-medium text-slate-700">{leilao.coverage}</p>
+                        </div>
+                      </div>
+
                       {/* Status de quem está ganhando */}
-                      {Boolean(leilao.melhor_lance) && (
+                      {Boolean(leilao.bestBid) && (
                         <div className="flex items-center text-xs text-slate-600 bg-white border border-slate-100 p-2 rounded">
                           <TrendingDown size={14} className="text-emerald-500 mr-2" />
-                          <span className="font-medium mr-1">{leilao.transportadora_vencendo}</span> liderando 
+                          <span className="font-medium mr-1">{leilao.winningCarrier}</span> liderando 
                           <Badge className="ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200 border-none">
-                            {leilao.total_lances} lances
+                            {leilao.totalBids} lances
                           </Badge>
                         </div>
                       )}
                       
-                      {!leilao.melhor_lance && (
+                      {!leilao.bestBid && (
                         <div className="flex items-center justify-center text-xs text-slate-400 bg-white border border-slate-100 border-dashed p-2 rounded h-[42px]">
                           Aguardando transportadoras...
                         </div>
@@ -184,22 +160,31 @@ export default function FreightsPanel() {
                     <div className="w-full">
                       <div className="flex justify-between text-xs mb-1.5">
                         <span className="text-slate-500 flex items-center font-medium">
-                          <Clock size={12} className="mr-1.5" /> Encerra em {leilao.tempo_restante_min} min
+                          <Clock size={12} className="mr-1.5" /> {leilao.auctionStatus}
+                        </span>
+                        <span className="text-slate-400 flex items-center">
+                          <CalendarRange size={12} className="mr-1.5" /> {leilao.bidDeadline}
                         </span>
                       </div>
                       <Progress 
-                        value={leilao.progresso_tempo} 
-                        className={`h-1.5 ${leilao.progresso_tempo > 90 ? 'bg-red-100' : 'bg-blue-100'}`}
-                        indicatorColor={leilao.progresso_tempo > 90 ? 'bg-red-500' : 'bg-blue-500'}
+                        value={progressValue} 
+                        className={`h-1.5 ${progressValue > 90 ? 'bg-red-100' : 'bg-blue-100'}`}
+                        indicatorColor={progressValue > 90 ? 'bg-red-500' : 'bg-blue-500'}
                       />
                     </div>
 
-                    <Button asChild variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                      <Link to="/auction-bids">Analisar Lances</Link>
-                    </Button>
+                    <div className="grid w-full gap-2 md:grid-cols-2">
+                      <Button asChild variant="outline" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                        <Link to={`/segment-details/${leilao.id}`}>Ver Trecho</Link>
+                      </Button>
+                      <Button asChild variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        <Link to={`/auction-bids/${leilao.id}`}>Analisar Lances</Link>
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
-              ))}
+                )
+              })}
 
             </div>
           </TabsContent>

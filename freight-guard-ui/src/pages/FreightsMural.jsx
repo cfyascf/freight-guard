@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { AlertCircle, Box, CheckCircle2, MapPin, Search, ShieldAlert, Truck, Calendar, Clock, Package } from "lucide-react"
+import { AlertCircle, Box, CheckCircle2, MapPin, Search, ShieldAlert, Truck, Calendar, Clock, Package, Route } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { freightOffersMock } from "@/constants/logistics-mock"
 import { RISK } from "@/constants/risk"
 
 const getRiskBorderClass = (risk) => {
@@ -46,59 +47,7 @@ export default function FreightsMural() {
   const navigate = useNavigate()
 
   // Lista estática de dados
-  const ofertasDisponiveis = [
-    {
-      id: "OFT-9921",
-      contratante: "Volvo Cars do Brasil",
-      nomeCarga: "Peças Automotivas",
-      tipoCarga: "Manufaturados",
-      risk: RISK.WARNING,
-      rota: "Curitiba, PR → São Paulo, SP",
-      tempoRetirada: "03/05/2026 08:00",
-      previsaoChegada: "04/05/2026 12:00",
-      distancia: "408 km",
-      valor: 2500,
-      peso: "12 Ton",
-      volume: "45 m³",
-      requisitos: ["Refrigerado"],
-      urgencia: "Alta",
-      caminhoesDisponiveis: 2
-    },
-    {
-      id: "OFT-9924",
-      contratante: "Industrias Alpha",
-      nomeCarga: "Bobinas de Aço",
-      tipoCarga: "Pesada / Siderurgia",
-      risk: RISK.NORMAL,
-      rota: "Ponta Grossa, PR → Joinville, SC",
-      tempoRetirada: "05/05/2026 06:00",
-      previsaoChegada: "05/05/2026 18:00",
-      distancia: "215 km",
-      valor: 1600,
-      peso: "28 Ton",
-      volume: "60 m³",
-      requisitos: ["Carga Seca"],
-      urgencia: "Normal",
-      caminhoesDisponiveis: 0
-    },
-    {
-      id: "OFT-9925",
-      contratante: "TechLogistics",
-      nomeCarga: "Lote de Servidores",
-      tipoCarga: "Eletrônicos Sensíveis",
-      risk: RISK.CRITIC,
-      rota: "Araucária, PR → Rio de Janeiro, RJ",
-      tempoRetirada: "04/05/2026 14:00",
-      previsaoChegada: "06/05/2026 09:00",
-      distancia: "850 km",
-      valor: 4200,
-      peso: "8 Ton",
-      volume: "25 m³",
-      requisitos: ["Produto Químico"],
-      urgencia: "Normal",
-      caminhoesDisponiveis: 5
-    }
-  ]
+  const ofertasDisponiveis = freightOffersMock
 
   const minhaFrota = [
     { placa: "ABC-1234", modelo: "Volvo FH 460", status: "Livre", capacidade: "50 m³" },
@@ -116,7 +65,7 @@ export default function FreightsMural() {
   }
 
   return (
-    <AppShell title="Mural de Oportunidades (Marketplace)">
+    <AppShell title="Mural de Trechos Disponíveis">
       
       {/* Barra de Busca */}
       <div className="mb-6 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
@@ -124,7 +73,7 @@ export default function FreightsMural() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
           <Input 
             type="text" 
-            placeholder="Buscar por origem, destino ou contratante..." 
+            placeholder="Buscar por trecho, parada ou contratante..." 
             className="border-slate-200 bg-white pl-9 shadow-sm"
           />
         </div>
@@ -139,10 +88,10 @@ export default function FreightsMural() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {oferta.contratante}
+                    {oferta.contractor}
                   </p>
                   <CardTitle className="text-lg font-bold text-slate-800">
-                    {formatarMoeda(oferta.valor)}
+                    {formatarMoeda(oferta.targetValue)}
                   </CardTitle>
                 </div>
                 <div className="flex flex-col items-end gap-2">
@@ -154,8 +103,8 @@ export default function FreightsMural() {
                       Urgente ⚠
                     </Badge>
                   )}
-                  <Badge variant="outline" className={oferta.caminhoesDisponiveis > 0 ? "text-slate-600 bg-slate-50" : "text-red-600 bg-red-50 border-red-200"}>
-                    {oferta.caminhoesDisponiveis} {oferta.caminhoesDisponiveis === 1 ? 'veículo' : 'veículos'}
+                  <Badge variant="outline" className={oferta.availableVehicles > 0 ? "text-slate-600 bg-slate-50" : "text-red-600 bg-red-50 border-red-200"}>
+                    {oferta.availableVehicles} {oferta.availableVehicles === 1 ? 'veículo' : 'veículos'}
                   </Badge>
                 </div>
               </div>
@@ -165,38 +114,43 @@ export default function FreightsMural() {
               <div className="space-y-4 text-sm">
                 
                 <div>
-                  <p className="font-semibold text-slate-800 text-base">{oferta.nomeCarga}</p>
+                  <p className="font-semibold text-slate-800 text-base">{oferta.segmentName}</p>
                   <div className="flex items-center text-slate-500 mt-1">
-                    <Package size={14} className="mr-1.5" />
-                    <span>{oferta.tipoCarga}</span>
+                    <Route size={14} className="mr-1.5" />
+                    <span>{oferta.itemCount} itens • {oferta.legCount} pernas</span>
                   </div>
                 </div>
 
                 <div className="flex items-start rounded-md bg-slate-50 p-2">
                   <MapPin size={16} className="mr-2 mt-0.5 text-blue-500 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-slate-700">{oferta.rota}</p>
-                    <p className="text-xs text-slate-500">{oferta.distancia} de distância</p>
+                    <p className="font-medium text-slate-700">{oferta.routeLabel}</p>
+                    <p className="text-xs text-slate-500">{oferta.segmentId}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 flex items-center"><Clock size={12} className="mr-1" /> Retirar até</span>
-                    <span className="font-medium text-slate-700">{oferta.tempoRetirada}</span>
+                    <span className="font-medium text-slate-700">{oferta.pickupLabel}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-slate-500 flex items-center"><Calendar size={12} className="mr-1" /> Chegada Prev.</span>
-                    <span className="font-medium text-slate-700">{oferta.previsaoChegada}</span>
+                    <span className="font-medium text-slate-700">{oferta.etaLabel}</span>
                   </div>
                 </div>
 
                 <div className="flex items-start border-t border-slate-100 pt-3">
                   <Box size={16} className="mr-2 mt-0.5 text-slate-400" />
                   <div>
-                    <p className="font-medium text-slate-700">{oferta.peso} • {oferta.volume}</p>
+                    <p className="font-medium text-slate-700">{oferta.totalWeight} • {oferta.totalVolume}</p>
+                    <div className="mt-2 space-y-1">
+                      {oferta.itemsSummary.map((itemSummary) => (
+                        <p key={itemSummary} className="text-xs text-slate-500">• {itemSummary}</p>
+                      ))}
+                    </div>
                     <div className="mt-1 flex gap-1 flex-wrap">
-                      {oferta.requisitos.map(req => (
+                      {oferta.requirements.map(req => (
                         <Badge key={req} variant="secondary" className="bg-slate-100 text-[10px] font-normal text-slate-600">
                           {req}
                         </Badge>
@@ -209,7 +163,7 @@ export default function FreightsMural() {
             </CardContent>
 
             <CardFooter className="bg-slate-50/50 pt-4 rounded-b-xl border-t border-slate-50">
-              {oferta.caminhoesDisponiveis === 0 ? (
+              {oferta.availableVehicles === 0 ? (
                 <Button disabled className="w-full bg-slate-200 text-slate-500 cursor-not-allowed">
                   <Truck size={16} className="mr-2" />
                   Sem frota disponível
@@ -238,11 +192,11 @@ export default function FreightsMural() {
             </DialogTitle>
 
             <DialogDescription>
-              Selecione o veículo para a rota{" "}
+              Selecione o veículo para o trecho{" "}
               <strong>
-                {freteSelecionado?.rota.split(" → ")[1]}
+                {freteSelecionado?.segmentName}
               </strong>.
-              O sistema validará a disponibilidade (ETA) e o volume.
+              O sistema validará a disponibilidade, a cobertura das pernas e o volume consolidado.
             </DialogDescription>
           </DialogHeader>
 

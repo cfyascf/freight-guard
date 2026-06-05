@@ -19,17 +19,21 @@ import {
   Box,
   ChartBar,
   Package,
+  Route,
   Truck,
 } from "lucide-react"
 
 import AuthPage from "@/pages/Auth"
 import Dashboard from "@/pages/Dashboard"
+import ControlTower from "@/pages/ControlTower"
 import RouteOverview from "@/pages/RouteOverview"
 import TransportOverview from "@/pages/TransportOverview"
 import VehicleForm from "@/pages/VehicleForm"
+import CarrierPortal from "@/pages/CarrierPortal"
 import LoadManagement from "@/pages/LoadManagement"
 import CreateLoad from "@/pages/CreateLoad"
 import LoadDetails from "@/pages/LoadDetails"
+import SegmentDetails from "@/pages/SegmentDetails"
 import CreateRoute from "@/pages/CreateRoute"
 import CreateProduct from "@/pages/CreateProduct"
 import CreateFreightAuction from "@/pages/CreateFreightAuction"
@@ -39,7 +43,6 @@ import RouteManagement from "@/pages/RouteManagement"
 import ProductManagement from "@/pages/ProductsManagement"
 import TransporterManagement from "@/pages/TransporterManagement"
 import CarrierManagement from "@/pages/CarrierManagement"
-import FreightsMural from "@/pages/FreightsMural"
 import FreightManagement from "@/pages/FreightManagement"
 
 import { ROLES } from "@/constants/roles"
@@ -62,6 +65,7 @@ export const ROUTES = [
     access: AuthAccess.AUTHENTICATED,
     nav: true,
   },
+  { path: "/control-tower", element: <ControlTower />, access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/route-overview",     element: <RouteOverview />,     access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/transport-overview", element: <TransportOverview />, access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/vehicle-form",       element: <VehicleForm />,       access: AuthAccess.AUTHENTICATED, nav: false },
@@ -71,22 +75,23 @@ export const ROUTES = [
   {
     path: "/load-management",
     element: <LoadManagement />,
-    label: "Gestão de Cargas",
+    label: "Itens de Carga",
     icon: Box,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
   { path: "/create-load", element: <CreateLoad />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/segment-details/:segmentId", element: <SegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/auction-bids/:loadId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/auction-bids/:segmentId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
   {
     path: "/freights-panel",
     element: <FreightsPanel />,
-    label: "Painel de Leilão",
+    label: "Leilões de Trechos",
     icon: Truck,
     access: [ROLES.CONTRACTOR],
     nav: true,
@@ -94,8 +99,8 @@ export const ROUTES = [
   {
     path: "/route-management",
     element: <RouteManagement />,
-    label: "Gestão de Rotas",
-    icon: Package,
+    label: "Gestão de Trechos",
+    icon: Route,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
@@ -115,12 +120,13 @@ export const ROUTES = [
   // Carrier only
   {
     path: "/freights-mural",
-    element: <FreightsMural />,
-    label: "Ofertas de Frete",
+    element: <CarrierPortal />,
+    label: "Oportunidades de Frete",
     icon: Truck,
     access: [ROLES.CARRIER],
     nav: true,
   },
+  { path: "/carrier-portal", element: <CarrierPortal />, access: [ROLES.CARRIER], nav: false },
   {
     path: "/freight-management",
     element: <FreightManagement />,

@@ -44,7 +44,7 @@ export default function RouteOverview() {
 
   return (
     <AppShell 
-      title="Gestão de Rotas da Frota"
+      title="Gestão de Trechos da Frota"
       actions={
         <Button asChild className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
           <Link to="/route-management">
@@ -63,7 +63,7 @@ export default function RouteOverview() {
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
             <CardTitle className="text-lg font-semibold flex items-center text-slate-800">
               <Map size={18} className="mr-2 text-blue-600" />
-              Rotas Cadastradas
+              Trechos Cadastrados
             </CardTitle>
           </CardHeader>
           
@@ -82,7 +82,7 @@ export default function RouteOverview() {
                 {rotas.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-slate-500">
-                      Nenhuma rota cadastrada no momento.
+                      Nenhum trecho cadastrado no momento.
                     </TableCell>
                   </TableRow>
                 ) : (
