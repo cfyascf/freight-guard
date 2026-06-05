@@ -89,8 +89,8 @@ export default function CreateRouteWorkspace() {
   }
 
   return (
-    <AppShell title="Workspace de Rota">
-      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col gap-3 overflow-hidden">
+    <AppShell title="Workspace de Rota" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
         
         {/* HEADER DA TELA REESTRUTURADO (Visual limpo integrado com Link/Button) */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">

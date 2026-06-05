@@ -38,9 +38,9 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   return (
-    <AppShell title="Operações">
+    <AppShell title="Operações" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
       {/* Container mestre rígido na viewport para eliminar scroll da página */}
-      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col overflow-hidden">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
         
         {/* O GRANDE CARD BRANCO UNIFICADOR DE TODA A TORRE DE CONTROLE */}
         <div className="flex-1 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col min-h-0 overflow-hidden">
