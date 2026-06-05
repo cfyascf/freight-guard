@@ -29,7 +29,7 @@ import {
 
 const SIDEBAR_STORAGE_KEY = "freightguard_sidebar_collapsed"
 
-export default function AppShell({ title, children }) {
+export default function AppShell({ title, children, contentClassName, innerClassName }) {
   const { user, setRole } = useAuth()
   const { brand, setBrand, currentKey, availableThemes } = useBrand()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -288,8 +288,8 @@ export default function AppShell({ title, children }) {
         </header>
 
         {/* Conteúdo */}
-        <div className="flex-1 overflow-auto bg-slate-50 p-8">
-          <div className="mx-auto max-w-7xl animate-in duration-500 fade-in">
+        <div className={cn("flex-1 overflow-auto bg-slate-50 p-8", contentClassName)}>
+          <div className={cn("mx-auto max-w-7xl animate-in duration-500 fade-in", innerClassName)}>
             {children}
           </div>
         </div>

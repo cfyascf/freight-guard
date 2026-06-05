@@ -1,48 +1,42 @@
 import { useState } from "react"
 import { useLocation, useNavigate, Link } from "react-router-dom"
-import { ArrowLeft, MapPinned, Scale } from "lucide-react"
+import { ArrowLeft, MapPinned, Clock } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 
+// Importa os trechos para cruzamento
 import { availableRouteSegments } from "./LoadManagement"
 
 const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} kg`
 const formatVolume = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} m³`
 const formatDistance = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} km`
+const formatCurrency = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
 
 function getNodeType(index, totalNodes) {
-  if (index === 0) {
-    return "Origem"
-  }
-
-  if (index === totalNodes - 1) {
-    return "Destino final"
-  }
-
+  if (index === 0) return "Origem"
+  if (index === totalNodes - 1) return "Destino final"
   return "Parada intermediária"
 }
 
 const buildUnifiedTimeline = (segments) => {
   const nodes = []
-
   const addAction = (city, action) => {
     const existing = nodes.find((n) => n.city === city)
-
     if (existing) {
       existing.actions.push(action)
       return
     }
-
     nodes.push({ city, actions: [action] })
   }
 
   segments.forEach((s) => {
-    addAction(s.origin, `Coleta · ${s.productName} · ${s.id}`)
-    addAction(s.destination, `Descarga · ${s.productName} · ${s.id}`)
+    addAction(s.origin, `📥 Coleta · ${s.productName} · ${s.id}`)
+    addAction(s.destination, `📤 Descarga · ${s.productName} · ${s.id}`)
   })
 
   return nodes.map((node, idx) => ({
@@ -52,31 +46,33 @@ const buildUnifiedTimeline = (segments) => {
 }
 
 function getRestrictiveRequirement(requirements) {
-  if (requirements.has("Refrigerado")) {
-    return "Baú frigorífico"
-  }
-
-  if (requirements.has("Frágil")) {
-    return "Carga sensível"
-  }
-
-  return "Carga seca padrão"
+  if (requirements.has("Refrigerado")) return "Baú Frigorífico"
+  if (requirements.has("Frágil")) return "Carga Sensível"
+  return "Carga Seca Padrão"
 }
 
 export default function CreateRouteWorkspace() {
   const location = useLocation()
   const navigate = useNavigate()
   const [auctionDeadline, setAuctionDeadline] = useState("")
+  const [isAutoAwardEnabled, setIsAutoAwardEnabled] = useState(true)
 
   const selectedIds = location.state?.selectedIds || []
   const selectedSegments = availableRouteSegments.filter((s) => selectedIds.includes(s.id))
   const unifiedTimeline = buildUnifiedTimeline(selectedSegments)
+  
+  // Métricas Físicas e Geográficas
   const totalDistance = selectedSegments.reduce((sum, s) => sum + s.distanceKm, 0)
   const maxWeight = selectedSegments.reduce((max, s) => Math.max(max, s.weightKg), 0)
   const maxVolume = selectedSegments.reduce((max, s) => Math.max(max, s.volumeM3), 0)
-  const totalWeight = selectedSegments.reduce((sum, s) => sum + s.weightKg, 0)
 
-  const requirementSet = new Set(selectedSegments.flatMap((s) => s.requirements))
+  // NOVO: Inteligência Comercial e Logística Real
+  const minimumFreightValue = selectedSegments.reduce((sum, s) => sum + (s.targetPrice || s.weightKg * 0.35), 0)
+  const estimatedTolls = Math.round(totalDistance * 0.48) // Média de R$ 0.48 por km em pedágios
+  const costPerKm = totalDistance > 0 ? minimumFreightValue / totalDistance : 0
+  const estimatedHours = Math.round(totalDistance / 65) + (unifiedTimeline.length * 1.5) // 65km/h de caminhão + 1.5h por parada
+
+  const requirementSet = new Set(selectedSegments.flatMap((s) => s.requirements || []))
   const restrictiveRequirement = getRestrictiveRequirement(requirementSet)
 
   if (selectedIds.length === 0) {
@@ -93,57 +89,62 @@ export default function CreateRouteWorkspace() {
   }
 
   return (
-    <AppShell title="Workspace de Rota">
-      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col gap-3 overflow-hidden">
+    <AppShell title="Workspace de Rota" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+        
+        {/* HEADER DA TELA */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 rounded-md p-0 hover:bg-slate-100"
+              variant="ghost" size="sm" className="h-7 w-7 rounded-md p-0 hover:bg-slate-100"
               onClick={() => navigate("/load-management")}
             >
               <ArrowLeft size={14} className="text-slate-600" />
             </Button>
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-base font-semibold text-slate-900">Montagem de rota consolidada</h1>
-                <p className="text-xs text-slate-500">Defina sequência, capacidade e gatilho de publicação.</p>
-              </div>
+            <div>
+              <h1 className="text-base font-semibold text-slate-900">Montagem de Rota Consolidada</h1>
             </div>
           </div>
 
           <Badge className="border-none bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-700">
-            {selectedIds.length} trechos
+            {selectedIds.length} trechos selecionados
           </Badge>
         </div>
 
-        <section className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1.45fr)_320px]">
-          <Card className="min-h-0 border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-100 px-5 pb-3 pt-5">
-              <div className="grid gap-2 md:grid-cols-4">
+        {/* SECTION CENTRAL PRINCIPAL */}
+        <section className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[minmax(0,1.45fr)_340px]">
+          
+          {/* CARD ESQUERDO: TIMELINE E RESUMO MACRO */}
+          <Card className="flex min-h-0 flex-col overflow-hidden border-slate-200 bg-white shadow-sm">
+            <CardHeader className="border-b border-slate-200 px-5 pb-3 pt-4">
+              
+              {/* CORREÇÃO UX 1: Dados macros reais de rota (Fim da repetição de peso) */}
+              <div className="grid gap-2 grid-cols-4">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Paradas</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Total Paradas</p>
                   <p className="mt-0.5 text-base font-semibold text-slate-900">{unifiedTimeline.length}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Distância</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Distância Total</p>
                   <p className="mt-0.5 text-base font-semibold text-slate-900">{formatDistance(totalDistance)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Peso consolidado</p>
-                  <p className="mt-0.5 text-base font-semibold text-slate-900">{formatWeight(totalWeight)}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Tempo Estimado (ETA)</p>
+                  <p className="mt-0.5 text-base font-semibold text-blue-600 font-mono">~ {estimatedHours}h</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Restrição crítica</p>
-                  <p className="mt-0.5 text-base font-semibold text-slate-900">{restrictiveRequirement}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Frete Mínimo</p>
+                  <p className="mt-0.5 font-mono text-base font-semibold text-emerald-600">{formatCurrency(minimumFreightValue)}</p>
                 </div>
               </div>
+
             </CardHeader>
-            <CardContent className="min-h-0 overflow-y-auto px-5 pb-5 pt-4">
+            
+            {/* Linha do tempo centralizada por cidades */}
+            <CardContent className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4">
               <div className="space-y-2.5 pr-1">
                 {unifiedTimeline.map((node, index) => (
-                  <div key={node.city} className="rounded-xl border border-slate-200 p-3">
+                  <div key={node.city} className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
@@ -157,11 +158,11 @@ export default function CreateRouteWorkspace() {
                       <MapPinned size={14} className="mt-0.5 text-slate-300" />
                     </div>
 
-                    <div className="mt-3 space-y-1.5">
+                    <div className="mt-2.5 space-y-1">
                       {node.actions.map((action) => (
                         <div
                           key={`${node.city}-${action}`}
-                          className="rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-xs font-medium text-slate-600"
+                          className="rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600"
                         >
                           {action}
                         </div>
@@ -173,66 +174,76 @@ export default function CreateRouteWorkspace() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-100 px-5 pb-3 pt-5">
-              <CardTitle className="text-sm font-semibold text-slate-900">Capacidade e publicação</CardTitle>
+          {/* CARD DIREITO: PARÂMETROS FINANCEIROS E REGRAS DO LEILÃO */}
+          <Card className="flex min-h-0 flex-col justify-between overflow-hidden border-slate-200 bg-white shadow-sm">
+            <CardHeader className="border-b border-slate-200 px-5 py-3.5">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuração Comercial</CardTitle>
             </CardHeader>
-            <CardContent className="flex h-full flex-col justify-between gap-4 px-5 pb-5 pt-4">
-              <div className="space-y-4">
-                <div className="grid gap-2.5">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Capacidade de peso</span>
-                      <span className="font-semibold text-slate-900">{formatWeight(maxWeight)}</span>
-                    </div>
-                    <div className="mt-2.5 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Capacidade de volume</span>
-                      <span className="font-semibold text-slate-900">{formatVolume(maxVolume)}</span>
-                    </div>
-                    <div className="mt-2.5 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Tipo de equipamento</span>
-                      <span className="font-semibold text-slate-900">{restrictiveRequirement}</span>
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <Scale size={13} />
-                      <span className="text-xs font-medium">Janela de publicação</span>
-                    </div>
-                    <Input
-                      id="workspace-deadline"
-                      type="datetime-local"
-                      value={auctionDeadline}
-                      onChange={(e) => setAuctionDeadline(e.target.value)}
-                      className="mt-2.5 h-9 border-slate-200 bg-white text-xs"
-                    />
-                  </div>
+            
+            <CardContent className="flex-1 overflow-hidden px-5 pb-4 pt-4 space-y-4">
+              
+              {/* CORREÇÃO UX 2: Mudança para Análise Financeira da Viagem */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Capacidade de Cubagem:</span>
+                  <span className="font-bold text-slate-800 font-mono">{formatWeight(maxWeight)} • {formatVolume(maxVolume)}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Pedágio Previsto (Vale):</span>
+                  <span className="font-bold text-slate-700 font-mono">{formatCurrency(estimatedTolls)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Custo de Rodagem:</span>
+                  <span className="font-bold text-slate-700 font-mono">{formatCurrency(costPerKm)} / km</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                  <span className="text-slate-500">Equipamento Exigido:</span>
+                  <Badge variant="outline" className="bg-white text-[10px] font-bold text-slate-700 border-slate-300">{restrictiveRequirement}</Badge>
+                </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Trechos incluídos</p>
-                  <div className="space-y-1.5">
-                    {selectedSegments.map((segment) => (
-                      <div key={segment.id} className="flex items-center justify-between rounded-lg border border-slate-200 px-2.5 py-2 text-xs">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-slate-800">{segment.productName}</p>
-                          <p className="text-[11px] text-slate-500">{segment.id}</p>
-                        </div>
-                        <Badge variant="outline" className="border-slate-200 bg-slate-50 text-[10px] text-slate-600">
-                          {segment.category}
-                        </Badge>
-                      </div>
-                    ))}
+              {/* Data limite do Leilão */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <Clock size={13} />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Encerramento do Leilão</span>
+                </div>
+                <Input
+                  id="workspace-deadline"
+                  type="datetime-local"
+                  value={auctionDeadline}
+                  onChange={(e) => setAuctionDeadline(e.target.value)}
+                  className="h-9 border-slate-200 bg-white text-xs font-medium"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Adjudicação da rota</p>
+                <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-slate-800">Seleção automática do vencedor</p>
+                      <p className="text-[11px] text-slate-500">
+                        {isAutoAwardEnabled
+                          ? "O sistema adjudica o lance mais próximo do frete mínimo."
+                          : "O operador analisa os lances e seleciona manualmente o vencedor."}
+                      </p>
+                    </div>
+                    <Switch checked={isAutoAwardEnabled} onCheckedChange={setIsAutoAwardEnabled} />
                   </div>
                 </div>
               </div>
 
-              <Button className="h-9 w-full rounded-lg bg-slate-900 text-[11px] font-bold tracking-wide text-white hover:bg-slate-800">
-                Disparar leilão reverso da rota
-              </Button>
             </CardContent>
+
+            {/* Ação Final de Disparo */}
+            <div className="border-t border-slate-200 bg-slate-50/50 p-4">
+              <Button className="h-10 w-full rounded-lg bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm">
+                Disparar Leilão Reverso da Rota
+              </Button>
+            </div>
           </Card>
+
         </section>
       </div>
     </AppShell>
