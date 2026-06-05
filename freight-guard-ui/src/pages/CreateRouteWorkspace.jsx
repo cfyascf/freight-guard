@@ -92,34 +92,28 @@ export default function CreateRouteWorkspace() {
     <AppShell title="Workspace de Rota">
       <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col gap-3 overflow-hidden">
         
-        {/* HEADER DA TELA */}
+        {/* HEADER DA TELA REESTRUTURADO (Visual limpo integrado com Link/Button) */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost" size="sm" className="h-7 w-7 rounded-md p-0 hover:bg-slate-100"
-              onClick={() => navigate("/load-management")}
-            >
-              <ArrowLeft size={14} className="text-slate-600" />
+          <Link to="/load-management">
+            <Button variant="ghost" className="text-slate-500 hover:text-slate-900 h-auto p-0 font-medium text-sm">
+              <ArrowLeft size={16} className="mr-2" /> Voltar para Gestão de Trechos
             </Button>
-            <div>
-              <h1 className="text-base font-semibold text-slate-900">Montagem de Rota Consolidada</h1>
-            </div>
-          </div>
+          </Link>
 
           <Badge className="border-none bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-700">
             {selectedIds.length} trechos selecionados
           </Badge>
         </div>
 
-        {/* SECTION CENTRAL PRINCIPAL (p-[1px] impede que as linhas de 1px sumam no corte) */}
+        {/* SECTION CENTRAL PRINCIPAL */}
         <section className="grid min-h-0 flex-1 gap-3 overflow-hidden p-[1px] xl:grid-cols-[minmax(0,1.45fr)_340px]">
           
-          {/* PAINEL ESQUERDO: Div sólida pura (Sem shadow-sm e sem componente Card) */}
+          {/* CARD ESQUERDO: TIMELINE E RESUMO MACRO */}
           <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-5 pb-3 pt-4 bg-white">
-              
-              {/* Indicadores macros superiores */}
-              <div className="grid gap-2 grid-cols-4">
+            
+            {/* Cabeçalho da esquerda com h-[76px] alinhado */}
+            <div className="border-b border-slate-200 px-5 bg-white h-[76px] flex items-center">
+              <div className="grid gap-2 grid-cols-4 w-full">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Total Paradas</p>
                   <p className="mt-0.5 text-base font-semibold text-slate-900">{unifiedTimeline.length}</p>
@@ -137,7 +131,6 @@ export default function CreateRouteWorkspace() {
                   <p className="mt-0.5 font-mono text-base font-semibold text-emerald-600">{formatCurrency(minimumFreightValue)}</p>
                 </div>
               </div>
-
             </div>
             
             {/* Linha do tempo centralizada por cidades */}
@@ -174,10 +167,11 @@ export default function CreateRouteWorkspace() {
             </div>
           </div>
 
-          {/* PAINEL DIREITO: Div sólida pura (Sem shadow-sm e sem componente Card) */}
+          {/* CARD DIREITO: PARÂMETROS FINANCEIROS E REGRAS DO LEILÃO */}
           <div className="flex min-h-0 flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white">
             <div>
-              <div className="border-b border-slate-200 px-5 py-3.5 bg-white">
+              {/* Cabeçalho da direita com h-[76px] alinhado */}
+              <div className="border-b border-slate-200 px-5 bg-white h-[76px] flex items-center">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuração Comercial</h2>
               </div>
               
@@ -234,7 +228,6 @@ export default function CreateRouteWorkspace() {
               </div>
             </div>
 
-            {/* BARRA DE DISPARO INFERIOR */}
             <div className="border-t border-slate-200 bg-slate-50/50 p-4">
               <Button className="h-10 w-full rounded-lg bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700 active:bg-blue-800 transition-colors">
                 Disparar Leilão Reverso da Rota
