@@ -1,4 +1,4 @@
-import { Plus, Search, Clock, TrendingDown, ArrowRight } from "lucide-react"
+import { Search, Clock, TrendingDown, ArrowRight, SlidersHorizontal } from "lucide-react"
 import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ export default function FreightsPanel() {
     <AppShell title="Mesa de Leilões">
       <div className="mx-auto max-w-7xl flex flex-col h-[calc(100vh-7.5rem)] gap-4 overflow-hidden">
         
-        {/* BARRA DE TOPO INTEGRADA MINIMALISTA (Baseada na tela de Gestão de Trechos) */}
+        {/* BARRA DE TOPO FOCADA EM MONITORAMENTO (Sem criação) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900">Leilões em Andamento</h1>
@@ -40,10 +40,9 @@ export default function FreightsPanel() {
               />
             </div>
 
-            <Button asChild className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 focus-visible:ring-blue-200 active:bg-blue-800">
-              <Link to="/create-freight-auction">
-                <Plus size={14} className="mr-1.5" /> Novo Leilão
-              </Link>
+            {/* Substituímos o "Novo Leilão" por "Filtros" (Ação lógica de monitoramento) */}
+            <Button variant="outline" className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <SlidersHorizontal size={14} className="mr-1.5 text-slate-500" /> Filtros
             </Button>
           </div>
         </div>
@@ -84,7 +83,7 @@ export default function FreightsPanel() {
                     </div>
                   </div>
 
-                  {/* Rodapé e Ação (Empurrado para baixo para alinhar todos os cards) */}
+                  {/* Rodapé e Ação */}
                   <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
                       <Clock size={12} className="mr-1.5" /> {l.bidDeadline}

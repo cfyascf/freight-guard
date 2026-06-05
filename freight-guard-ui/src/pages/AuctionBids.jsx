@@ -1,135 +1,173 @@
-import { ArrowLeft, CheckCircle2, Search, Truck, XCircle } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, ShieldCheck, Trophy, ArrowDownRight, ExternalLink } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { auctionBidsMock, getSegmentById } from "@/constants/logistics-mock"
 
 export default function AuctionBids() {
   const { segmentId } = useParams()
-  const selectedSegment = segmentId ? getSegmentById(segmentId) : null
-  const visibleBids = segmentId ? auctionBidsMock.filter((bid) => bid.segmentRef === segmentId) : auctionBidsMock
+  
+  // Mock fallback (Caso acesse sem ID na URL, pega o primeiro para demonstração)
+  const selectedSegment = segmentId ? getSegmentById(segmentId) : getSegmentById("TRC-1042")
+  const visibleBids = (segmentId ? auctionBidsMock.filter((bid) => bid.segmentRef === segmentId) : auctionBidsMock) || []
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-  }
+  // Lógica de Ranking: Ordena do menor preço (melhor) para o maior
+  const rankedBids = [...visibleBids].sort((a, b) => a.proposedValue - b.proposedValue)
+
+  // Simulação das balizas financeiras para o TCC (Teto definido na criação, Piso calculado pelo sistema)
+  const targetFare = selectedSegment?.targetFare || 4200
+  const anttFloorFare = targetFare * 0.72 // Simulando que o piso ANTT é 72% do teto
+
+  const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
   return (
-    <AppShell title={segmentId ? `Lances do Trecho ${segmentId}` : "Lances dos Trechos"}>
-      <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-3">
-            <Link to="/freights-panel">
-              <Button variant="ghost" className="text-slate-500 hover:text-slate-900">
-                <ArrowLeft size={16} className="mr-2" /> Voltar ao Painel de Leilões
-              </Button>
-            </Link>
-            {segmentId && (
-              <Button asChild variant="outline" className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                <Link to={`/segment-details/${segmentId}`}>Abrir trecho</Link>
-              </Button>
-            )}
-          </div>
+    <AppShell title="Análise de Lances">
+      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-5xl flex-col gap-5 overflow-hidden">
+        
+        {/* HEADER LIMPO E TEXTUAL (Unificado com o resto do sistema) */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1">
+          <Link to="/freights-panel">
+            <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
+              <ArrowLeft size={16} className="mr-2" /> Voltar à Mesa de Leilões
+            </Button>
+          </Link>
 
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Buscar por ID, transportadora ou veículo..."
-              className="border-slate-200 bg-white pl-9 shadow-sm"
-            />
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline" className="h-9 border-slate-200 text-xs font-semibold text-slate-700 bg-white">
+              <Link to={`/segment-details/${selectedSegment?.id}`}>
+                <ExternalLink size={14} className="mr-1.5" /> Detalhes do Trecho
+              </Link>
+            </Button>
           </div>
         </div>
 
+        {/* CONTEXTO DA ROTA E BALIZAS FINANCEIRAS */}
         {selectedSegment && (
-          <Card className="border-slate-200 shadow-sm">
-            <CardContent className="grid gap-4 p-5 md:grid-cols-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Trecho</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{selectedSegment.name}</p>
+          <div className="flex flex-col md:flex-row gap-0 rounded-xl border border-slate-200 bg-white shrink-0">
+            
+            {/* Bloco 1: A Rota */}
+            <div className="flex-1 p-5 border-b md:border-b-0 md:border-r border-slate-100">
+              <div className="flex items-center justify-between mb-3">
+                <Badge className="bg-slate-100 text-slate-600 border-none text-[10px] font-bold uppercase tracking-wider">{selectedSegment.id}</Badge>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{selectedSegment.itemCount} Itens</span>
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Paradas</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{selectedSegment.stops.join(" → ")}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Composição</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{selectedSegment.itemCount} itens • {selectedSegment.legCount} pernas</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Tarifa-alvo</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">{formatCurrency(selectedSegment.targetFare)}</p>
-              </div>
-            </CardContent>
-          </Card>
+              <h2 className="text-sm font-bold text-slate-900 mb-1">{selectedSegment.name}</h2>
+              <p className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <MapPin size={13} className="text-blue-500" /> {selectedSegment.stops.join(" ➔ ")}
+              </p>
+            </div>
+
+            {/* Bloco 2: O Piso (Legal) */}
+            <div className="w-full md:w-56 p-5 bg-slate-50/50 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+                <ShieldCheck size={12} /> Piso Legal ANTT
+              </p>
+              <p className="text-lg font-black text-slate-700 font-mono">{formatCurrency(anttFloorFare)}</p>
+              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Lances abaixo deste valor são bloqueados.</p>
+            </div>
+
+            {/* Bloco 3: O Teto (Orçamento) */}
+            <div className="w-full md:w-56 p-5 bg-slate-50/50 flex flex-col justify-center">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Orçamento Teto</p>
+              <p className="text-lg font-black text-slate-700 font-mono">{formatCurrency(targetFare)}</p>
+              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Meta de custo estipulada pelo embarcador.</p>
+            </div>
+
+          </div>
         )}
 
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="w-[120px]">ID Lance</TableHead>
-                <TableHead>Transportadora</TableHead>
-                <TableHead>Cobertura</TableHead>
-                <TableHead>Veículo</TableHead>
-                <TableHead className="text-right">Valor ofertado</TableHead>
-                <TableHead>ETA</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ação</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleBids.map((bid) => (
-                <TableRow key={bid.id} className="hover:bg-slate-50/50">
-                  <TableCell>
-                    <p className="font-bold text-slate-900">{bid.id}</p>
-                    <p className="text-xs text-slate-500">Trecho: {bid.segmentRef}</p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200">
-                      {bid.carrier}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-600">{bid.coverage}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="font-mono bg-slate-50 text-slate-700 border-slate-200">
-                      <Truck size={12} className="mr-1 text-slate-400" /> {bid.vehicle}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-emerald-700">
-                    {formatCurrency(bid.proposedValue)}
-                  </TableCell>
-                  <TableCell className="text-slate-600 text-sm">{bid.eta}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-blue-100 text-blue-800 border-none hover:bg-blue-200">
-                      {bid.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
-                        <CheckCircle2 size={16} className="mr-2" /> Aceitar
-                      </Button>
-                      <Button variant="outline" className="border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700">
-                        <XCircle size={16} className="mr-2" /> Recusar
-                      </Button>
+        {/* RANKING DE LANCES (A Arena de Disputa) */}
+        <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 ml-1">Ranking de Propostas ({rankedBids.length})</h3>
+            
+            {rankedBids.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 border-dashed py-12 text-center text-slate-500 bg-slate-50/50">
+                Nenhum lance recebido para este trecho ainda.
+              </div>
+            ) : (
+              rankedBids.map((bid, index) => {
+                const isWinner = index === 0
+                const savings = targetFare - bid.proposedValue
+                const savingsPercent = ((savings / targetFare) * 100).toFixed(1)
+
+                return (
+                  <div 
+                    key={bid.id} 
+                    className={`relative flex items-center justify-between rounded-xl border p-4 transition-all ${
+                      isWinner 
+                        ? "border-emerald-300 bg-emerald-50/20 ring-1 ring-emerald-100" 
+                        : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    
+                    {/* Destaque Ouro para o Menor Preço */}
+                    {isWinner && (
+                      <div className="absolute -top-2.5 left-4 flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 shadow-sm">
+                        <Trophy size={10} /> Melhor Oferta
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-5 w-1/2">
+                      {/* Posição no Ranking */}
+                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                        isWinner ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
+                      }`}>
+                        #{index + 1}
+                      </div>
+
+                      {/* Dados da Transportadora */}
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-slate-800 truncate">{bid.carrier}</h4>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="flex items-center text-[11px] font-semibold text-slate-500">
+                            <Truck size={12} className="mr-1.5 text-slate-400" /> {bid.vehicle}
+                          </span>
+                          <span className="flex items-center text-[11px] font-semibold text-slate-500">
+                            <Clock size={12} className="mr-1.5 text-slate-400" /> ETA: {bid.eta}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {visibleBids.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-slate-500">
-                    Nenhum lance encontrado para este trecho.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+
+                    <div className="flex items-center gap-8 justify-end w-1/2">
+                      
+                      {/* Lógica Financeira e Economia */}
+                      <div className="text-right">
+                        <p className={`text-lg font-black font-mono ${isWinner ? "text-emerald-700" : "text-slate-700"}`}>
+                          {formatCurrency(bid.proposedValue)}
+                        </p>
+                        {savings > 0 ? (
+                          <p className="flex items-center justify-end text-[10px] font-bold text-emerald-600 mt-0.5">
+                            <ArrowDownRight size={12} className="mr-0.5" /> 
+                            Economia de {formatCurrency(savings)} ({savingsPercent}%)
+                          </p>
+                        ) : (
+                          <p className="text-[10px] font-bold text-rose-500 mt-0.5">
+                            Acima do Teto Orçamentário
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Botão de Decisão Final */}
+                      <Button 
+                        className={`h-9 px-6 text-xs font-bold tracking-wide transition-colors ${
+                          isWinner 
+                            ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        }`}
+                      >
+                        {isWinner ? <><CheckCircle2 size={14} className="mr-1.5" /> Adjudicar Vencedor</> : "Selecionar Lance"}
+                      </Button>
+                      
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       </div>
     </AppShell>
