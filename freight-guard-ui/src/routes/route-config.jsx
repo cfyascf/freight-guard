@@ -24,6 +24,7 @@ import {
 
 import AuthPage from "@/pages/Auth"
 import Dashboard from "@/pages/Dashboard"
+import ActiveRoutes from "@/pages/ActiveRoutes"
 import ControlTower from "@/pages/ControlTower"
 import RouteOverview from "@/pages/RouteOverview"
 import TransportOverview from "@/pages/TransportOverview"
@@ -32,6 +33,7 @@ import CarrierPortal from "@/pages/CarrierPortal"
 import LoadManagement from "@/pages/LoadManagement"
 import CreateLoad from "@/pages/CreateLoad"
 import LoadDetails from "@/pages/LoadDetails"
+import ActiveRouteTracking from "@/pages/ActiveRouteTracking"
 import SegmentDetails from "@/pages/SegmentDetails"
 import CreateRoute from "@/pages/CreateRoute"
 import CreateRouteWorkspace from "@/pages/CreateRouteWorkspace"
@@ -72,23 +74,6 @@ export const ROUTES = [
 
   // Contractor only
   {
-    path: "/load-management",
-    element: <LoadManagement />,
-    label: "Trechos",
-    icon: Box,
-    access: [ROLES.CONTRACTOR],
-    nav: true,
-  },
-  { path: "/create-load", element: <CreateLoad />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/segment-details/:segmentId", element: <SegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-route-workspace", element: <CreateRouteWorkspace />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/auction-bids/:segmentId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
-  {
     path: "/freights-panel",
     element: <FreightsPanel />,
     label: "Leilões de Trechos",
@@ -96,6 +81,33 @@ export const ROUTES = [
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
+  {
+    path: "/load-management",
+    element: <LoadManagement />,
+    label: "Trechos De Rota",
+    icon: Box,
+    access: [ROLES.CONTRACTOR],
+    nav: true,
+  },
+  { path: "/create-load", element: <CreateLoad />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
+  {
+    path: "/active-route-tracking",
+    element: <ActiveRoutes />,
+    label: "Rotas Ativas",
+    icon: Truck,
+    access: [ROLES.CONTRACTOR],
+    nav: true,
+  },
+  { path: "/active-route-tracking/:routeId", element: <ActiveRouteTracking />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/segment-details/:segmentId", element: <SegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-route-workspace", element: <CreateRouteWorkspace />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/auction-bids/:segmentId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
+  
   {
     path: "/products-management",
     element: <ProductManagement />,

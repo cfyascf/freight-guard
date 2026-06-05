@@ -1,12 +1,28 @@
-import { ArrowLeft, PackageOpen, Truck, MapPinned, CalendarClock, DollarSign, Scale, Box, Save, X } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { ArrowLeft, PackageOpen, Truck, MapPinned, CalendarClock, DollarSign, Scale, Box, Save, X, Plus, Search } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { productOptionsMock } from "@/constants/products-mock"
 
 export default function CreateSegment() {
+  const navigate = useNavigate()
+  const [selectedProduct, setSelectedProduct] = useState("")
+  const [productSearch, setProductSearch] = useState("")
+  const selectedProductOption = productOptionsMock.find((product) => product.value === selectedProduct)
+  const filteredProductOptions = productOptionsMock.filter((product) => {
+    const search = productSearch.trim().toLowerCase()
+
+    if (!search) return true
+
+    return [product.sku, product.name, product.details]
+      .filter(Boolean)
+      .some((field) => field.toLowerCase().includes(search))
+  })
+
   return (
     <AppShell title="Cadastro de Trecho">
       {/* MUDANÇA: Ajuste no calc() para 8.5rem garantindo margem de segurança */}
@@ -52,23 +68,65 @@ export default function CreateSegment() {
                 <div className="flex flex-col p-5 space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-600">Produto Principal</label>
-                    <Input placeholder="Ex: Peito de Frango Congelado" className="h-10 border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-600">Tipo de Acomodação</label>
-                    <Select>
-                      <SelectTrigger className="h-10 border-slate-200 text-sm focus:ring-blue-500">
-                        <SelectValue placeholder="Selecione o formato..." />
+                    <Select
+                      value={selectedProduct}
+                      onValueChange={(value) => {
+                        setSelectedProduct(value)
+                        setProductSearch("")
+                      }}
+                    >
+                      <SelectTrigger className="h-10 w-full border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500">
+                        {selectedProductOption ? (
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                              {selectedProductOption.sku}
+                            </span>
+                            <span className="truncate text-sm font-medium text-slate-700">{selectedProductOption.name}</span>
+                          </div>
+                        ) : (
+                          <SelectValue placeholder="Selecione um produto existente..." />
+                        )}
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="paletizado">Carga Paletizada</SelectItem>
-                        <SelectItem value="caixas">Caixas Master (Batida)</SelectItem>
-                        <SelectItem value="granel">Granel Sólido</SelectItem>
-                        <SelectItem value="liquido">Granel Líquido</SelectItem>
+                        <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-2 py-2 backdrop-blur-sm">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                            <Input
+                              value={productSearch}
+                              onChange={(event) => setProductSearch(event.target.value)}
+                              onKeyDown={(event) => event.stopPropagation()}
+                              placeholder="Buscar por codigo ou nome..."
+                              className="h-9 border-slate-200 bg-slate-50 pl-9 text-xs focus:border-blue-500 focus:ring-blue-500"
+                            />
+                          </div>
+                        </div>
+
+                        {filteredProductOptions.length === 0 ? (
+                          <div className="px-3 py-3 text-xs text-slate-500">Nenhum produto encontrado.</div>
+                        ) : filteredProductOptions.map((product) => (
+                          <SelectItem key={product.id} value={product.value}>
+                            <div className="flex min-w-0 flex-col gap-0.5 py-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                  {product.sku}
+                                </span>
+                                <span className="truncate font-semibold text-slate-800">{product.name}</span>
+                              </div>
+                              <span className="pl-[3.4rem] text-[11px] text-slate-500">{product.details}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex items-center justify-between rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 py-2.5">
+                    <p className="text-[11px] font-medium text-slate-500">Nao encontrou o produto na lista?</p>
+                    <Button type="button" variant="outline" size="sm" onClick={() => navigate("/create-product")} className="h-8 border-slate-200 bg-white text-[11px] font-semibold text-slate-700 hover:bg-slate-100">
+                      <Plus size={13} className="mr-1.5" /> Cadastrar produto
+                    </Button>
+                  </div>
+                  
                 </div>
               </div>
 
