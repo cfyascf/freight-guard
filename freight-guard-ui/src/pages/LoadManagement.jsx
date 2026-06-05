@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Plus, Search } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Plus, Search, Layers, ArrowRight } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RISK } from "@/constants/risk"
 
-const availableRouteSegments = [
+// Base de dados mockada compartilhada do FreightGuard
+export const availableRouteSegments = [
   {
     id: "TRC-1042",
     productName: "Peito de Frango Congelado",
@@ -16,7 +17,7 @@ const availableRouteSegments = [
     origin: "Curitiba, PR",
     destination: "São Paulo, SP",
     risk: RISK.CRITIC,
-    riskLabel: "Critico: Janela Limite Hoje",
+    riskLabel: "Crítico: Janela Limite Hoje",
     weightKg: 12000,
     volumeM3: 45,
     distanceKm: 408,
@@ -24,12 +25,12 @@ const availableRouteSegments = [
   },
   {
     id: "TRC-1043",
-    productName: "Laticinios Pasteurizados",
+    productName: "Laticínios Pasteurizados",
     category: "Refrigerado",
     origin: "São Paulo, SP",
     destination: "Campinas, SP",
     risk: RISK.WARNING,
-    riskLabel: "Atencao: Coleta nas proximas 6h",
+    riskLabel: "Atenção: Coleta nas próximas 6h",
     weightKg: 9000,
     volumeM3: 28,
     distanceKm: 96,
@@ -37,317 +38,178 @@ const availableRouteSegments = [
   },
   {
     id: "TRC-1044",
-    productName: "Eletronicos de Alto Valor",
-    category: "Fragil",
+    productName: "Eletrônicos de Alto Valor",
+    category: "Frágil",
     origin: "Campinas, SP",
-    destination: "Ribeirao Preto, SP",
+    destination: "Ribeirão Preto, SP",
     risk: RISK.WARNING,
-    riskLabel: "Atencao: Entrega sensivel com janela curta",
+    riskLabel: "Atenção: Janela Curta",
     weightKg: 4800,
     volumeM3: 22,
     distanceKm: 223,
-    requirements: ["Fragil"],
+    requirements: ["Frágil"],
   },
   {
     id: "TRC-1045",
     productName: "Vacinas Influenza",
-    category: "Saude",
-    origin: "Ribeirao Preto, SP",
-    destination: "Uberlandia, MG",
+    category: "Saúde",
+    origin: "Ribeirão Preto, SP",
+    destination: "Uberlândia, MG",
     risk: RISK.CRITIC,
-    riskLabel: "Critico: Cadeia fria e horario restrito",
+    riskLabel: "Crítico: Cadeia Fria Restrita",
     weightKg: 3200,
     volumeM3: 18,
     distanceKm: 166,
-    requirements: ["Refrigerado", "Fragil"],
+    requirements: ["Refrigerado", "Frágil"],
   },
 ]
 
 const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} kg`
 const formatVolume = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} m³`
 
-const getRiskCardClass = (risk) => {
-  switch (risk) {
-    case RISK.CRITIC:
-      return "border-l-4 border-l-rose-600"
-    case RISK.WARNING:
-      return "border-l-4 border-l-amber-500"
-    default:
-      return "border-l-4 border-l-slate-200"
-  }
-}
-
-const getRiskTextClass = (risk) => {
-  switch (risk) {
-    case RISK.CRITIC:
-      return "text-rose-700"
-    case RISK.WARNING:
-      return "text-amber-700"
-    default:
-      return "text-slate-500"
-  }
-}
-
-const getMostRestrictiveRequirement = (segments) => {
-  const requirements = segments.flatMap((segment) => segment.requirements)
-
-  if (requirements.includes("Hazmat")) {
-    return "Hazmat"
-  }
-
-  if (requirements.includes("Refrigerado")) {
-    return "Refrigerado"
-  }
-
-  if (requirements.includes("Fragil")) {
-    return "Fragil"
-  }
-
-  return requirements[0] || "Carga seca"
-}
-
-const buildTimelineNodes = (segments) => {
-  const nodes = []
-
-  const appendAction = (city, action) => {
-    const existingNode = nodes.find((node) => node.city === city)
-
-    if (existingNode) {
-      existingNode.actions.push(action)
-      return
-    }
-
-    nodes.push({ city, actions: [action] })
-  }
-
-  segments.forEach((segment) => {
-    appendAction(segment.origin, `Coleta ${segment.productName}`)
-    appendAction(segment.destination, `Descarga ${segment.productName}`)
-  })
-
-  const resolveNodeType = (index, totalNodes) => {
-    if (index === 0) {
-      return "Coleta"
-    }
-
-    if (index === totalNodes - 1) {
-      return "Destino Final"
-    }
-
-    return "Parada"
-  }
-
-  return nodes.map((node, index) => ({
-    ...node,
-    type: resolveNodeType(index, nodes.length),
-  }))
-}
-
 export default function LoadManagement() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("")
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedSegmentIds, setSelectedSegmentIds] = useState([])
-  const [auctionDeadline, setAuctionDeadline] = useState("")
 
   const visibleSegments = availableRouteSegments.filter((segment) => {
     const term = searchTerm.trim().toLowerCase()
-
-    if (!term) {
-      return true
-    }
-
+    if (!term) return true
     return [segment.id, segment.productName, segment.category, segment.origin, segment.destination]
       .join(" ")
       .toLowerCase()
       .includes(term)
   })
 
-  const selectedSegments = availableRouteSegments.filter((segment) => selectedSegmentIds.includes(segment.id))
-  const timelineNodes = buildTimelineNodes(selectedSegments)
-  const totalDistance = selectedSegments.reduce((sum, segment) => sum + segment.distanceKm, 0)
-  const maxWeight = selectedSegments.reduce((max, segment) => Math.max(max, segment.weightKg), 0)
-  const maxVolume = selectedSegments.reduce((max, segment) => Math.max(max, segment.volumeM3), 0)
-  const restrictiveRequirement = getMostRestrictiveRequirement(selectedSegments)
-
   const handleToggleSegment = (segmentId) => {
-    setSelectedSegmentIds((currentIds) => (
-      currentIds.includes(segmentId)
-        ? currentIds.filter((id) => id !== segmentId)
-        : [...currentIds, segmentId]
-    ))
+    setSelectedSegmentIds((prev) => 
+      prev.includes(segmentId) ? prev.filter((id) => id !== segmentId) : [...prev, segmentId]
+    )
+  }
+
+  const handleCancelSelection = () => {
+    setIsSelectionMode(false)
+    setSelectedSegmentIds([])
+  }
+
+  // Navega enviando os IDs marcados via state para CreateRouteWorkspace.jsx
+  const handleProceedToWorkspace = () => {
+    navigate("/create-route-workspace", { state: { selectedIds: selectedSegmentIds } })
   }
 
   return (
     <AppShell title="Gestão de Trechos">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
-        <section className="min-w-0 space-y-5">
-          <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Consolidação de Trechos de Rota</h1>
-              <p className="max-w-3xl text-sm text-slate-600">
-                Selecione pernas avulsas disponíveis para agrupá-las em uma nova rota e publicar o conjunto no leilão reverso.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por trecho, produto, origem ou destino..."
-                  className="h-11 border-slate-200 bg-white pl-10"
-                />
-              </div>
-
-              <Button asChild className="h-11 bg-sky-700 text-white hover:bg-sky-800">
-                <Link to="/create-load">
-                  <Plus size={16} className="mr-2" /> Novo Trecho
-                </Link>
-              </Button>
-            </div>
+      <div className="mx-auto max-w-7xl space-y-4">
+        
+        {/* BARRA DE TOPO INTEGRADA MINIMALISTA (SEM CARD DE TEXTO DESCRITIVO) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Trechos Disponíveis</h1>
           </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por trecho, produto ou cidade..."
+                className="h-9 border-slate-200 bg-white pl-9 text-xs"
+              />
+            </div>
 
-          <div className="space-y-3">
-            {visibleSegments.map((segment) => {
-              const isChecked = selectedSegmentIds.includes(segment.id)
+            <Button 
+              variant={isSelectionMode ? "secondary" : "outline"} 
+              className="h-9 text-xs font-semibold"
+              onClick={() => isSelectionMode ? handleCancelSelection() : setIsSelectionMode(true)}
+            >
+              <Layers size={14} className="mr-1.5" />
+              {isSelectionMode ? "Cancelar Otimização" : "Consolidar Trechos"}
+            </Button>
 
-              return (
-                <label
-                  key={segment.id}
-                  className={`grid cursor-pointer gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md md:grid-cols-[56px_minmax(0,1.2fr)_minmax(0,1.3fr)_auto] ${getRiskCardClass(segment.risk)} ${isChecked ? "ring-2 ring-sky-200" : ""}`}
-                >
-                  <div className="flex items-center justify-center">
+            <Button asChild className="h-9 bg-sky-700 text-white hover:bg-sky-800 text-xs font-semibold">
+              <Link to="/create-load">
+                <Plus size={14} className="mr-1.5" /> Novo Trecho
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* NOVA MODIFICAÇÃO UX: Banner contextual de texto direto na tela acima da lista */}
+        {isSelectionMode && selectedSegmentIds.length > 0 && (
+          <div className="flex items-center justify-between rounded-xl bg-sky-50/60 border border-sky-100/70 p-3 px-4 text-sm animate-in fade-in duration-200">
+            <div className="flex items-center gap-2.5 text-sky-900">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sky-600 text-[10px] font-black text-white tracking-wider">
+                {selectedSegmentIds.length}
+              </span>
+              <span className="text-xs font-medium text-slate-700">
+                {selectedSegmentIds.length === 1 
+                  ? "Trecho selecionado e pronto para roteirização." 
+                  : "Trechos selecionados e prontos para roteirização conjunta."}
+              </span>
+            </div>
+            
+            {/* Botão textual direto com a flecha de avanço */}
+            <button
+              onClick={handleProceedToWorkspace}
+              className="flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-800 transition-colors uppercase tracking-wider pl-4 focus:outline-none"
+            >
+              Avançar para Rota <ArrowRight size={14} className="animate-pulse" />
+            </button>
+          </div>
+        )}
+
+        {/* LISTAGEM DE ALTA DENSIDADE */}
+        <div className="space-y-2">
+          {visibleSegments.map((segment) => {
+            const isChecked = selectedSegmentIds.includes(segment.id)
+            const riskCardStyle = segment.risk === RISK.CRITIC ? "border-l-4 border-l-rose-500 bg-rose-50/5" : segment.risk === RISK.WARNING ? "border-l-4 border-l-amber-500 bg-amber-50/5" : "border-l-4 border-l-slate-200"
+            const riskTextStyle = segment.risk === RISK.CRITIC ? "text-rose-600 font-bold" : segment.risk === RISK.WARNING ? "text-amber-600 font-bold" : "text-slate-400"
+
+            return (
+              <div
+                key={segment.id}
+                onClick={() => isSelectionMode && handleToggleSegment(segment.id)}
+                className={`flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm transition-all ${isSelectionMode ? "cursor-pointer hover:border-slate-300" : ""} ${riskCardStyle} ${isChecked ? "bg-sky-50/30 border-sky-300 ring-1 ring-sky-300" : ""}`}
+              >
+                {isSelectionMode && (
+                  <div className="flex items-center justify-center pl-1">
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => handleToggleSegment(segment.id)}
-                      className="h-5 w-5 rounded border-slate-300 text-sky-700 focus:ring-sky-500"
-                      aria-label={`Selecionar ${segment.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500 cursor-pointer"
                     />
                   </div>
+                )}
 
-                  <div className="min-w-0 space-y-1">
-                    <p className="font-mono text-sm font-semibold text-slate-900">{segment.id}</p>
-                    <p className="truncate text-sm font-medium text-slate-800">{segment.productName}</p>
-                    <Badge variant="outline" className="w-fit border-slate-200 bg-slate-50 text-slate-600">
+                {/* Grid adaptável dependendo do modo de seleção ativo */}
+                <div className={`grid gap-6 items-center flex-1 min-w-0 ${isSelectionMode ? "grid-cols-[100px_1fr_1.2fr_180px]" : "grid-cols-[100px_1fr_1.2fr_180px]"}`}>
+                  <div>
+                    <span className="font-mono text-xs font-bold text-slate-400 block">{segment.id}</span>
+                    <Badge variant="outline" className="text-[10px] mt-0.5 border-slate-200 bg-slate-50 text-slate-500 font-medium">
                       {segment.category}
                     </Badge>
                   </div>
-
-                  <div className="min-w-0 space-y-1.5">
-                    <p className="truncate text-sm font-medium text-slate-800">
-                      {segment.origin} <span className="text-slate-400">➔</span> {segment.destination}
+                  <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">{segment.productName}</p></div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-slate-700 flex items-center gap-2">
+                      {segment.origin.split(",")[0]} <span className="text-slate-300 text-xs">➔</span> {segment.destination.split(",")[0]}
                     </p>
-                    <p className={`text-xs font-medium ${getRiskTextClass(segment.risk)}`}>
-                      {segment.riskLabel}
-                    </p>
+                    <span className={`text-[11px] block mt-0.5 ${riskTextStyle}`}>{segment.riskLabel}</span>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                    <Badge className="border-none bg-slate-100 px-2.5 py-1 text-slate-700 hover:bg-slate-100">
-                      {formatWeight(segment.weightKg)}
-                    </Badge>
-                    <Badge className="border-none bg-slate-100 px-2.5 py-1 text-slate-700 hover:bg-slate-100">
-                      {formatVolume(segment.volumeM3)}
-                    </Badge>
+                  <div className="flex items-center justify-end gap-1.5 text-xs font-bold text-slate-500">
+                    <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200/40">{formatWeight(segment.weightKg)}</span>
+                    <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200/40">{formatVolume(segment.volumeM3)}</span>
                   </div>
-                </label>
-              )
-            })}
-
-            {visibleSegments.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-sm text-slate-500">
-                Nenhum trecho disponivel para composicao foi encontrado com esse filtro.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <aside className="lg:sticky lg:top-6 lg:h-fit">
-          <div className="rounded-3xl border-l border-slate-200 bg-slate-50 p-5 shadow-sm lg:min-h-[640px] lg:rounded-[28px]">
-            <div className="border-b border-slate-200 pb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Nova Rota em Composição</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                O painel reage aos trechos marcados e mostra uma prévia operacional unificada da rota que irá para o leilão.
-              </p>
-            </div>
-
-            <div className="space-y-5 py-5">
-              {selectedSegments.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center text-sm text-slate-500">
-                  Marque um ou mais trechos na lista para montar a prévia da rota e habilitar a publicação no leilão reverso.
                 </div>
-              ) : (
-                <>
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Preview do roteiro</p>
-                    <div className="mt-4 space-y-4">
-                      {timelineNodes.map((node, index) => (
-                        <div key={`${node.city}-${index}`} className="grid grid-cols-[24px_minmax(0,1fr)] gap-3">
-                          <div className="flex flex-col items-center">
-                            <span className="h-3 w-3 rounded-full bg-sky-600" />
-                            {index < timelineNodes.length - 1 && <span className="mt-2 h-full min-h-8 w-px border-l border-dashed border-slate-300" />}
-                          </div>
-
-                          <div className="pb-2">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{node.type}</p>
-                            <p className="mt-1 text-sm font-semibold text-slate-900">{node.city}</p>
-                            <div className="mt-2 space-y-1.5">
-                              {node.actions.map((action) => (
-                                <p key={`${node.city}-${action}`} className="text-sm text-slate-600">
-                                  {action}
-                                </p>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Resumo</p>
-                    <div className="mt-4 space-y-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Distancia total estimada</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900">{new Intl.NumberFormat("pt-BR").format(totalDistance)} km</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Capacidade critica requisitada</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900">
-                          {formatWeight(maxWeight)} • {formatVolume(maxVolume)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Exigencia mais restritiva</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-900">{restrictiveRequirement}</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-2">
-                <label htmlFor="auction-deadline" className="text-sm font-medium text-slate-700">
-                  Encerramento do Leilao
-                </label>
-                <Input
-                  id="auction-deadline"
-                  type="datetime-local"
-                  value={auctionDeadline}
-                  onChange={(event) => setAuctionDeadline(event.target.value)}
-                  className="border-slate-200 bg-white"
-                />
               </div>
-            </div>
+            )
+          })}
+        </div>
 
-            <div className="border-t border-slate-200 pt-5">
-              <Button className="h-11 w-full bg-sky-700 text-white hover:bg-sky-800" disabled={selectedSegments.length === 0}>
-                Publicar Rota no Leilao Reverso
-              </Button>
-            </div>
-          </div>
-        </aside>
       </div>
     </AppShell>
   )

@@ -35,6 +35,7 @@ import CreateLoad from "@/pages/CreateLoad"
 import LoadDetails from "@/pages/LoadDetails"
 import SegmentDetails from "@/pages/SegmentDetails"
 import CreateRoute from "@/pages/CreateRoute"
+import CreateRouteWorkspace from "@/pages/CreateRouteWorkspace"
 import CreateProduct from "@/pages/CreateProduct"
 import CreateFreightAuction from "@/pages/CreateFreightAuction"
 import AuctionBids from "@/pages/AuctionBids"
@@ -84,6 +85,7 @@ export const ROUTES = [
   { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/segment-details/:segmentId", element: <SegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-route-workspace", element: <CreateRouteWorkspace />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
