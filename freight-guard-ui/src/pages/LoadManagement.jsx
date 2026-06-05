@@ -72,10 +72,11 @@ const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)}
 const formatVolume = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} m³`
 const formatCurrency = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
 
-const getRiskCardStyle = (risk) => {
-  if (risk === RISK.CRITIC) return "border-l-4 border-l-rose-500 bg-rose-50/5"
-  if (risk === RISK.WARNING) return "border-l-4 border-l-amber-500 bg-amber-50/5"
-  return "border-l-4 border-l-slate-200"
+// Substituímos a Color Band por um Dot Status elegante
+const getRiskDotStyle = (risk) => {
+  if (risk === RISK.CRITIC) return "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
+  if (risk === RISK.WARNING) return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+  return "bg-slate-300"
 }
 
 const getRiskTextStyle = (risk) => {
@@ -179,15 +180,16 @@ export default function LoadManagement() {
         <div className="space-y-2">
           {visibleSegments.map((segment) => {
             const isChecked = selectedSegmentIds.includes(segment.id)
-            const riskCardStyle = getRiskCardStyle(segment.risk)
             const riskTextStyle = getRiskTextStyle(segment.risk)
+            const riskDotStyle = getRiskDotStyle(segment.risk)
 
             return (
               <button
                 key={segment.id}
                 type="button"
                 onClick={() => isSelectionMode && handleToggleSegment(segment.id)}
-                className={`flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 text-left shadow-sm transition-all ${isSelectionMode ? "cursor-pointer hover:border-slate-300" : "cursor-default"} ${riskCardStyle} ${isChecked ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200" : ""}`}
+                // BORDA 100% RETA E UNIFORME, SEM COLOR BANDS E SEM SOMBRAS
+                className={`flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition-all ${isSelectionMode ? "cursor-pointer hover:border-slate-300 hover:bg-slate-50/50" : "cursor-default"} ${isChecked ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200" : ""}`}
               >
                 {isSelectionMode && (
                   <div className="flex items-center justify-center pl-1">
@@ -204,10 +206,13 @@ export default function LoadManagement() {
                 {/* Grid de alta densidade sem redundâncias */}
                 <div className="grid min-w-0 flex-1 grid-cols-[110px_1.1fr_1.3fr_220px] items-center gap-6">
                   
-                  {/* COLUNA 1: ID + Tipo de Frota Necessária */}
+                  {/* COLUNA 1: Status Dot + ID + Tipo de Frota Necessária */}
                   <div>
-                    <span className="font-mono text-xs font-bold text-slate-400 block">{segment.id}</span>
-                    <Badge variant="secondary" className="text-[10px] mt-1 bg-slate-100 text-slate-700 font-bold uppercase tracking-wide border-none px-1.5 py-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`h-2 w-2 rounded-full ${riskDotStyle}`} title={`Risco: ${segment.risk}`} />
+                      <span className="font-mono text-xs font-bold text-slate-500">{segment.id}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] bg-slate-100 text-slate-600 font-bold uppercase tracking-wide border-none px-1.5 py-0">
                       {segment.bodyType}
                     </Badge>
                   </div>
