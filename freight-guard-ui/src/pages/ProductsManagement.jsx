@@ -22,6 +22,7 @@ export default function ProductManagement() {
       fragil: false,
       empilhavel: true,
       maxCamadas: 5,
+      tipoHu: "paletizado",
       temperatura: "Ambiente",
       tempMin: null,
       tempMax: null,
@@ -40,6 +41,7 @@ export default function ProductManagement() {
       fragil: true,
       empilhavel: false,
       maxCamadas: 1,
+      tipoHu: "caixas",
       temperatura: "Refrigerado",
       tempMin: 2,
       tempMax: 8,
@@ -54,10 +56,11 @@ export default function ProductManagement() {
       nome: "Soda Cáustica Líquida (IBC)",
       tipo: "Químico",
       pesoPadrao: 1200,
-      volumePadrao: 1,
+      volumePadrao: 1.0,
       fragil: false,
       empilhavel: true,
       maxCamadas: 2,
+      tipoHu: "caixas",
       temperatura: "Ambiente",
       tempMin: null,
       tempMax: null,
@@ -75,8 +78,6 @@ export default function ProductManagement() {
   const [isEditing, setIsEditing] = useState(false)
   
   const activeProduct = produtos.find(p => p.id === selectedId)
-  const hasActiveProduct = Boolean(activeProduct)
-  const detailsOpacityClass = isEditing ? "" : "opacity-95"
 
   const filteredProdutos = produtos.filter(p => 
     p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -192,7 +193,15 @@ export default function ProductManagement() {
             ========================================================= */}
         <div className="hidden lg:flex w-full flex-col rounded-xl border border-slate-200 bg-white lg:w-1/2 xl:w-[55%]">
           
-          {hasActiveProduct ? (
+          {!activeProduct ? (
+            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-slate-500">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50">
+                <PackageOpen size={32} className="text-slate-300" />
+              </div>
+              <p className="text-sm font-semibold text-slate-700">Nenhum item selecionado</p>
+              <p className="text-xs mt-1">Selecione um produto na lista ao lado para visualizar e editar seus parâmetros.</p>
+            </div>
+          ) : (
             <>
               {/* HEADER DIREITO (Com botões de ação) */}
               <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/50 p-4">
@@ -215,15 +224,14 @@ export default function ProductManagement() {
               </div>
 
               {/* CORPO DO FORMULÁRIO */}
-              <div className={`flex-1 overflow-y-auto p-6 ${detailsOpacityClass}`}>
+              <div className={`flex-1 overflow-y-auto p-6 ${!isEditing ? "opacity-95" : ""}`}>
                 <div className="space-y-8 max-w-md">
                   
                   {/* Bloco 1: Identidade */}
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="product-name" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nome do Produto</label>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nome do Produto</label>
                       <Input 
-                        id="product-name"
                         disabled={!isEditing}
                         value={activeProduct.nome} 
                         onChange={(e) => handleUpdateField("nome", e.target.value)} 
@@ -233,9 +241,8 @@ export default function ProductManagement() {
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label htmlFor="product-sku" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Código SKU</label>
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Código SKU</label>
                         <Input 
-                          id="product-sku"
                           disabled={!isEditing}
                           value={activeProduct.sku} 
                           onChange={(e) => handleUpdateField("sku", e.target.value)} 
@@ -243,9 +250,8 @@ export default function ProductManagement() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="product-category" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Categoria</label>
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Categoria</label>
                         <Input 
-                          id="product-category"
                           disabled={!isEditing}
                           value={activeProduct.tipo} 
                           onChange={(e) => handleUpdateField("tipo", e.target.value)} 
@@ -260,16 +266,26 @@ export default function ProductManagement() {
                     <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Scale size={14} className="text-slate-400"/> Fatores Físicos Base</h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-1.5">
-                        <label htmlFor="product-weight" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Peso (Kg)</label>
-                        <Input id="product-weight" disabled={!isEditing} type="number" value={activeProduct.pesoPadrao} onChange={(e) => handleUpdateField("pesoPadrao", Number(e.target.value))} className="h-10 border-slate-200 text-sm font-mono focus:border-blue-500 disabled:opacity-100 disabled:bg-slate-50" />
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Peso (Kg)</label>
+                        <Input disabled={!isEditing} type="number" value={activeProduct.pesoPadrao} onChange={(e) => handleUpdateField("pesoPadrao", Number(e.target.value))} className="h-10 border-slate-200 text-sm font-mono focus:border-blue-500 disabled:opacity-100 disabled:bg-slate-50" />
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="product-volume" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vol. (m³)</label>
-                        <Input id="product-volume" disabled={!isEditing} type="number" step="0.01" value={activeProduct.volumePadrao} onChange={(e) => handleUpdateField("volumePadrao", Number(e.target.value))} className="h-10 border-slate-200 text-sm font-mono focus:border-blue-500 disabled:opacity-100 disabled:bg-slate-50" />
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vol. (m³)</label>
+                        <Input disabled={!isEditing} type="number" step="0.01" value={activeProduct.volumePadrao} onChange={(e) => handleUpdateField("volumePadrao", Number(e.target.value))} className="h-10 border-slate-200 text-sm font-mono focus:border-blue-500 disabled:opacity-100 disabled:bg-slate-50" />
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="product-layers" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Max. Camadas</label>
-                        <Input id="product-layers" disabled={!isEditing || !activeProduct.empilhavel} type="number" value={activeProduct.maxCamadas} onChange={(e) => handleUpdateField("maxCamadas", Number(e.target.value))} className="h-10 border-slate-200 text-sm font-mono focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400" />
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tipo de HU</label>
+                        <Select disabled={!isEditing} value={activeProduct.tipoHu} onValueChange={(value) => handleUpdateField("tipoHu", value)}>
+                          <SelectTrigger className="h-10 w-full min-w-0 border-slate-200 px-2.5 py-1 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600">
+                            <SelectValue placeholder="Selecione o formato..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="paletizado">Paletizado</SelectItem>
+                            <SelectItem value="caixas">Caixas Master</SelectItem>
+                            <SelectItem value="granel">Granel</SelectItem>
+                            <SelectItem value="isotermico">Isotérmico</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
@@ -277,32 +293,34 @@ export default function ProductManagement() {
                   {/* Bloco 3: Ambiente Logístico */}
                   <div className="space-y-4 border-t border-slate-100 pt-6">
                     <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Snowflake size={14} className="text-slate-400"/> Ambiente de Transporte</h3>
-                    <div className="space-y-1.5">
-                      <label htmlFor="product-temperature" className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Controle de Temperatura</label>
-                      <Select disabled={!isEditing} value={activeProduct.temperatura} onValueChange={(v) => handleUpdateField("temperatura", v)}>
-                        <SelectTrigger id="product-temperature" className="h-10 border-slate-200 text-sm font-semibold focus:ring-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Ambiente">Seco / Ambiente</SelectItem>
-                          <SelectItem value="Refrigerado">Refrigerado (Positivo)</SelectItem>
-                          <SelectItem value="Congelado">Congelado (Negativo)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {activeProduct.temperatura !== "Ambiente" && (
-                      <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in duration-200">
-                        <div className="space-y-1.5">
-                          <label htmlFor="product-temp-min" className="text-[11px] font-bold uppercase tracking-wider text-sky-600">Temp. Mínima (°C)</label>
-                          <Input id="product-temp-min" disabled={!isEditing} type="number" value={activeProduct.tempMin || 0} onChange={(e) => handleUpdateField("tempMin", Number(e.target.value))} className="h-10 border-sky-200 bg-sky-50 text-sm font-mono text-sky-800 focus:border-sky-500 disabled:opacity-80" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label htmlFor="product-temp-max" className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Temp. Máxima (°C)</label>
-                          <Input id="product-temp-max" disabled={!isEditing} type="number" value={activeProduct.tempMax || 0} onChange={(e) => handleUpdateField("tempMax", Number(e.target.value))} className="h-10 border-rose-200 bg-rose-50 text-sm font-mono text-rose-800 focus:border-rose-500 disabled:opacity-80" />
-                        </div>
+                    <div className={`rounded-xl transition-all ${activeProduct.temperatura !== "Ambiente" ? "border border-sky-300 bg-sky-50/30 p-4" : "border-transparent bg-transparent p-0"} ${!isEditing && "opacity-80"}`}>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Controle de Temperatura</label>
+                        <Select disabled={!isEditing} value={activeProduct.temperatura} onValueChange={(v) => handleUpdateField("temperatura", v)}>
+                          <SelectTrigger className="h-10 border-slate-200 text-sm font-semibold focus:ring-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Ambiente">Seco / Ambiente</SelectItem>
+                            <SelectItem value="Refrigerado">Refrigerado (Positivo)</SelectItem>
+                            <SelectItem value="Congelado">Congelado (Negativo)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )}
+
+                      {activeProduct.temperatura !== "Ambiente" && (
+                        <div className="mt-4 grid grid-cols-2 gap-4 animate-in fade-in zoom-in duration-200">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-sky-600">Temp. Mínima (°C)</label>
+                            <Input disabled={!isEditing} type="number" value={activeProduct.tempMin || 0} onChange={(e) => handleUpdateField("tempMin", Number(e.target.value))} className="h-10 border-sky-200 bg-sky-50 text-sm font-mono text-sky-800 focus:border-sky-500 disabled:opacity-80" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Temp. Máxima (°C)</label>
+                            <Input disabled={!isEditing} type="number" value={activeProduct.tempMax || 0} onChange={(e) => handleUpdateField("tempMax", Number(e.target.value))} className="h-10 border-rose-200 bg-rose-50 text-sm font-mono text-rose-800 focus:border-rose-500 disabled:opacity-80" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bloco 4: Restrições de Risco (Toggles) */}
@@ -321,12 +339,12 @@ export default function ProductManagement() {
                             {activeProduct.perigosa && (
                               <div className="mt-4 grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                  <label htmlFor="product-onu" className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Número ONU</label>
-                                  <Input id="product-onu" disabled={!isEditing} placeholder="Ex: 1203" value={activeProduct.onu} onChange={(e) => handleUpdateField("onu", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Número ONU</label>
+                                  <Input disabled={!isEditing} placeholder="Ex: 1203" value={activeProduct.onu} onChange={(e) => handleUpdateField("onu", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
                                 </div>
                                 <div className="space-y-1.5">
-                                  <label htmlFor="product-risk-class" className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Classe de Risco</label>
-                                  <Input id="product-risk-class" disabled={!isEditing} placeholder="Ex: 3" value={activeProduct.classeRisco} onChange={(e) => handleUpdateField("classeRisco", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Classe de Risco</label>
+                                  <Input disabled={!isEditing} placeholder="Ex: 3" value={activeProduct.classeRisco} onChange={(e) => handleUpdateField("classeRisco", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
                                 </div>
                               </div>
                             )}
@@ -343,14 +361,23 @@ export default function ProductManagement() {
                         </div>
                       </button>
 
-                      <button disabled={!isEditing} onClick={() => handleUpdateField("empilhavel", !activeProduct.empilhavel)} className={`flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-80 ${isEditing && "hover:border-slate-300"}`}>
-                        <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${activeProduct.empilhavel ? "border-blue-600 bg-blue-600" : "border-slate-300"}`}>
-                          {activeProduct.empilhavel && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      <div className={`rounded-xl border p-4 transition-all ${activeProduct.empilhavel ? "border-blue-300 bg-blue-50/40" : "border-slate-200 bg-white"} ${!isEditing && "opacity-80"}`}>
+                        <div className="flex items-start gap-3">
+                          <button disabled={!isEditing} onClick={() => handleUpdateField("empilhavel", !activeProduct.empilhavel)} className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors disabled:cursor-not-allowed ${activeProduct.empilhavel ? "border-blue-600 bg-blue-600" : "border-slate-300"}`}>
+                            {activeProduct.empilhavel && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-slate-800">Permite Empilhamento</p>
+
+                            {activeProduct.empilhavel && (
+                              <div className="mt-4 max-w-40 space-y-1.5 animate-in fade-in zoom-in duration-200">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Max. Camadas</label>
+                                <Input disabled={!isEditing} type="number" value={activeProduct.maxCamadas} onChange={(e) => handleUpdateField("maxCamadas", Number(e.target.value))} className="h-10 border-blue-200 bg-blue-50 text-sm font-mono text-blue-800 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-800">Permite Empilhamento</p>
-                        </div>
-                      </button>
+                      </div>
                     </div>
                   </div>
 
@@ -385,14 +412,6 @@ export default function ProductManagement() {
                 </div>
               )}
             </>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-slate-500">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50">
-                <PackageOpen size={32} className="text-slate-300" />
-              </div>
-              <p className="text-sm font-semibold text-slate-700">Nenhum item selecionado</p>
-              <p className="text-xs mt-1">Selecione um produto na lista ao lado para visualizar e editar seus parâmetros.</p>
-            </div>
           )}
         </div>
 
