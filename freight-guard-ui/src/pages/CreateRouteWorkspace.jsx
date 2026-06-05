@@ -1,11 +1,10 @@
 import { useState } from "react"
 import { useLocation, useNavigate, Link } from "react-router-dom"
-import { ArrowLeft, MapPinned, Clock } from "lucide-react"
+import { ArrowLeft, MapPinned, Clock, Scale, Box, ShieldAlert } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 
@@ -65,12 +64,13 @@ export default function CreateRouteWorkspace() {
   const totalDistance = selectedSegments.reduce((sum, s) => sum + s.distanceKm, 0)
   const maxWeight = selectedSegments.reduce((max, s) => Math.max(max, s.weightKg), 0)
   const maxVolume = selectedSegments.reduce((max, s) => Math.max(max, s.volumeM3), 0)
+  const totalWeight = selectedSegments.reduce((sum, s) => sum + s.weightKg, 0)
 
-  // NOVO: Inteligência Comercial e Logística Real
+  // Inteligência Comercial e Logística Real
   const minimumFreightValue = selectedSegments.reduce((sum, s) => sum + (s.targetPrice || s.weightKg * 0.35), 0)
-  const estimatedTolls = Math.round(totalDistance * 0.48) // Média de R$ 0.48 por km em pedágios
+  const estimatedTolls = Math.round(totalDistance * 0.48)
   const costPerKm = totalDistance > 0 ? minimumFreightValue / totalDistance : 0
-  const estimatedHours = Math.round(totalDistance / 65) + (unifiedTimeline.length * 1.5) // 65km/h de caminhão + 1.5h por parada
+  const estimatedHours = Math.round(totalDistance / 65) + (unifiedTimeline.length * 1.5)
 
   const requirementSet = new Set(selectedSegments.flatMap((s) => s.requirements || []))
   const restrictiveRequirement = getRestrictiveRequirement(requirementSet)
@@ -78,7 +78,7 @@ export default function CreateRouteWorkspace() {
   if (selectedIds.length === 0) {
     return (
       <AppShell title="Workspace de Rota">
-        <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center">
           <p className="text-sm font-semibold text-slate-500">Nenhum trecho foi selecionado para montagem.</p>
           <Button asChild className="mt-4 h-9 bg-slate-900 text-xs text-white">
             <Link to="/load-management">Voltar para listagem</Link>
@@ -89,11 +89,11 @@ export default function CreateRouteWorkspace() {
   }
 
   return (
-    <AppShell title="Workspace de Rota" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
-      <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+    <AppShell title="Workspace de Rota">
+      <div className="mx-auto flex h-[calc(100vh-7.5rem)] max-w-7xl flex-col gap-3 overflow-hidden">
         
         {/* HEADER DA TELA */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost" size="sm" className="h-7 w-7 rounded-md p-0 hover:bg-slate-100"
@@ -111,14 +111,14 @@ export default function CreateRouteWorkspace() {
           </Badge>
         </div>
 
-        {/* SECTION CENTRAL PRINCIPAL */}
-        <section className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[minmax(0,1.45fr)_340px]">
+        {/* SECTION CENTRAL PRINCIPAL (p-[1px] impede que as linhas de 1px sumam no corte) */}
+        <section className="grid min-h-0 flex-1 gap-3 overflow-hidden p-[1px] xl:grid-cols-[minmax(0,1.45fr)_340px]">
           
-          {/* CARD ESQUERDO: TIMELINE E RESUMO MACRO */}
-          <Card className="flex min-h-0 flex-col overflow-hidden border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-200 px-5 pb-3 pt-4">
+          {/* PAINEL ESQUERDO: Div sólida pura (Sem shadow-sm e sem componente Card) */}
+          <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-5 pb-3 pt-4 bg-white">
               
-              {/* CORREÇÃO UX 1: Dados macros reais de rota (Fim da repetição de peso) */}
+              {/* Indicadores macros superiores */}
               <div className="grid gap-2 grid-cols-4">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Total Paradas</p>
@@ -138,13 +138,13 @@ export default function CreateRouteWorkspace() {
                 </div>
               </div>
 
-            </CardHeader>
+            </div>
             
             {/* Linha do tempo centralizada por cidades */}
-            <CardContent className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-4">
               <div className="space-y-2.5 pr-1">
                 {unifiedTimeline.map((node, index) => (
-                  <div key={node.city} className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+                  <div key={node.city} className="rounded-xl border border-slate-200 bg-slate-50/40 p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function CreateRouteWorkspace() {
                       {node.actions.map((action) => (
                         <div
                           key={`${node.city}-${action}`}
-                          className="rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600"
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600"
                         >
                           {action}
                         </div>
@@ -171,78 +171,76 @@ export default function CreateRouteWorkspace() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* CARD DIREITO: PARÂMETROS FINANCEIROS E REGRAS DO LEILÃO */}
-          <Card className="flex min-h-0 flex-col justify-between overflow-hidden border-slate-200 bg-white shadow-sm">
-            <CardHeader className="border-b border-slate-200 px-5 py-3.5">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuração Comercial</CardTitle>
-            </CardHeader>
-            
-            <CardContent className="flex-1 overflow-hidden px-5 pb-4 pt-4 space-y-4">
+          {/* PAINEL DIREITO: Div sólida pura (Sem shadow-sm e sem componente Card) */}
+          <div className="flex min-h-0 flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div>
+              <div className="border-b border-slate-200 px-5 py-3.5 bg-white">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuração Comercial</h2>
+              </div>
               
-              {/* CORREÇÃO UX 2: Mudança para Análise Financeira da Viagem */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3 space-y-2.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Capacidade de Cubagem:</span>
-                  <span className="font-bold text-slate-800 font-mono">{formatWeight(maxWeight)} • {formatVolume(maxVolume)}</span>
+              <div className="px-5 pt-4 space-y-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-3 space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Capacidade de Cubagem:</span>
+                    <span className="font-bold text-slate-800 font-mono">{formatWeight(maxWeight)} • {formatVolume(maxVolume)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Pedágio Previsto (Vale):</span>
+                    <span className="font-bold text-slate-700 font-mono">{formatCurrency(estimatedTolls)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Custo de Rodagem:</span>
+                    <span className="font-bold text-slate-700 font-mono">{formatCurrency(costPerKm)} / km</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-2">
+                    <span className="text-slate-500">Equipamento Exigido:</span>
+                    <Badge variant="outline" className="bg-white text-[10px] font-bold text-slate-700 border-slate-300">{restrictiveRequirement}</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Pedágio Previsto (Vale):</span>
-                  <span className="font-bold text-slate-700 font-mono">{formatCurrency(estimatedTolls)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Custo de Rodagem:</span>
-                  <span className="font-bold text-slate-700 font-mono">{formatCurrency(costPerKm)} / km</span>
-                </div>
-                <div className="flex items-center justify-between border-t border-slate-100 pt-2">
-                  <span className="text-slate-500">Equipamento Exigido:</span>
-                  <Badge variant="outline" className="bg-white text-[10px] font-bold text-slate-700 border-slate-300">{restrictiveRequirement}</Badge>
-                </div>
-              </div>
 
-              {/* Data limite do Leilão */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <Clock size={13} />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Encerramento do Leilão</span>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-3">
+                  <div className="flex items-center gap-2 text-slate-500 mb-2">
+                    <Clock size={13} />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Encerramento do Leilão</span>
+                  </div>
+                  <Input
+                    id="workspace-deadline"
+                    type="datetime-local"
+                    value={auctionDeadline}
+                    onChange={(e) => setAuctionDeadline(e.target.value)}
+                    className="h-9 border-slate-200 bg-white text-xs font-medium focus:ring-blue-500"
+                  />
                 </div>
-                <Input
-                  id="workspace-deadline"
-                  type="datetime-local"
-                  value={auctionDeadline}
-                  onChange={(e) => setAuctionDeadline(e.target.value)}
-                  className="h-9 border-slate-200 bg-white text-xs font-medium"
-                />
-              </div>
 
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Adjudicação da rota</p>
-                <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold text-slate-800">Seleção automática do vencedor</p>
-                      <p className="text-[11px] text-slate-500">
-                        {isAutoAwardEnabled
-                          ? "O sistema adjudica o lance mais próximo do frete mínimo."
-                          : "O operador analisa os lances e seleciona manualmente o vencedor."}
-                      </p>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Adjudicação da rota</p>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1 pr-2">
+                        <p className="text-xs font-semibold text-slate-800">Seleção automática do vencedor</p>
+                        <p className="text-[11px] text-slate-500 leading-normal">
+                          {isAutoAwardEnabled
+                            ? "O sistema adjudica o lance mais próximo do frete mínimo ao fim do cronômetro."
+                            : "O operador analisa a lista de propostas e seleciona manualmente o transportador."}
+                        </p>
+                      </div>
+                      <Switch checked={isAutoAwardEnabled} onCheckedChange={setIsAutoAwardEnabled} />
                     </div>
-                    <Switch checked={isAutoAwardEnabled} onCheckedChange={setIsAutoAwardEnabled} />
                   </div>
                 </div>
               </div>
+            </div>
 
-            </CardContent>
-
-            {/* Ação Final de Disparo */}
+            {/* BARRA DE DISPARO INFERIOR */}
             <div className="border-t border-slate-200 bg-slate-50/50 p-4">
-              <Button className="h-10 w-full rounded-lg bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm">
+              <Button className="h-10 w-full rounded-lg bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700 active:bg-blue-800 transition-colors">
                 Disparar Leilão Reverso da Rota
               </Button>
             </div>
-          </Card>
+          </div>
 
         </section>
       </div>
