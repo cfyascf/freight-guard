@@ -128,7 +128,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/route-management")}
+                  onClick={() => navigate("/load-management")}
                 >
                   Ver Detalhes <ExternalLink size={12} />
                 </Button>

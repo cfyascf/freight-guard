@@ -228,7 +228,7 @@ export default function CreateRouteWorkspace() {
 
             <div className="border-t border-slate-200 bg-slate-50/50 p-4">
               <Button className="h-10 w-full rounded-lg bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700 active:bg-blue-800 transition-colors">
-                Disparar Leilão Reverso da Rota
+                Iniciar Leilão da Rota
               </Button>
             </div>
           </div>

@@ -47,7 +47,7 @@ export default function RouteOverview() {
       title="Gestão de Trechos da Frota"
       actions={
         <Button asChild className="w-full bg-slate-900 text-white hover:bg-slate-800 md:w-auto">
-          <Link to="/route-management">
+          <Link to="/load-management">
             <Plus size={16} className="mr-2" />
             Criar rota
           </Link>

@@ -115,15 +115,6 @@ export default function LoadManagement() {
     navigate("/create-route-workspace", { state: { selectedIds: selectedSegmentIds } })
   }
 
-  const handleSegmentClick = (segmentId) => {
-    if (isSelectionMode) {
-      handleToggleSegment(segmentId)
-      return
-    }
-
-    navigate(`/segment-details/${segmentId}`)
-  }
-
   return (
     <AppShell title="Gestão de Trechos">
       <div className="mx-auto max-w-7xl space-y-4">
@@ -193,12 +184,10 @@ export default function LoadManagement() {
             const riskDotStyle = getRiskDotStyle(segment.risk)
 
             return (
-              <button
+              <div
                 key={segment.id}
-                type="button"
-                onClick={() => handleSegmentClick(segment.id)}
                 // BORDA 100% RETA E UNIFORME, SEM COLOR BANDS E SEM SOMBRAS
-                className={`flex w-full cursor-pointer items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition-all hover:border-slate-300 hover:bg-slate-50/50 ${isChecked ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200" : ""}`}
+                className={`flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition-all ${isChecked ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200" : ""}`}
               >
                 {isSelectionMode && (
                   <div className="flex items-center justify-center pl-1">
@@ -259,7 +248,7 @@ export default function LoadManagement() {
                   </div>
 
                 </div>
-              </button>
+              </div>
             )
           })}
         </div>

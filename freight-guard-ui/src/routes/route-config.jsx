@@ -19,7 +19,6 @@ import {
   Box,
   ChartBar,
   Package,
-  Route,
   Truck,
 } from "lucide-react"
 
@@ -40,7 +39,6 @@ import CreateProduct from "@/pages/CreateProduct"
 import CreateFreightAuction from "@/pages/CreateFreightAuction"
 import AuctionBids from "@/pages/AuctionBids"
 import FreightsPanel from "@/pages/FreightsPanel"
-import RouteManagement from "@/pages/RouteManagement"
 import ProductManagement from "@/pages/ProductsManagement"
 import TransporterManagement from "@/pages/TransporterManagement"
 import CarrierManagement from "@/pages/CarrierManagement"
@@ -95,14 +93,6 @@ export const ROUTES = [
     element: <FreightsPanel />,
     label: "Leilões de Trechos",
     icon: Truck,
-    access: [ROLES.CONTRACTOR],
-    nav: true,
-  },
-  {
-    path: "/route-management",
-    element: <RouteManagement />,
-    label: "Gestão de Trechos",
-    icon: Route,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },

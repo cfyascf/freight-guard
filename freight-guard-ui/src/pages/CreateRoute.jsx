@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { AlertTriangle, ArrowLeft, Boxes, ChevronRight, MapPin, Plus, Route, Save, Sparkles, Trash2, Workflow } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -9,13 +9,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { cargoItemsMock } from "@/constants/logistics-mock"
 
+const initialStops = [
+  { id: "stop-1", value: "Curitiba, PR" },
+  { id: "stop-2", value: "São Paulo, SP" },
+  { id: "stop-3", value: "Salvador, BA" },
+]
+
+function getStepBadgeClass(isActive, isDone) {
+  if (isActive) {
+    return "bg-sky-600 text-white"
+  }
+
+  if (isDone) {
+    return "bg-emerald-100 text-emerald-700"
+  }
+
+  return "bg-slate-100 text-slate-500"
+}
+
 export default function CreateRoute() {
   const navigate = useNavigate()
+  const nextStopIdRef = useRef(initialStops.length + 1)
   const [segmentName, setSegmentName] = useState("Curitiba → São Paulo → Salvador")
   const [plannerNote, setPlannerNote] = useState("Consolidar coleta refrigerada na 1ª perna e manter janela urbana na transferência.")
   const [bidDeadline, setBidDeadline] = useState("2026-05-18T18:00")
   const [targetFare, setTargetFare] = useState("9800")
-  const [stops, setStops] = useState(["Curitiba, PR", "São Paulo, SP", "Salvador, BA"])
+  const [stops, setStops] = useState(initialStops)
   const [selectedItemIds, setSelectedItemIds] = useState(["CRG-1042", "CRG-1043"])
   const [currentStep, setCurrentStep] = useState(0)
 
@@ -27,14 +46,17 @@ export default function CreateRoute() {
 
   const selectedItems = cargoItemsMock.filter((item) => selectedItemIds.includes(item.id))
   const suggestedFloor = selectedItems.reduce((total, item) => total + item.freightValue, 0)
-  const hasWarning = stops.filter(Boolean).length < 2 || selectedItems.length === 0
+  const filledStopsCount = stops.filter((stop) => stop.value.trim()).length
+  const hasWarning = filledStopsCount < 2 || selectedItems.length === 0
 
   const updateStop = (index, value) => {
-    setStops((currentStops) => currentStops.map((stop, stopIndex) => (stopIndex === index ? value : stop)))
+    setStops((currentStops) => currentStops.map((stop, stopIndex) => (stopIndex === index ? { ...stop, value } : stop)))
   }
 
   const addStop = () => {
-    setStops((currentStops) => [...currentStops, ""])
+    const nextId = `stop-${nextStopIdRef.current}`
+    nextStopIdRef.current += 1
+    setStops((currentStops) => [...currentStops, { id: nextId, value: "" }])
   }
 
   const removeStop = (index) => {
@@ -53,16 +75,16 @@ export default function CreateRoute() {
     <AppShell title="Planejamento de Novo Trecho">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <Link to="/route-management">
+          <Link to="/load-management">
             <Button variant="ghost" className="text-slate-500 hover:text-slate-900">
               <ArrowLeft size={16} className="mr-2" /> Voltar para Gestão de Trechos
             </Button>
           </Link>
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="outline" className="border-slate-200">
-              <Link to="/route-management">Cancelar</Link>
+              <Link to="/load-management">Cancelar</Link>
             </Button>
-            <Button className="bg-sky-700 text-white hover:bg-sky-800" onClick={() => navigate("/route-management")}>
+            <Button className="bg-sky-700 text-white hover:bg-sky-800" onClick={() => navigate("/load-management")}>
               <Save size={16} className="mr-2" /> Salvar Trecho
             </Button>
           </div>
@@ -86,7 +108,7 @@ export default function CreateRoute() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Prontidão</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                 <div>
-                  <p className="text-2xl font-semibold text-slate-900">{stops.filter(Boolean).length}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{filledStopsCount}</p>
                   <p className="text-xs text-slate-500">paradas</p>
                 </div>
                 <div>
@@ -119,7 +141,7 @@ export default function CreateRoute() {
                   className={`focus-ring-strong rounded-2xl border px-4 py-4 text-left transition-colors ${isActive ? "border-sky-300 bg-white shadow-sm" : "border-slate-200/80 bg-white/70 hover:bg-white"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${isActive ? "bg-sky-600 text-white" : isDone ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                    <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${getStepBadgeClass(isActive, isDone)}`}>
                       {index + 1}
                     </span>
                     <div>
@@ -173,14 +195,14 @@ export default function CreateRoute() {
                       </Button>
                     </div>
                     {stops.map((stop, index) => (
-                      <div key={`stop-${index}`} className="flex items-center gap-3">
+                      <div key={stop.id} className="flex items-center gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-50 text-xs font-semibold text-sky-700">
                           {index + 1}
                         </div>
                         <div className="relative flex-1">
                           <MapPin size={16} className="absolute left-3 top-2.5 text-slate-400" />
                           <Input
-                            value={stop}
+                            value={stop.value}
                             onChange={(e) => updateStop(index, e.target.value)}
                             className="focus-ring-strong border-slate-200 bg-white/90 pl-9"
                             placeholder={`Parada ${index + 1}`}
@@ -301,7 +323,7 @@ export default function CreateRoute() {
                     <div className="mt-4 grid gap-3 md:grid-cols-3">
                       <div className="rounded-xl bg-slate-50 p-4">
                         <p className="text-sm font-semibold text-slate-800">Paradas definidas</p>
-                        <p className="mt-1 text-sm text-slate-500">{stops.filter(Boolean).length >= 2 ? "OK para sequência" : "Faltam pontos"}</p>
+                        <p className="mt-1 text-sm text-slate-500">{filledStopsCount >= 2 ? "OK para sequência" : "Faltam pontos"}</p>
                       </div>
                       <div className="rounded-xl bg-slate-50 p-4">
                         <p className="text-sm font-semibold text-slate-800">Composição</p>
@@ -318,7 +340,7 @@ export default function CreateRoute() {
                     <Button type="button" variant="outline" className="border-slate-200 bg-white" onClick={() => setCurrentStep(1)}>
                       Voltar
                     </Button>
-                    <Button className="bg-sky-700 text-white hover:bg-sky-800" onClick={() => navigate("/route-management")}>
+                    <Button className="bg-sky-700 text-white hover:bg-sky-800" onClick={() => navigate("/load-management")}>
                       <Save size={16} className="mr-2" /> Concluir planejamento
                     </Button>
                   </div>
@@ -341,7 +363,7 @@ export default function CreateRoute() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Paradas ativas</p>
-                  <p className="mt-1 text-sm font-medium text-slate-800">{stops.filter(Boolean).length} pontos</p>
+                  <p className="mt-1 text-sm font-medium text-slate-800">{filledStopsCount} pontos</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Itens selecionados</p>
