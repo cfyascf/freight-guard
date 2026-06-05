@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { useLocation, useNavigate, Link } from "react-router-dom"
-import { ArrowLeft, MapPinned, Clock, Scale, Box, ShieldAlert } from "lucide-react"
+import { useLocation, Link } from "react-router-dom"
+import { ArrowLeft, MapPinned, Clock } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -52,7 +52,6 @@ function getRestrictiveRequirement(requirements) {
 
 export default function CreateRouteWorkspace() {
   const location = useLocation()
-  const navigate = useNavigate()
   const [auctionDeadline, setAuctionDeadline] = useState("")
   const [isAutoAwardEnabled, setIsAutoAwardEnabled] = useState(true)
 
@@ -64,7 +63,6 @@ export default function CreateRouteWorkspace() {
   const totalDistance = selectedSegments.reduce((sum, s) => sum + s.distanceKm, 0)
   const maxWeight = selectedSegments.reduce((max, s) => Math.max(max, s.weightKg), 0)
   const maxVolume = selectedSegments.reduce((max, s) => Math.max(max, s.volumeM3), 0)
-  const totalWeight = selectedSegments.reduce((sum, s) => sum + s.weightKg, 0)
 
   // Inteligência Comercial e Logística Real
   const minimumFreightValue = selectedSegments.reduce((sum, s) => sum + (s.targetPrice || s.weightKg * 0.35), 0)
