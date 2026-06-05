@@ -1,197 +1,104 @@
-import {
-  CalendarRange,
-  Clock,
-  Gavel,
-  MapPin,
-  Plus,
-  TrendingDown,
-} from "lucide-react"
+import { Plus, Search, Clock, TrendingDown, ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
-
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  Card, CardContent, CardFooter, CardHeader, CardTitle 
-} from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
 import { segmentPlansMock } from "@/constants/logistics-mock"
 import { RISK } from "@/constants/risk"
 
-const getRiskBorderClass = (risk) => {
-  switch (risk) {
-    case RISK.NORMAL:
-      return "border-l-4 border-l-emerald-500"
-    case RISK.WARNING:
-      return "border-l-4 border-l-amber-500"
-    case RISK.CRITIC:
-      return "border-l-4 border-l-rose-600"
-    default:
-      return "border-l-4 border-l-slate-200"
-  }
-}
+const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
-const getRiskBadgeClass = (risk) => {
-  switch (risk) {
-    case RISK.NORMAL:
-      return "bg-emerald-100 text-emerald-800"
-    case RISK.WARNING:
-      return "bg-amber-100 text-amber-800"
-    case RISK.CRITIC:
-      return "bg-rose-100 text-rose-800"
-    default:
-      return "bg-slate-100 text-slate-700"
+const getRiskBadge = (risk) => {
+  const styles = {
+    [RISK.NORMAL]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [RISK.WARNING]: "bg-amber-50 text-amber-700 border-amber-200",
+    [RISK.CRITIC]: "bg-rose-50 text-rose-700 border-rose-200",
   }
+  return <Badge variant="outline" className={`rounded-full text-[10px] uppercase font-bold tracking-wider px-2 py-0 ${styles[risk] || "bg-slate-50"}`}>{risk}</Badge>
 }
 
 export default function FreightsPanel() {
-  const leiloesAtivos = segmentPlansMock.filter((segment) => segment.status !== "Em montagem")
-
-  const formatarMoeda = (valor) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
-  }
+  const leiloesAtivos = segmentPlansMock.filter((s) => s.status !== "Em montagem")
 
   return (
-    <AppShell
-      title="Mesa de Leilões"
-    >
-      <div className="flex flex-col space-y-4">
-        <Tabs defaultValue="ativos" className="w-full">
-          <div className="mb-4 flex flex-col items-start justify-between gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-center">
-            <TabsList className="bg-white border border-slate-200">
-              <TabsTrigger value="ativos" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                Leilões Ativos ({leiloesAtivos.length})
-              </TabsTrigger>
-              <TabsTrigger value="historico" className="data-[state=active]:bg-slate-100">
-                Histórico e Encerrados
-              </TabsTrigger>
-            </TabsList>
+    <AppShell title="Mesa de Leilões">
+      <div className="mx-auto max-w-7xl flex flex-col h-[calc(100vh-7.5rem)] gap-4 overflow-hidden">
+        
+        {/* BARRA DE TOPO INTEGRADA MINIMALISTA (Baseada na tela de Gestão de Trechos) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Leilões em Andamento</h1>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Buscar por ID ou trecho..."
+                className="h-9 border-slate-200 bg-white pl-9 text-xs"
+              />
+            </div>
 
-            <Button asChild className="self-start bg-blue-600 text-white hover:bg-blue-700 md:ml-auto md:self-auto">
+            <Button asChild className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 focus-visible:ring-blue-200 active:bg-blue-800">
               <Link to="/create-freight-auction">
-                <Plus size={16} className="mr-2" /> Novo Leilão
+                <Plus size={14} className="mr-1.5" /> Novo Leilão
               </Link>
             </Button>
           </div>
+        </div>
 
-          <TabsContent value="ativos" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-              
-              {leiloesAtivos.map((leilao) => {
-                const progressValue = leilao.totalBids > 0 ? Math.min(95, 35 + leilao.totalBids * 7) : 18
+        {/* GRID DE CARDS INTELIGENTES */}
+        <div className="min-h-0 flex-1 overflow-y-auto pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {leiloesAtivos.map((l) => (
+              <div key={l.id} className="flex flex-col rounded-xl border border-slate-200 bg-white transition-all hover:border-slate-300">
+                
+                {/* Cabeçalho do Card */}
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                  <span className="font-mono text-xs font-bold text-slate-500">{l.id}</span>
+                  {getRiskBadge(l.risk)}
+                </div>
 
-                return (
-                <Card key={leilao.id} className={`flex flex-col border-slate-200 transition-shadow hover:shadow-md ${getRiskBorderClass(leilao.risk)}`}>
-                  <CardHeader className="border-b border-slate-100 pb-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-600">
-                            {leilao.id}
-                          </Badge>
-                          <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(leilao.risk)}`}>
-                            {leilao.risk}
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-lg font-semibold text-slate-900">{leilao.name}</CardTitle>
-                        <p className="flex items-center text-sm text-slate-500">
-                          <MapPin size={12} className="mr-1" /> {leilao.stops.join(" → ")}
-                        </p>
-                      </div>
+                <div className="flex flex-col flex-1 p-4">
+                  {/* Identificação do Trecho */}
+                  <div className="mb-4">
+                    <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{l.name}</h3>
+                    <p className="text-xs font-medium text-slate-500 mt-1 truncate">{l.stops.join(" ➔ ")}</p>
+                  </div>
 
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-right">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Melhor lance</p>
-                        <p className={`mt-1 text-lg font-semibold ${leilao.bestBid ? 'text-emerald-700' : 'text-slate-500'}`}>
-                          {leilao.bestBid ? formatarMoeda(leilao.bestBid) : 'Sem oferta'}
-                        </p>
+                  {/* Painel de Estatísticas Interno */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Melhor Lance</p>
+                      <p className="mt-0.5 font-mono text-sm font-black text-emerald-600">
+                        {l.bestBid ? formatCurrency(l.bestBid) : "Sem ofertas"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de Lances</p>
+                      <div className="flex items-center mt-0.5">
+                        <TrendingDown size={14} className="text-blue-500 mr-1.5" />
+                        <p className="text-sm font-bold text-slate-700">{l.totalBids} <span className="text-xs font-medium text-slate-400">lances</span></p>
                       </div>
                     </div>
-                  </CardHeader>
-                  
-                  <CardContent className="flex-1 pt-5">
-                    <div className="space-y-4">
-                      <div className="grid gap-3 md:grid-cols-4">
-                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Piso</p>
-                          <p className="text-sm font-medium text-slate-700">{formatarMoeda(leilao.targetFare)}</p>
-                        </div>
-                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Lances</p>
-                          <p className="text-sm font-medium text-slate-700">{leilao.totalBids}</p>
-                        </div>
-                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Composição</p>
-                          <p className="text-sm font-medium text-slate-700">{leilao.itemCount} itens • {leilao.legCount} pernas</p>
-                        </div>
-                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Cobertura</p>
-                          <p className="text-sm font-medium text-slate-700">{leilao.coverage}</p>
-                        </div>
-                      </div>
+                  </div>
 
-                      {Boolean(leilao.bestBid) && (
-                        <div className="flex items-center rounded-xl border border-slate-100 bg-white p-3 text-xs text-slate-600">
-                          <TrendingDown size={14} className="text-emerald-500 mr-2" />
-                          <span className="mr-1 font-medium">{leilao.winningCarrier}</span> liderando
-                          <Badge className="ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200 border-none">
-                            {leilao.totalBids} lances
-                          </Badge>
-                        </div>
-                      )}
-                      
-                      {!leilao.bestBid && (
-                        <div className="flex items-center justify-center text-xs text-slate-400 bg-white border border-slate-100 border-dashed p-2 rounded h-[42px]">
-                          Aguardando transportadoras...
-                        </div>
-                      )}
-
+                  {/* Rodapé e Ação (Empurrado para baixo para alinhar todos os cards) */}
+                  <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                      <Clock size={12} className="mr-1.5" /> {l.bidDeadline}
                     </div>
-                  </CardContent>
+                    <Button asChild size="sm" variant="ghost" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2">
+                      <Link to={`/auction-bids/${l.id}`}>Analisar <ArrowRight size={14} className="ml-1" /></Link>
+                    </Button>
+                  </div>
+                </div>
 
-                  <CardFooter className="flex flex-col gap-3 rounded-b-xl border-t border-slate-100 bg-slate-50/50 pt-4">
-                    <div className="w-full">
-                      <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-slate-500 flex items-center font-medium">
-                          <Clock size={12} className="mr-1.5" /> {leilao.auctionStatus}
-                        </span>
-                        <span className="text-slate-400 flex items-center">
-                          <CalendarRange size={12} className="mr-1.5" /> {leilao.bidDeadline}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={progressValue} 
-                        className={`h-1.5 ${progressValue > 90 ? 'bg-red-100' : 'bg-blue-100'}`}
-                        indicatorColor={progressValue > 90 ? 'bg-red-500' : 'bg-blue-500'}
-                      />
-                    </div>
-
-                    <div className="grid w-full gap-2 md:grid-cols-2">
-                      <Button asChild variant="outline" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                        <Link to={`/segment-details/${leilao.id}`}>Ver Trecho</Link>
-                      </Button>
-                      <Button asChild variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                        <Link to={`/auction-bids/${leilao.id}`}>Analisar Lances</Link>
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-                )
-              })}
-
-            </div>
-          </TabsContent>
-
-          <TabsContent value="historico">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 text-slate-500">
-                <Gavel size={48} className="mb-4 text-slate-200" />
-                <p>Nenhum leilão encerrado recentemente.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-        </Tabs>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </AppShell>
   )
