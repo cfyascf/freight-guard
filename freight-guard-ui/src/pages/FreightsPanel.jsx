@@ -1,6 +1,5 @@
 import {
   CalendarRange,
-  Box,
   Clock,
   Gavel,
   MapPin,
@@ -55,11 +54,11 @@ export default function FreightsPanel() {
 
   return (
     <AppShell
-      title="Painel de Leilões de Trechos"
+      title="Mesa de Leilões"
     >
-      <div className="flex flex-col space-y-6">
+      <div className="flex flex-col space-y-4">
         <Tabs defaultValue="ativos" className="w-full">
-          <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+          <div className="mb-4 flex flex-col items-start justify-between gap-3 border-b border-slate-100 pb-4 md:flex-row md:items-center">
             <TabsList className="bg-white border border-slate-200">
               <TabsTrigger value="ativos" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
                 Leilões Ativos ({leiloesAtivos.length})
@@ -77,69 +76,64 @@ export default function FreightsPanel() {
           </div>
 
           <TabsContent value="ativos" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               
               {leiloesAtivos.map((leilao) => {
                 const progressValue = leilao.totalBids > 0 ? Math.min(95, 35 + leilao.totalBids * 7) : 18
 
                 return (
-                <Card key={leilao.id} className={`flex flex-col hover:shadow-md transition-shadow border-slate-200 ${getRiskBorderClass(leilao.risk)}`}>
-                  <CardHeader className="pb-3 border-b border-slate-50">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                <Card key={leilao.id} className={`flex flex-col border-slate-200 transition-shadow hover:shadow-md ${getRiskBorderClass(leilao.risk)}`}>
+                  <CardHeader className="border-b border-slate-100 pb-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-600">
                             {leilao.id}
                           </Badge>
                           <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(leilao.risk)}`}>
                             {leilao.risk}
                           </Badge>
                         </div>
-                        <CardTitle className="text-base font-bold text-slate-800">
-                          {leilao.name}
-                        </CardTitle>
-                        <p className="mt-1 text-xs text-slate-500 flex items-center">
+                        <CardTitle className="text-lg font-semibold text-slate-900">{leilao.name}</CardTitle>
+                        <p className="flex items-center text-sm text-slate-500">
                           <MapPin size={12} className="mr-1" /> {leilao.stops.join(" → ")}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-right">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Melhor lance</p>
+                        <p className={`mt-1 text-lg font-semibold ${leilao.bestBid ? 'text-emerald-700' : 'text-slate-500'}`}>
+                          {leilao.bestBid ? formatarMoeda(leilao.bestBid) : 'Sem oferta'}
                         </p>
                       </div>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="pt-4 flex-1">
+                  <CardContent className="flex-1 pt-5">
                     <div className="space-y-4">
-                      
-                      {/* Valores */}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-3 md:grid-cols-4">
                         <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <p className="text-[10px] uppercase font-semibold text-slate-400 mb-1">Tarifa-alvo</p>
+                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Piso</p>
                           <p className="text-sm font-medium text-slate-700">{formatarMoeda(leilao.targetFare)}</p>
                         </div>
-                        <div className={`p-3 rounded-lg border ${leilao.bestBid ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                          <p className={`text-[10px] uppercase font-semibold mb-1 ${leilao.bestBid ? 'text-emerald-600' : 'text-slate-400'}`}>
-                            Melhor Lance
-                          </p>
-                          <p className={`text-sm font-bold ${leilao.bestBid ? 'text-emerald-700' : 'text-slate-500'}`}>
-                            {leilao.bestBid ? formatarMoeda(leilao.bestBid) : 'Nenhum lance'}
-                          </p>
+                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Lances</p>
+                          <p className="text-sm font-medium text-slate-700">{leilao.totalBids}</p>
+                        </div>
+                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Composição</p>
+                          <p className="text-sm font-medium text-slate-700">{leilao.itemCount} itens • {leilao.legCount} pernas</p>
+                        </div>
+                        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                          <p className="mb-1 text-[10px] font-semibold uppercase text-slate-400">Cobertura</p>
+                          <p className="text-sm font-medium text-slate-700">{leilao.coverage}</p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-xs text-slate-500">
-                        <div className="rounded-lg border border-slate-100 bg-white p-3">
-                          <p className="font-semibold uppercase tracking-wide text-slate-400">Composição</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">{leilao.itemCount} itens • {leilao.legCount} pernas</p>
-                        </div>
-                        <div className="rounded-lg border border-slate-100 bg-white p-3">
-                          <p className="font-semibold uppercase tracking-wide text-slate-400">Cobertura</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">{leilao.coverage}</p>
-                        </div>
-                      </div>
-
-                      {/* Status de quem está ganhando */}
                       {Boolean(leilao.bestBid) && (
-                        <div className="flex items-center text-xs text-slate-600 bg-white border border-slate-100 p-2 rounded">
+                        <div className="flex items-center rounded-xl border border-slate-100 bg-white p-3 text-xs text-slate-600">
                           <TrendingDown size={14} className="text-emerald-500 mr-2" />
-                          <span className="font-medium mr-1">{leilao.winningCarrier}</span> liderando 
+                          <span className="mr-1 font-medium">{leilao.winningCarrier}</span> liderando
                           <Badge className="ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200 border-none">
                             {leilao.totalBids} lances
                           </Badge>
@@ -155,8 +149,7 @@ export default function FreightsPanel() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="flex flex-col border-t border-slate-50 pt-4 bg-slate-50/50 rounded-b-xl gap-3">
-                    {/* Barra de Tempo */}
+                  <CardFooter className="flex flex-col gap-3 rounded-b-xl border-t border-slate-100 bg-slate-50/50 pt-4">
                     <div className="w-full">
                       <div className="flex justify-between text-xs mb-1.5">
                         <span className="text-slate-500 flex items-center font-medium">

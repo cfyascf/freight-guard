@@ -67,6 +67,30 @@ export const availableRouteSegments = [
 const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} kg`
 const formatVolume = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} m³`
 
+const getRiskCardStyle = (risk) => {
+  if (risk === RISK.CRITIC) {
+    return "border-l-4 border-l-rose-500 bg-rose-50/5"
+  }
+
+  if (risk === RISK.WARNING) {
+    return "border-l-4 border-l-amber-500 bg-amber-50/5"
+  }
+
+  return "border-l-4 border-l-slate-200"
+}
+
+const getRiskTextStyle = (risk) => {
+  if (risk === RISK.CRITIC) {
+    return "text-rose-600 font-bold"
+  }
+
+  if (risk === RISK.WARNING) {
+    return "text-amber-600 font-bold"
+  }
+
+  return "text-slate-400"
+}
+
 export default function LoadManagement() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("")
@@ -121,14 +145,14 @@ export default function LoadManagement() {
 
             <Button 
               variant={isSelectionMode ? "secondary" : "outline"} 
-              className="h-9 text-xs font-semibold"
+              className={isSelectionMode ? "h-9 border-blue-200 bg-blue-50 text-xs font-semibold text-blue-700 hover:bg-blue-100" : "h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"}
               onClick={() => isSelectionMode ? handleCancelSelection() : setIsSelectionMode(true)}
             >
               <Layers size={14} className="mr-1.5" />
-              {isSelectionMode ? "Cancelar Otimização" : "Consolidar Trechos"}
+              {isSelectionMode ? "Cancelar" : "Criar Rota"}
             </Button>
 
-            <Button asChild className="h-9 bg-sky-700 text-white hover:bg-sky-800 text-xs font-semibold">
+            <Button asChild className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700 focus-visible:ring-blue-200 active:bg-blue-800">
               <Link to="/create-load">
                 <Plus size={14} className="mr-1.5" /> Novo Trecho
               </Link>
@@ -138,9 +162,9 @@ export default function LoadManagement() {
 
         {/* NOVA MODIFICAÇÃO UX: Banner contextual de texto direto na tela acima da lista */}
         {isSelectionMode && selectedSegmentIds.length > 0 && (
-          <div className="flex items-center justify-between rounded-xl bg-sky-50/60 border border-sky-100/70 p-3 px-4 text-sm animate-in fade-in duration-200">
-            <div className="flex items-center gap-2.5 text-sky-900">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-sky-600 text-[10px] font-black text-white tracking-wider">
+          <div className="animate-in fade-in flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50 p-3 px-4 text-sm duration-200">
+            <div className="flex items-center gap-2.5 text-blue-900">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-[10px] font-black tracking-wider text-white">
                 {selectedSegmentIds.length}
               </span>
               <span className="text-xs font-medium text-slate-700">
@@ -153,7 +177,7 @@ export default function LoadManagement() {
             {/* Botão textual direto com a flecha de avanço */}
             <button
               onClick={handleProceedToWorkspace}
-              className="flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-800 transition-colors uppercase tracking-wider pl-4 focus:outline-none"
+              className="flex items-center gap-1.5 pl-4 text-xs font-bold uppercase tracking-wider text-blue-700 transition-colors hover:text-blue-800 focus:outline-none"
             >
               Avançar para Rota <ArrowRight size={14} className="animate-pulse" />
             </button>
@@ -164,14 +188,15 @@ export default function LoadManagement() {
         <div className="space-y-2">
           {visibleSegments.map((segment) => {
             const isChecked = selectedSegmentIds.includes(segment.id)
-            const riskCardStyle = segment.risk === RISK.CRITIC ? "border-l-4 border-l-rose-500 bg-rose-50/5" : segment.risk === RISK.WARNING ? "border-l-4 border-l-amber-500 bg-amber-50/5" : "border-l-4 border-l-slate-200"
-            const riskTextStyle = segment.risk === RISK.CRITIC ? "text-rose-600 font-bold" : segment.risk === RISK.WARNING ? "text-amber-600 font-bold" : "text-slate-400"
+            const riskCardStyle = getRiskCardStyle(segment.risk)
+            const riskTextStyle = getRiskTextStyle(segment.risk)
 
             return (
-              <div
+              <button
                 key={segment.id}
+                type="button"
                 onClick={() => isSelectionMode && handleToggleSegment(segment.id)}
-                className={`flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm transition-all ${isSelectionMode ? "cursor-pointer hover:border-slate-300" : ""} ${riskCardStyle} ${isChecked ? "bg-sky-50/30 border-sky-300 ring-1 ring-sky-300" : ""}`}
+                className={`flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-3.5 text-left shadow-sm transition-all ${isSelectionMode ? "cursor-pointer hover:border-slate-300" : "cursor-default"} ${riskCardStyle} ${isChecked ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200" : ""}`}
               >
                 {isSelectionMode && (
                   <div className="flex items-center justify-center pl-1">
@@ -180,13 +205,13 @@ export default function LoadManagement() {
                       checked={isChecked}
                       onChange={() => handleToggleSegment(segment.id)}
                       onClick={(e) => e.stopPropagation()}
-                      className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-500 cursor-pointer"
+                      className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-blue-600 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 )}
 
                 {/* Grid adaptável dependendo do modo de seleção ativo */}
-                <div className={`grid gap-6 items-center flex-1 min-w-0 ${isSelectionMode ? "grid-cols-[100px_1fr_1.2fr_180px]" : "grid-cols-[100px_1fr_1.2fr_180px]"}`}>
+                <div className="grid min-w-0 flex-1 grid-cols-[100px_1fr_1.2fr_180px] items-center gap-6">
                   <div>
                     <span className="font-mono text-xs font-bold text-slate-400 block">{segment.id}</span>
                     <Badge variant="outline" className="text-[10px] mt-0.5 border-slate-200 bg-slate-50 text-slate-500 font-medium">
@@ -205,7 +230,7 @@ export default function LoadManagement() {
                     <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200/40">{formatVolume(segment.volumeM3)}</span>
                   </div>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>

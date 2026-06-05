@@ -76,7 +76,7 @@ export const ROUTES = [
   {
     path: "/load-management",
     element: <LoadManagement />,
-    label: "Itens de Carga",
+    label: "Trechos",
     icon: Box,
     access: [ROLES.CONTRACTOR],
     nav: true,

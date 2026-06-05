@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
-import { AlertCircle, CheckCircle2, FileText, Truck } from "lucide-react"
+import { AlertCircle, CheckCircle2, FileText } from "lucide-react"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 
 const routesMock = [
@@ -149,6 +149,22 @@ function getTimelineStyles(state) {
   }
 }
 
+function finalizeTimeline(events) {
+  return events.map((event) => ({
+    ...event,
+    state: "done",
+  }))
+}
+
+function finalizeRoute(route) {
+  return {
+    ...route,
+    status: "Finalizada",
+    completedStops: route.totalStops,
+    timeline: finalizeTimeline(route.timeline),
+  }
+}
+
 export default function ControlTower() {
   const [routes, setRoutes] = useState(routesMock)
   const [selectedRouteId, setSelectedRouteId] = useState(routesMock[0]?.id ?? null)
@@ -177,35 +193,16 @@ export default function ControlTower() {
     }
 
     setRoutes((currentRoutes) =>
-      currentRoutes.map((route) => {
-        if (route.id !== selectedRoute.id) {
-          return route
-        }
-
-        return {
-          ...route,
-          status: "Finalizada",
-          completedStops: route.totalStops,
-          timeline: route.timeline.map((event) => ({
-            ...event,
-            state: "done",
-          })),
-        }
-      }),
+      currentRoutes.map((route) => (route.id === selectedRoute.id ? finalizeRoute(route) : route)),
     )
   }
 
   return (
     <AppShell title="Torre de Controle - Monitoramento de Execução">
-      <div className="mx-auto grid max-w-7xl gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-7xl gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
         <Card className="border-slate-200 bg-white shadow-sm xl:sticky xl:top-6 xl:self-start">
           <CardHeader className="border-b border-slate-100 pb-5">
-            <CardTitle className="text-lg font-semibold text-slate-900">
-              Painel de Controle de Rotas Ativas
-            </CardTitle>
-            <CardDescription>
-              Acompanhe rotas adjudicadas ou em transporte e selecione uma operação para visualizar a execução física detalhada.
-            </CardDescription>
+            <CardTitle className="text-lg font-semibold text-slate-900">Rotas ativas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {activeRoutes.map((route) => {
@@ -235,9 +232,15 @@ export default function ControlTower() {
 
                   <p className="mt-3 text-sm text-slate-500">{route.itinerary}</p>
 
-                  <div className="mt-4 flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Fechamento do frete</span>
-                    <span className="font-semibold text-slate-900">{formatCurrency(route.closingValue)}</span>
+                  <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-slate-100 bg-white p-3 text-sm">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Frete</p>
+                      <p className="mt-1 font-semibold text-slate-900">{formatCurrency(route.closingValue)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Paradas</p>
+                      <p className="mt-1 font-semibold text-slate-900">{route.completedStops}/{route.totalStops}</p>
+                    </div>
                   </div>
 
                   <div className="mt-4 space-y-2">
@@ -262,14 +265,9 @@ export default function ControlTower() {
         <div className="space-y-6">
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader className="border-b border-slate-100 pb-5">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold text-slate-900">
-                    Linha do Tempo do Evento de Transporte
-                  </CardTitle>
-                  <CardDescription>
-                    Visibilidade operacional dos marcos físicos e logísticos da rota selecionada.
-                  </CardDescription>
+                  <CardTitle className="text-lg font-semibold text-slate-900">Linha do tempo da execução</CardTitle>
                 </div>
                 {selectedRoute ? (
                   <Badge className={`w-fit border-none ${getStatusBadgeClass(selectedRoute.status)}`}>
@@ -329,12 +327,7 @@ export default function ControlTower() {
 
           <Card className="border-slate-200 bg-white shadow-sm">
             <CardHeader className="border-b border-slate-100 pb-5">
-              <CardTitle className="text-lg font-semibold text-slate-900">
-                Comprovação de Entrega (POD)
-              </CardTitle>
-              <CardDescription>
-                Baixar canhoto da nota fiscal assinado para encerrar rota.
-              </CardDescription>
+              <CardTitle className="text-lg font-semibold text-slate-900">Comprovação de entrega</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition-colors hover:border-slate-400 hover:bg-slate-100/60">
@@ -344,9 +337,6 @@ export default function ControlTower() {
                 </div>
                 <p className="mt-4 text-sm font-medium text-slate-900">
                   Selecionar comprovante assinado
-                </p>
-                <p className="mt-1 max-w-xl text-sm text-slate-500">
-                  Ao anexar o arquivo, o sistema simula a validação do POD e altera a rota selecionada para o status Finalizada.
                 </p>
                 <Button type="button" variant="outline" className="mt-5 border-slate-200 bg-white">
                   Enviar comprovante
