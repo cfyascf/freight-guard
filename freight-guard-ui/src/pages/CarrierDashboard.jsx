@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge"
 // MOCKS ADAPTADOS PARA TRANSPORTADORA
 // ==========================================
 const kpis = [
-  { title: "Veículos Livres", value: "4", style: "text-amber-600", desc: "Patio e Retorno" },
-  { title: "Lances Ativos", value: "12", style: "text-blue-600", desc: "Em negociação" },
-  { title: "Em Trânsito", value: "38", style: "text-emerald-600", desc: "Cargas ativas" },
+  { title: "Veículos Livres", value: "4", style: "text-amber-600"},
+  { title: "Lances Ativos", value: "12", style: "text-blue-600" },
+  { title: "Em Trânsito", value: "38", style: "text-emerald-600"},
 ]
 
 const carrierPerformance = {
