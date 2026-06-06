@@ -116,7 +116,7 @@ export default function LoadManagement() {
               <span className="text-xs font-medium text-slate-700">{selectedSegmentIds.length === 1 ? "Trecho selecionado e pronto para roteirização." : "Trechos selecionados e prontos para roteirização conjunta."}</span>
             </div>
             <button onClick={handleProceedToWorkspace} className="flex items-center gap-1.5 pl-4 text-xs font-bold uppercase tracking-wider text-blue-700 hover:text-blue-800">
-              Avançar para Rota <ArrowRight size={14} className="animate-pulse" />
+              Avançar para Criar Leilão <ArrowRight size={14} className="animate-pulse" />
             </button>
           </div>
         )}
@@ -157,6 +157,7 @@ export default function LoadManagement() {
                 }`}
               >
                 {/* LINHA PRINCIPAL VISÍVEL */}
+
                 <div className="flex items-center w-full p-3.5 text-left">
                   {isSelectionMode && !isEditingThis && (
                     <div className="flex items-center justify-center pl-1 mr-4">
@@ -164,7 +165,8 @@ export default function LoadManagement() {
                     </div>
                   )}
 
-                  <div className="grid min-w-0 flex-1 grid-cols-[110px_1.1fr_1.3fr_220px] items-center gap-6">
+                  {/* AJUSTE: Aumentei um pouco o espaço da última coluna (de 220px para 250px) para evitar quebra */}
+                  <div className="grid min-w-0 flex-1 grid-cols-[110px_1.1fr_1.3fr_250px] items-center gap-6">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`h-2 w-2 rounded-full ${getRiskDotStyle(segment.risk)}`} />
@@ -186,7 +188,8 @@ export default function LoadManagement() {
                       <span className={`text-[11px] block mt-0.5 ${getRiskTextStyle(segment.risk)}`}>⏱️ {segment.pickupWindow}</span>
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 text-xs font-bold mr-16">
+                    {/* AJUSTE: whitespace-nowrap aqui impede a quebra de linha */}
+                    <div className="flex items-center justify-end gap-3 text-xs font-bold whitespace-nowrap">
                       <div className="flex gap-1 text-slate-500 bg-slate-50 px-2 py-1 rounded border border-slate-100">
                         <span>{formatWeight(segment.weightKg)}</span><span className="text-slate-300">•</span><span>{formatVolume(segment.volumeM3)}</span>
                       </div>
@@ -197,13 +200,13 @@ export default function LoadManagement() {
                     </div>
                   </div>
 
-                  {/* AÇÕES SEMPRE VISÍVEIS (Mas ganham cor no hover) */}
+                  {/* AÇÕES: ESCONDIDAS POR PADRÃO (Opacidade 0) */}
                   {!isSelectionMode && !isEditingThis && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white pl-2">
-                      <Button variant="ghost" size="icon" onClick={() => startEditing(segment)} className="h-8 w-8 text-slate-300 hover:text-blue-600 hover:bg-blue-50 shrink-0 transition-colors">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 bg-white pl-2 transition-opacity duration-200">
+                      <Button variant="ghost" size="icon" onClick={() => startEditing(segment)} className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 shrink-0 transition-colors">
                         <Pencil size={14} />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(segment.id)} className="h-8 w-8 text-slate-300 hover:text-rose-600 hover:bg-rose-50 shrink-0 transition-colors">
+                      <Button variant="ghost" size="icon" onClick={() => setDeletingId(segment.id)} className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0 transition-colors">
                         <Trash2 size={14} />
                       </Button>
                     </div>
