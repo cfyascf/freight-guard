@@ -176,10 +176,21 @@ export const ROUTES = [
  *    (DEVELOPER sees everything, mirroring RequireRole's bypass logic)
  */
 export function getNavItems(role) {
-  return ROUTES.filter((route) => {
+  const navItems = ROUTES.filter((route) => {
     if (!route.nav) return false
     if (route.access === AuthAccess.PUBLIC) return false
     if (route.access === AuthAccess.AUTHENTICATED) return true
     return role === ROLES.DEVELOPER || route.access.includes(role)
   })
+
+  const partnerNetworkIndex = navItems.findIndex((route) => route.path === "/partner-network")
+
+  if (partnerNetworkIndex === -1) {
+    return navItems
+  }
+
+  const [partnerNetworkRoute] = navItems.splice(partnerNetworkIndex, 1)
+  navItems.push(partnerNetworkRoute)
+
+  return navItems
 }
