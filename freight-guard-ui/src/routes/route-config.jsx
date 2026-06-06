@@ -18,6 +18,7 @@
 import {
   Box,
   ChartBar,
+  Link2,
   Package,
   Truck,
 } from "lucide-react"
@@ -47,6 +48,7 @@ import ProductManagement from "@/pages/ProductsManagement"
 import TransporterManagement from "@/pages/TransporterManagement"
 import CarrierManagement from "@/pages/CarrierManagement"
 import FreightManagement from "@/pages/FreightManagement"
+import PartnerNetwork from "@/pages/PartnerNetwork"
 
 import { ROLES } from "@/constants/roles"
 import { Auth as AuthAccess } from "@/constants/auth"
@@ -82,6 +84,14 @@ export const ROUTES = [
   { path: "/route-overview",     element: <RouteOverview />,     access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/transport-overview", element: <TransportOverview />, access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/vehicle-form",       element: <VehicleForm />,       access: AuthAccess.AUTHENTICATED, nav: false },
+  {
+    path: "/partner-network",
+    element: <PartnerNetwork />,
+    label: "Rede de Parceiros",
+    icon: Link2,
+    access: [ROLES.CONTRACTOR, ROLES.CARRIER],
+    nav: true,
+  },
 
 
   // Contractor only

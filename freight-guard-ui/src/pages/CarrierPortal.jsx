@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Search, Box, SlidersHorizontal, TrendingDown, Clock } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,8 @@ const getRequirementBadge = (req) => {
 }
 
 export default function FreightsMural() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchParams] = useSearchParams()
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("partner") || "")
   const ofertas = freightOffersMock
 
   const filteredOfertas = ofertas.filter((o) => {

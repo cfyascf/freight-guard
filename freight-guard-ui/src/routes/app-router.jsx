@@ -7,8 +7,9 @@ import { NotFound } from "@/pages/NotFound"
 
 const publicRoutes     = ROUTES.filter((r) => r.access === AuthAccess.PUBLIC)
 const authRoutes       = ROUTES.filter((r) => r.access === AuthAccess.AUTHENTICATED)
-const contractorRoutes = ROUTES.filter((r) => Array.isArray(r.access) && r.access.includes(ROLES.CONTRACTOR))
-const carrierRoutes    = ROUTES.filter((r) => Array.isArray(r.access) && r.access.includes(ROLES.CARRIER))
+const sharedBusinessRoutes = ROUTES.filter((r) => Array.isArray(r.access) && r.access.includes(ROLES.CONTRACTOR) && r.access.includes(ROLES.CARRIER))
+const contractorRoutes = ROUTES.filter((r) => Array.isArray(r.access) && r.access.includes(ROLES.CONTRACTOR) && !r.access.includes(ROLES.CARRIER))
+const carrierRoutes    = ROUTES.filter((r) => Array.isArray(r.access) && r.access.includes(ROLES.CARRIER) && !r.access.includes(ROLES.CONTRACTOR))
 
 export function Router() {
   return (
@@ -25,6 +26,12 @@ export function Router() {
         {authRoutes.map((r) => (
           <Route key={r.path} path={r.path} element={r.element} />
         ))}
+
+        <Route element={<RequireRole allowedRoles={[ROLES.CONTRACTOR, ROLES.CARRIER]} />}>
+          {sharedBusinessRoutes.map((r) => (
+            <Route key={r.path} path={r.path} element={r.element} />
+          ))}
+        </Route>
 
         <Route element={<RequireRole allowedRoles={[ROLES.CONTRACTOR]} />}>
           {contractorRoutes.map((r) => (
