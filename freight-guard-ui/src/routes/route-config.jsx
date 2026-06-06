@@ -24,6 +24,7 @@ import {
 
 import AuthPage from "@/pages/Auth"
 import Dashboard from "@/pages/Dashboard"
+import CarrierDashboard from "@/pages/CarrierDashboard"
 import ActiveRoutes from "@/pages/ActiveRoutes"
 import ControlTower from "@/pages/ControlTower"
 import RouteOverview from "@/pages/RouteOverview"
@@ -58,15 +59,25 @@ export const ROUTES = [
   { path: "/register",element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
 
 
-  // Authenticated only (all roles)
+  // Shared dashboards by role
   {
     path: "/dashboard",
     element: <Dashboard />,
     label: "Visão Geral",
     icon: ChartBar,
-    access: AuthAccess.AUTHENTICATED,
+    access: [ROLES.DEVELOPER, ROLES.CONTRACTOR],
     nav: true,
   },
+  {
+    path: "/carrier-dashboard",
+    element: <CarrierDashboard />,
+    label: "Dashboard da Transportadora",
+    icon: ChartBar,
+    access: [ROLES.DEVELOPER, ROLES.CARRIER],
+    nav: true,
+  },
+
+  // Authenticated only (all roles)
   { path: "/control-tower", element: <ControlTower />, access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/route-overview",     element: <RouteOverview />,     access: AuthAccess.AUTHENTICATED, nav: false },
   { path: "/transport-overview", element: <TransportOverview />, access: AuthAccess.AUTHENTICATED, nav: false },

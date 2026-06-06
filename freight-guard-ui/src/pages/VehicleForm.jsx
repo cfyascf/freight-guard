@@ -1,147 +1,238 @@
 import { useState } from "react"
-import { ArrowLeft, Save, Tag, Truck, X } from "lucide-react"
-import { Link } from "react-router-dom"
+import { ArrowLeft, Truck, MapPin, User, Activity, Scale, Box, Save, X, Info } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function VehicleForm() {
-  const [attributes, setAttributes] = useState([])
-  const [newAttribute, setNewAttribute] = useState("")
-
-  const handleAddAttribute = (e) => {
-    e.preventDefault()
-    const trimmedAttr = newAttribute.trim()
-    
-    if (trimmedAttr !== "" && !attributes.includes(trimmedAttr)) {
-      setAttributes([...attributes, trimmedAttr])
-      setNewAttribute("")
-    }
-  }
-
-  const handleRemoveAttribute = (attrToRemove) => {
-    setAttributes(attributes.filter(attr => attr !== attrToRemove))
-  }
+  const navigate = useNavigate()
+  
+  // Estado espelhado aos campos do modo "update" da tela anterior
+  const [formData, setFormData] = useState({
+    plate: "",
+    model: "",
+    driver: "",
+    location: "",
+    weightKg: "",
+    volumeM3: "",
+    bodyType: "",
+    status: ""
+  })
 
   return (
     <AppShell title="Cadastro de Veículo">
-      <div className="mx-auto max-w-4xl">
+      {/* Container com scroll blindado e altura calculada em 8.5rem garantindo margem de segurança */}
+      <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
         
-        <div className="mb-6 flex items-center justify-between">
+        {/* HEADER LIMPO E TEXTUAL */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1 mb-5">
           <Link to="/fleet-management">
-            <Button variant="ghost" className="text-slate-500 hover:text-slate-900">
-              <ArrowLeft size={16} className="mr-2" /> Voltar para Frota
+            <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
+              <ArrowLeft size={16} className="mr-2" /> Voltar para Gestão de Frota
             </Button>
           </Link>
-          <div className="flex space-x-3">
-            <Button asChild variant="outline" className="border-slate-200">
-              <Link to="/fleet-management">Cancelar</Link>
+
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline" className="h-9 border-slate-200 text-xs font-semibold text-slate-700 bg-white">
+              <Link to="/fleet-management"><X size={14} className="mr-1.5" /> Cancelar</Link>
             </Button>
-            <Button asChild className="bg-slate-900 text-white hover:bg-slate-800">
-              <Link to="/fleet-management">
-                <Save size={16} className="mr-2" /> Salvar Veículo
-              </Link>
+            <Button className="h-9 bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700">
+              <Save size={14} className="mr-1.5" /> Salvar Veículo
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Double Div (Container Blindado do Formulário) */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-2 pb-6">
           
-          {/* Main Info */}
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-800 flex items-center">
-                <Truck size={18} className="mr-2 text-slate-600" /> Identificação e Capacidade
-              </CardTitle>
-              <CardDescription>Dados base para o algoritmo de roteirização.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Placa</label>
-                  <Input placeholder="ABC-1234" className="border-slate-200 uppercase" maxLength={8} />
+            {/* O segredo do alinhamento: grid-rows-[auto_1fr] obriga as caixas a andarem em pares */}
+            <div className="grid min-h-full gap-6 md:grid-cols-2 md:grid-rows-[auto_1fr]">
+              
+              {/* ========================================================
+                  LINHA 1: IDENTIFICAÇÃO (Esq) + ALOCAÇÃO (Dir)
+                  ======================================================== */}
+              
+              {/* Bloco 1: Identificação Básica (Esquerda, Topo) */}
+              <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
+                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                  <Truck size={16} className="text-blue-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Identificação do Veículo</h2>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Modelo</label>
-                  <Input placeholder="Ex: Volvo FH 540" className="border-slate-200" />
+                
+                <div className="flex flex-col p-5 space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600">Placa do Veículo</label>
+                    <Input 
+                      placeholder="Ex: ABC-1234" 
+                      value={formData.plate}
+                      onChange={(e) => setFormData({...formData, plate: e.target.value})}
+                      className="h-10 border-slate-200 text-sm font-mono font-bold uppercase placeholder:font-sans placeholder:font-normal focus:border-blue-500 focus:ring-blue-500" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600">Marca / Modelo</label>
+                    <Input 
+                      placeholder="Ex: Volvo FH 540" 
+                      value={formData.model}
+                      onChange={(e) => setFormData({...formData, model: e.target.value})}
+                      className="h-10 border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 py-3 mt-2">
+                    <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5">
+                        <Info size={14} className="text-blue-500"/>
+                        A placa será usada como identificador único na frota.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bloco 2: Alocação e Localização (Direita, Topo) */}
+              <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
+                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                  <User size={16} className="text-emerald-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Atribuição Física</h2>
+                </div>
+                
+                <div className="flex flex-col p-5">
+                  {/* Reaproveitamento visual da linha conectora do Itinerário original */}
+                  <div className="relative space-y-6">
+                    <div className="absolute bottom-5 left-3.5 top-8 w-px border-l-2 border-dashed border-slate-200" />
+                    
+                    <div className="relative space-y-2 pl-8">
+                      <span className="absolute left-1.5 top-2.5 h-4 w-4 rounded-full border-[3px] border-white bg-slate-800" />
+                      <label className="text-xs font-bold text-slate-600">Motorista Responsável</label>
+                      <Input 
+                        placeholder="Nome do motorista (Opcional)" 
+                        value={formData.driver}
+                        onChange={(e) => setFormData({...formData, driver: e.target.value})}
+                        className="h-10 border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                      />
+                    </div>
+
+                    <div className="relative space-y-2 pl-8">
+                      <span className="absolute left-1.5 top-2.5 h-4 w-4 rounded-full border-[3px] border-white bg-emerald-500" />
+                      <label className="text-xs font-bold text-slate-600">Pátio / Localização Atual</label>
+                      <Input 
+                        placeholder="Ex: Curitiba, PR" 
+                        value={formData.location}
+                        onChange={(e) => setFormData({...formData, location: e.target.value})}
+                        className="h-10 border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Tipo de Carroceria</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bau">Carreta Baú</SelectItem>
-                    <SelectItem value="sider">Sider</SelectItem>
-                    <SelectItem value="refrigerado">Refrigerado</SelectItem>
-                    <SelectItem value="graneleiro">Graneleiro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* ========================================================
+                  LINHA 2: CUBAGEM E TIPO (Esq) + STATUS (Dir)
+                  ======================================================== */}
 
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Carga Útil (Ton)</label>
-                  <Input type="number" step="0.1" placeholder="Ex: 30.0" className="border-slate-200" />
+              {/* Bloco 3: Dimensionamento e Equipamento (Esquerda, Baixo) */}
+              <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
+                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                  <Scale size={16} className="text-blue-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Capacidade da Carroceria</h2>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Volume Útil (m³)</label>
-                  <Input type="number" step="0.1" placeholder="Ex: 115.0" className="border-slate-200" />
+                
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                        <Scale size={13} className="text-slate-400" /> Peso Suportado
+                      </label>
+                      <div className="relative">
+                        <Input 
+                            type="number" 
+                            placeholder="0" 
+                            value={formData.weightKg}
+                            onChange={(e) => setFormData({...formData, weightKg: e.target.value})}
+                            className="h-10 border-slate-200 pr-10 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                        />
+                        <span className="absolute right-3 top-2.5 text-xs font-semibold text-slate-400">kg</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                        <Box size={13} className="text-slate-400" /> Volume Físico
+                      </label>
+                      <div className="relative">
+                        <Input 
+                            type="number" 
+                            placeholder="0" 
+                            value={formData.volumeM3}
+                            onChange={(e) => setFormData({...formData, volumeM3: e.target.value})}
+                            className="h-10 border-slate-200 pr-10 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                        />
+                        <span className="absolute right-3 top-2.5 text-xs font-semibold text-slate-400">m³</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MT-AUTO espelhado: Força a Restrição pro exato fundo da caixa */}
+                  <div className="mt-auto border-t border-slate-100 pt-5">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-600">Tipo de Carroceria</label>
+                      <Select value={formData.bodyType} onValueChange={(v) => setFormData({...formData, bodyType: v})}>
+                        <SelectTrigger className="h-10 border-slate-200 text-sm focus:ring-blue-500">
+                          <SelectValue placeholder="Selecione o implemento..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Carga Seca">Carga Seca Padrão</SelectItem>
+                          <SelectItem value="Baú Sider">Baú Sider (Abertura Lateral)</SelectItem>
+                          <SelectItem value="Frigorífico">Baú Frigorífico</SelectItem>
+                          <SelectItem value="Refrigerado">Baú Refrigerado</SelectItem>
+                          <SelectItem value="Carreta Prancha">Carreta Prancha / Aberta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* JSONB Attributes */}
-          <Card className="border-slate-200 shadow-sm bg-slate-50/50">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-slate-800 flex items-center">
-                <Tag size={18} className="mr-2 text-slate-600" /> Atributos Especiais (JSONB)
-              </CardTitle>
-              <CardDescription>
-                Certificações e equipamentos que o veículo possui para dar "match" com cargas específicas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleAddAttribute} className="flex space-x-2">
-                <Input 
-                  value={newAttribute}
-                  onChange={(e) => setNewAttribute(e.target.value)}
-                  placeholder="Ex: MOPP, Rastreador, Anvisa..." 
-                  className="border-slate-200 bg-white"
-                />
-                <Button type="submit" variant="secondary" className="bg-slate-200 text-slate-700 hover:bg-slate-300">
-                  Add
-                </Button>
-              </form>
+              {/* Bloco 4: Status Operacional (Direita, Baixo) */}
+              <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
+                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                  <Activity size={16} className="text-amber-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Disponibilidade e Status</h2>
+                </div>
+                
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600">Status Operacional Inicial</label>
+                    <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
+                        <SelectTrigger className="h-10 border-slate-200 text-sm focus:ring-blue-500">
+                          <SelectValue placeholder="Defina o status atual do veículo..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Livre" className="font-semibold text-emerald-700">Livre (Disponível para carga)</SelectItem>
+                          <SelectItem value="Em Trânsito" className="font-semibold text-blue-700">Em Trânsito</SelectItem>
+                          <SelectItem value="Manutenção" className="font-semibold text-amber-700">Em Manutenção</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                {attributes.length === 0 && (
-                  <p className="text-xs text-slate-400 italic">Nenhum atributo cadastrado.</p>
-                )}
-                {attributes.map((attr, index) => (
-                  <Badge key={index} className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-1 px-2 flex items-center gap-1 font-medium">
-                    {attr}
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveAttribute(attr)}
-                      className="text-slate-400 hover:text-red-500 rounded-full focus:outline-none"
-                    >
-                      <X size={12} />
-                    </button>
-                  </Badge>
-                ))}
+                  {/* MT-AUTO espelhado: Força a info box pro exato fundo da caixa, igual ao "Orçamento Teto" anterior */}
+                  <div className="mt-auto border-t border-slate-100 pt-5">
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-4">
+                        <h4 className="text-xs font-bold text-emerald-800 mb-1">Mesa de Operações</h4>
+                        <p className="text-[11px] font-medium text-emerald-700 leading-relaxed">
+                          Veículos criados com o status <strong className="font-bold">Livre</strong> serão automaticamente listados na mesa de operação e poderão receber atribuição de leilões e lances ativos.
+                        </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
 
+            </div>
+          </div>
         </div>
       </div>
     </AppShell>

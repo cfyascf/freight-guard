@@ -3,6 +3,7 @@ import { Building2, Shield, Truck } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/contexts/AuthContext"
+import { getDefaultRouteForRole } from "@/constants/auth"
 import { ROLES } from "@/constants/roles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,7 +20,7 @@ export default function Auth() {
   const handleLogin = (e) => {
     e.preventDefault()
     login({ role: accountType })
-    const nextPath = location.state?.from?.pathname || "/dashboard"
+    const nextPath = location.state?.from?.pathname || getDefaultRouteForRole(accountType)
     navigate(nextPath, { replace: true })
   }
 
@@ -33,7 +34,7 @@ export default function Auth() {
             <Shield size={28} className="text-white" />
           </div>
           <h1 className="mb-4 text-4xl font-bold tracking-tight">
-            Freight<span className="text-blue-500">Guard</span>
+            Sig<span className="text-blue-500">loc</span>
           </h1>
           <p className="max-w-md text-lg text-slate-400">
             A plataforma definitiva de consolidação de cargas e prevenção de overbooking. 
@@ -42,7 +43,7 @@ export default function Auth() {
         </div>
         
         <div className="space-y-4 text-sm text-slate-500">
-          <p>&copy; 2026 FreightGuard Systems.</p>
+          <p>&copy; 2026 Sigloc Systems.</p>
           <p>TCC Engineering Project</p>
         </div>
       </div>
@@ -68,7 +69,7 @@ export default function Auth() {
                 <p className="text-sm text-slate-500">Insira suas credenciais para acessar o painel.</p>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form noValidate onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700" htmlFor="email">Email Corporativo</label>
                   <Input id="email" type="email" placeholder="nome@empresa.com" required className="border-slate-200" />
@@ -161,7 +162,7 @@ export default function Auth() {
                   className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-2"
                   onClick={() => {
                     register({ role: accountType })
-                    navigate("/dashboard", { replace: true })
+                    navigate(getDefaultRouteForRole(accountType), { replace: true })
                   }}
                 >
                   Criar Conta

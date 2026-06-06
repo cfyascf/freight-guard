@@ -3,8 +3,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { ROLES } from "@/constants/roles"
 
 const AuthContext = createContext()
-const AUTH_STORAGE_KEY = "freightguard_auth"
-const USER_STORAGE_KEY = "freightguard_user"
+const AUTH_STORAGE_KEY = "sigloc_auth"
+const USER_STORAGE_KEY = "sigloc_user"
 
 const defaultUser = {
   name: "Pedro Netto",

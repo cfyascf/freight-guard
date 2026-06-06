@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-const SIDEBAR_STORAGE_KEY = "freightguard_sidebar_collapsed"
+const SIDEBAR_STORAGE_KEY = "sigloc_sidebar_collapsed"
 
 export default function AppShell({ title, children, contentClassName, innerClassName }) {
   const { user, setRole } = useAuth()
@@ -94,11 +94,11 @@ export default function AppShell({ title, children, contentClassName, innerClass
             <span
               className={cn("text-xl font-black tracking-tight", brand.textMain)}
             >
-              Freight{" "}
+              Sig
               <span
                 className={cn("transition-colors duration-500", brand.accent)}
               >
-                Guard
+                loc
               </span>
             </span>
           ) : null}

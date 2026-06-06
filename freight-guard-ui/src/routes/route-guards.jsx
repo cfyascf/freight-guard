@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
+import { getDefaultRouteForRole } from "@/constants/auth"
 import { ROLES } from "@/constants/roles"
 
 export function RequireAuth() {
@@ -18,10 +19,10 @@ export function RequireAuth() {
 }
 
 export function PublicOnly() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={getDefaultRouteForRole(user?.role)} replace />
   }
 
   // Outlet renders the matched child route
@@ -35,7 +36,7 @@ export function RequireRole({ allowedRoles }) {
     user.role === ROLES.DEVELOPER || allowedRoles.includes(user.role)
 
   if (!hasRoleAccess) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={getDefaultRouteForRole(user?.role)} replace />
   }
 
   // Outlet renders the matched child route
