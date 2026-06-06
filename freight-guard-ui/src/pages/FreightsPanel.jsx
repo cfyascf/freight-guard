@@ -1,4 +1,5 @@
-import { Search, Clock, TrendingDown, ArrowRight, SlidersHorizontal } from "lucide-react"
+import { useState } from "react"
+import { Search, Clock, TrendingDown, ArrowRight, SlidersHorizontal, Pencil, Trash2, Check, X, AlertCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -19,14 +20,37 @@ const getRiskBadge = (risk) => {
 }
 
 export default function FreightsPanel() {
-  const leiloesAtivos = segmentPlansMock.filter((s) => s.status !== "Em montagem")
+  const [leiloes, setLeiloes] = useState(segmentPlansMock.filter((s) => s.status !== "Em montagem"))
+  const [deletingId, setDeletingId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const handleDelete = (id) => {
+    setLeiloes(prev => prev.filter(l => l.id !== id))
+    setDeletingId(null)
+  }
+
+  const startEditing = (l) => {
+    setEditingId(l.id)
+    setEditForm({ ...l })
+  }
+
+  const saveEdit = () => {
+    setLeiloes(prev => prev.map(l => l.id === editingId ? { ...l, ...editForm } : l))
+    setEditingId(null)
+    setEditForm(null)
+  }
+
+  const filteredLeiloes = leiloes.filter((l) => {
+    const term = searchTerm.toLowerCase()
+    return l.id.toLowerCase().includes(term) || l.name.toLowerCase().includes(term)
+  })
 
   return (
     <AppShell title="Painel de Leilões">
-      {/* 1. MUDANÇA: Ajuste no calc() para 8.5rem garantindo que a tela nunca ultrapasse o monitor */}
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl flex-col gap-4 overflow-hidden">
         
-        {/* BARRA DE TOPO (Com shrink-0 para não ser esmagada) */}
         <div className="flex shrink-0 flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-3 pt-1">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900">Leilões em Andamento</h1>
@@ -36,74 +60,121 @@ export default function FreightsPanel() {
             <div className="relative w-72">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por ID ou trecho..."
                 className="h-9 border-slate-200 bg-white pl-9 text-xs"
               />
             </div>
-
             <Button variant="outline" className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
               <SlidersHorizontal size={14} className="mr-1.5 text-slate-500" /> Filtros
             </Button>
           </div>
         </div>
 
-        {/* 2. MUDANÇA: Double Div (Container Blindado) */}
         <div className="min-h-0 flex-1 overflow-hidden">
-          {/* Div que realmente faz o scroll (com padding inferior pra dar respiro no final da lista) */}
           <div className="h-full overflow-y-auto pr-2 pb-6">
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {leiloesAtivos.map((l) => (
-                <div key={l.id} className="flex flex-col rounded-xl border border-slate-200 bg-white transition-all hover:border-slate-300">
-                  
-                  {/* Cabeçalho do Card */}
-                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-3">
-                    <span className="font-mono text-xs font-bold text-slate-500">{l.id}</span>
-                    {getRiskBadge(l.risk)}
-                  </div>
+              {filteredLeiloes.map((l) => {
+                const isEditing = editingId === l.id
+                const isDeleting = deletingId === l.id
 
-                  <div className="flex flex-col flex-1 p-4">
-                    {/* Identificação do Trecho */}
-                    <div className="mb-4">
-                      <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{l.name}</h3>
-                      <p className="text-xs font-medium text-slate-500 mt-1 truncate">{l.stops.join(" ➔ ")}</p>
+                return (
+                  <div key={l.id} className="group relative flex flex-col rounded-xl border border-slate-200 bg-white transition-all overflow-hidden">
+                    
+                    {/* CABEÇALHO DO CARD - Azulado no Edit Mode */}
+                    <div className={`flex items-center justify-between border-b px-4 py-3 min-h-[44px] ${isEditing ? "border-blue-100 bg-blue-50/50" : "border-slate-100 bg-slate-50/50"}`}>
+                      
+                      <div className="relative h-5 w-full">
+                        {isDeleting ? (
+                          <div className="absolute inset-0 flex items-center gap-2 animate-in fade-in">
+                            <span className="text-[10px] font-bold text-rose-600">Excluir?</span>
+                            <button onClick={() => setDeletingId(null)} className="text-slate-400 hover:text-slate-600"><X size={14}/></button>
+                            <button onClick={() => handleDelete(l.id)} className="text-rose-600 hover:text-rose-700 font-bold text-[10px]">Sim</button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="absolute inset-0 flex items-center font-mono text-[10px] font-bold text-slate-500 opacity-100 group-hover:opacity-0 transition-opacity duration-200">
+                              {l.id}
+                            </span>
+                            
+                            <div className="absolute inset-0 hidden group-hover:flex items-center gap-1 transition-opacity duration-200">
+                              <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-600 hover:bg-blue-100" onClick={() => startEditing(l)}>
+                                <Pencil size={12} />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-6 w-6 text-rose-600 hover:bg-rose-100" onClick={() => setDeletingId(l.id)}>
+                                <Trash2 size={12} />
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {getRiskBadge(l.risk)}
                     </div>
 
-                    {/* Painel de Estatísticas Interno */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Melhor Lance</p>
-                        <p className="mt-0.5 font-mono text-sm font-black text-emerald-600">
-                          {l.bestBid ? formatCurrency(l.bestBid) : "Sem ofertas"}
-                        </p>
-                      </div>
-                      <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de Lances</p>
-                        <div className="flex items-center mt-0.5">
-                          <TrendingDown size={14} className="text-blue-500 mr-1.5" />
-                          <p className="text-sm font-bold text-slate-700">{l.totalBids} <span className="text-xs font-medium text-slate-400">lances</span></p>
+                    {/* CORPO DO CARD - Altura mínima fixa para estabilidade */}
+                    <div className="flex-1 min-h-[220px] flex flex-col">
+                      {isDeleting ? (
+                        <div className="flex-1 p-6 flex items-center justify-center text-rose-500 bg-rose-50/30">
+                          <AlertCircle size={32} />
                         </div>
-                      </div>
-                    </div>
+                      ) : isEditing ? (
+                        <div className="p-4 space-y-3 bg-white animate-in fade-in duration-200 h-full flex flex-col">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-slate-500">Nome do Leilão</label>
+                            <Input value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="h-8 text-xs border-slate-200" />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-slate-500">Prazo (Deadline)</label>
+                            <Input value={editForm.bidDeadline} onChange={(e) => setEditForm({...editForm, bidDeadline: e.target.value})} className="h-8 text-xs border-slate-200" />
+                          </div>
+                          <div className="flex gap-2 justify-end mt-auto pt-4 border-t border-slate-100">
+                            <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-8 text-xs">Cancelar</Button>
+                            <Button size="sm" onClick={saveEdit} className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col flex-1 p-4">
+                          <div className="mb-4">
+                            <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{l.name}</h3>
+                            <p className="text-xs font-medium text-slate-500 mt-1 truncate">{l.stops.join(" ➔ ")}</p>
+                          </div>
 
-                    {/* Rodapé e Ação */}
-                    <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                        <Clock size={12} className="mr-1.5" /> {l.bidDeadline}
-                      </div>
-                      <Button asChild size="sm" variant="ghost" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2">
-                        <Link to={`/auction-bids/${l.id}`}>Analisar <ArrowRight size={14} className="ml-1" /></Link>
-                      </Button>
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Melhor Lance</p>
+                              <p className="mt-0.5 font-mono text-sm font-black text-emerald-600">
+                                {l.bestBid ? formatCurrency(l.bestBid) : "Sem ofertas"}
+                              </p>
+                            </div>
+                            <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de Lances</p>
+                              <div className="flex items-center mt-0.5">
+                                <TrendingDown size={14} className="text-blue-500 mr-1.5" />
+                                <p className="text-sm font-bold text-slate-700">{l.totalBids}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex items-center text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                              <Clock size={12} className="mr-1.5" /> {l.bidDeadline}
+                            </div>
+                            <Button asChild size="sm" variant="ghost" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2">
+                              <Link to={`/auction-bids/${l.id}`}>Analisar <ArrowRight size={14} className="ml-1" /></Link>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                </div>
-              ))}
+                )
+              })}
             </div>
-            
           </div>
         </div>
-        
       </div>
     </AppShell>
   )
