@@ -1,286 +1,155 @@
-import { useEffect, useMemo, useState } from "react"
-import { ArrowRight, Clock3, Search, Truck } from "lucide-react"
-
+import { useState } from "react"
+import { Search, Box, SlidersHorizontal, TrendingDown, Clock, ArrowRight } from "lucide-react"
+import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { freightOffersMock } from "@/constants/logistics-mock"
+import { RISK } from "@/constants/risk"
 
-const vehicleOptions = ["Todos", "Baú Frigorífico", "Sider", "Carga Seca"]
+const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
-const auctionOpportunities = [
-  {
-    id: "ROT-9921",
-    vehicleType: "Baú Frigorífico",
-    deadline: "2026-06-04T16:45:00",
-    cities: ["Curitiba-PR", "São Paulo-SP", "Rio de Janeiro-RJ"],
-    totalWeight: "18.400 kg",
-    totalVolume: "58 m³",
-    currentBid: 4200,
-  },
-  {
-    id: "ROT-9938",
-    vehicleType: "Sider",
-    deadline: "2026-06-04T17:52:00",
-    cities: ["Joinville-SC", "Campinas-SP", "Betim-MG"],
-    totalWeight: "22.000 kg",
-    totalVolume: "72 m³",
-    currentBid: 5150,
-  },
-  {
-    id: "ROT-9954",
-    vehicleType: "Carga Seca",
-    deadline: "2026-06-04T19:08:00",
-    cities: ["Londrina-PR", "Ribeirão Preto-SP", "Contagem-MG"],
-    totalWeight: "14.600 kg",
-    totalVolume: "49 m³",
-    currentBid: 3890,
-  },
-  {
-    id: "ROT-9962",
-    vehicleType: "Baú Frigorífico",
-    deadline: "2026-06-04T18:36:00",
-    cities: ["Maringá-PR", "Guarulhos-SP", "Serra-ES"],
-    totalWeight: "19.200 kg",
-    totalVolume: "61 m³",
-    currentBid: 4680,
-  },
-]
-
-const currencyFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-})
-
-function getCountdownLabel(deadline, now) {
-  const diffMs = new Date(deadline).getTime() - now.getTime()
-
-  if (diffMs <= 0) {
-    return "Encerrado"
+const getRiskBadge = (risk) => {
+  const styles = {
+    [RISK.NORMAL]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [RISK.WARNING]: "bg-amber-50 text-amber-700 border-amber-200",
+    [RISK.CRITIC]: "bg-rose-50 text-rose-700 border-rose-200",
   }
-
-  const totalMinutes = Math.floor(diffMs / 60000)
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-
-  return `Encerra em: ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m`
+  return <Badge variant="outline" className={`rounded-full text-[10px] uppercase font-bold tracking-wider px-2 py-0 ${styles[risk] || "bg-slate-50"}`}>{risk}</Badge>
 }
 
-export default function CarrierPortal() {
+const getRequirementBadge = (req) => {
+  const normalized = req.toLowerCase();
+  if (normalized.includes("frágil")) return "bg-rose-50 text-rose-600 border-rose-200";
+  if (normalized.includes("hazmat") || normalized.includes("perigoso")) return "bg-amber-50 text-amber-600 border-amber-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
+}
+
+export default function FreightsMural() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [vehicleFilter, setVehicleFilter] = useState("Todos")
-  const [bidValues, setBidValues] = useState({})
-  const [now, setNow] = useState(() => new Date())
+  const ofertas = freightOffersMock
 
-  useEffect(() => {
-    const intervalId = globalThis.setInterval(() => {
-      setNow(new Date())
-    }, 60000)
-
-    return () => globalThis.clearInterval(intervalId)
-  }, [])
-
-  const filteredOpportunities = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase()
-
-    return auctionOpportunities.filter((opportunity) => {
-      const matchesVehicle = vehicleFilter === "Todos" || opportunity.vehicleType === vehicleFilter
-      const matchesCity =
-        normalizedSearch.length === 0 ||
-        opportunity.cities.some((city) => city.toLowerCase().includes(normalizedSearch))
-
-      return matchesVehicle && matchesCity
-    })
-  }, [searchTerm, vehicleFilter])
-
-  const updateBidValue = (routeId, value) => {
-    setBidValues((current) => ({
-      ...current,
-      [routeId]: value,
-    }))
-  }
-
-  const getBidState = (opportunity) => {
-    const rawValue = bidValues[opportunity.id]
-
-    if (!rawValue) {
-      return {
-        isValid: false,
-        buttonLabel: "Enviar Lance",
-      }
-    }
-
-    const bidNumber = Number(rawValue)
-
-    if (!Number.isFinite(bidNumber) || bidNumber <= 0) {
-      return {
-        isValid: false,
-        buttonLabel: "Valor inválido",
-      }
-    }
-
-    if (bidNumber >= opportunity.currentBid) {
-      return {
-        isValid: false,
-        buttonLabel: "Lance deve ser menor",
-      }
-    }
-
-    return {
-      isValid: true,
-      buttonLabel: "Enviar Lance",
-    }
-  }
+  const filteredOfertas = ofertas.filter((o) => {
+    const term = searchTerm.toLowerCase()
+    return o.segmentName.toLowerCase().includes(term) || o.contractor.toLowerCase().includes(term)
+  })
 
   return (
-    <AppShell title="Portal do Transportador - Oportunidades de Frete">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <Card className="border-slate-200 bg-white shadow-sm">
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl font-semibold tracking-tight text-slate-900">
-              Mural de Ofertas Ativas
-            </CardTitle>
-            <CardDescription className="max-w-3xl text-sm leading-6 text-slate-600">
-              Avalie as rotas publicadas e envie um lance competitivo. Para ser computado no motor do leilão reverso, o valor informado precisa ser obrigatoriamente menor que o lance atual mais baixo.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="border-slate-200 bg-white shadow-sm">
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por cidade do itinerário"
-                  className="h-11 border-slate-200 bg-white pl-10"
-                />
-              </div>
-
-              <div className="w-full lg:w-[260px]">
-                <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
-                  <SelectTrigger className="h-11 border-slate-200 bg-white">
-                    <SelectValue placeholder="Filtrar por equipamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {vehicleOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+    <AppShell title="Mural de Fretes">
+      <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl flex-col gap-4 overflow-hidden">
+        
+        {/* BARRA DE TOPO */}
+        <div className="flex shrink-0 flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-3 pt-1">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Mural de Oportunidades</h1>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por cliente ou rota..."
+                className="h-9 border-slate-200 bg-white pl-9 text-xs"
+              />
             </div>
-          </CardContent>
-        </Card>
+            <Button variant="outline" className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700">
+              <SlidersHorizontal size={14} className="mr-1.5 text-slate-500" /> Filtros
+            </Button>
+          </div>
+        </div>
 
-        <section className="grid gap-5 xl:grid-cols-2">
-          {filteredOpportunities.map((opportunity) => {
-            const bidState = getBidState(opportunity)
-
-            return (
-              <Card
-                key={opportunity.id}
-                className="border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <CardHeader className="space-y-4 border-b border-slate-100 pb-5">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
-                      <p className="font-mono text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                        {opportunity.id}
-                      </p>
-                      <Badge className="w-fit border-none bg-sky-100 text-sky-800 hover:bg-sky-100">
-                        {opportunity.vehicleType}
-                      </Badge>
+        {/* GRID DE OFERTAS */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-2 pb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              
+              {filteredOfertas.map((o) => {
+                const hasBid = !!o.bidStatus;
+                
+                return (
+                  <div key={o.id} className={`group flex flex-col rounded-xl border border-slate-200 bg-white transition-all overflow-hidden ${hasBid ? "border-t-4 border-t-blue-600" : ""}`}>
+                    
+                    {/* CABEÇALHO */}
+                    <div className="bg-slate-50/50 px-4 py-2.5 border-b border-slate-100">
+                      <div className="flex justify-between items-center mb-1">
+                          <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider truncate">{o.contractor}</p>
+                          <div className="flex gap-1.5 items-center">
+                             {/* Badge de Lance Ativo */}
+                             {hasBid && (
+                                <Badge className="bg-blue-600 text-white text-[9px] font-bold border-none uppercase shadow-none">
+                                    Lance Ativo
+                                </Badge>
+                             )}
+                             {getRiskBadge(o.risk)}
+                          </div>
+                      </div>
+                      <p className="text-sm font-bold text-slate-800 leading-tight">{o.routeLabel}</p>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-                      <Clock3 className="h-4 w-4" />
-                      <span>{getCountdownLabel(opportunity.deadline, now)}</span>
-                    </div>
-                  </div>
+                    {/* CORPO */}
+                    <div className="flex flex-col p-4 gap-3">
+                      
+                      <div className="flex items-start justify-between">
+                          <div>
+                              <p className="text-[10px] font-bold uppercase text-slate-400">Valor Teto</p>
+                              <p className="text-lg font-black text-blue-700">{formatCurrency(o.targetValue)}</p>
+                              <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                                  <TrendingDown size={10}/> {o.totalBids || 0} lances ativos
+                              </p>
+                          </div>
+                          {o.isExpiringSoon && (
+                            <Badge className="bg-rose-50 text-rose-600 border-rose-200 text-[9px] font-bold flex items-center gap-1">
+                                <Clock size={10} /> {o.hoursLeft}H
+                            </Badge>
+                          )}
+                      </div>
 
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                      {opportunity.cities.map((city, index) => (
-                        <div key={`${opportunity.id}-${city}`} className="flex items-center gap-2">
-                          <span className="font-medium text-slate-700">{city}</span>
-                          {index < opportunity.cities.length - 1 ? <ArrowRight className="h-3.5 w-3.5 text-slate-300" /> : null}
-                        </div>
-                      ))}
-                    </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                              <span className="text-slate-400 block font-bold uppercase text-[9px]">Coleta</span>
+                              <span className="font-semibold text-slate-700">{o.pickupLabel}</span>
+                          </div>
+                          <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                              <span className="text-slate-400 block font-bold uppercase text-[9px]">Entrega</span>
+                              <span className="font-semibold text-slate-700">{o.etaLabel}</span>
+                          </div>
+                      </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1">
-                        <Truck className="h-3.5 w-3.5 text-slate-400" />
-                        Peso total: {opportunity.totalWeight}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1">
-                        Cubagem: {opportunity.totalVolume}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-5">
-                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Lance Atual Mais Baixo
-                      </p>
-                      <p className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
-                        {currencyFormatter.format(opportunity.currentBid)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Ação de Lance
-                      </p>
-                      <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          inputMode="decimal"
-                          value={bidValues[opportunity.id] ?? ""}
-                          onChange={(event) => updateBidValue(opportunity.id, event.target.value)}
-                          placeholder="Digite seu valor (R$)"
-                          className="h-11 border-slate-200 bg-white"
-                        />
-                        <Button
-                          type="button"
-                          title="O sistema validará se o valor informado é menor que o lance atual antes de processar no backend em C#."
-                          disabled={!bidState.isValid}
-                          className={`h-11 min-w-[170px] text-white ${
-                            bidState.isValid
-                              ? "bg-emerald-600 hover:bg-emerald-700"
-                              : "bg-slate-300 text-slate-500 hover:bg-slate-300"
-                          }`}
-                        >
-                          {bidState.buttonLabel}
-                        </Button>
+                      <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2 text-[11px] text-slate-600">
+                              <Box size={14} className="text-slate-400" />
+                              <span className="font-medium">{o.totalWeight} • {o.totalVolume}</span>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-1.5">
+                              {o.requirements.map((req) => (
+                                  <Badge key={req} variant="outline" className={`text-[9px] font-bold uppercase tracking-wide border ${getRequirementBadge(req)}`}>
+                                      {req}
+                                  </Badge>
+                              ))}
+                          </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </section>
 
-        {filteredOpportunities.length === 0 ? (
-          <Card className="border-dashed border-slate-300 bg-white shadow-sm">
-            <CardContent className="flex min-h-40 items-center justify-center pt-6 text-center text-sm text-slate-500">
-              Nenhuma oportunidade encontrada para os filtros aplicados.
-            </CardContent>
-          </Card>
-        ) : null}
+                    {/* FOOTER */}
+                    <div className="px-4 pb-4">
+                      <Button asChild variant={hasBid ? "outline" : "default"} className={`w-full font-bold h-8 text-xs ${
+                          hasBid ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "bg-slate-900 hover:bg-slate-800 text-white"
+                      }`}>
+                        <Link to={`/freight-bid/${o.id}`}>
+                            {hasBid ? "Ver Detalhes do Lance" : "Analisar e Dar Lance"}
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
       </div>
     </AppShell>
   )

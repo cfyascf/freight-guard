@@ -214,6 +214,7 @@ export const freightOffersMock = [
     pickupLabel: "18/05/2026 08:00",
     etaLabel: "21/05/2026 12:00",
     itemsSummary: ["100 kg de peito de frango", "2 bicicletas"],
+    bidStatus: "SENT"
   },
   {
     id: "OFT-9924",
@@ -232,7 +233,7 @@ export const freightOffersMock = [
     availableVehicles: 0,
     pickupLabel: "20/05/2026 07:30",
     etaLabel: "20/05/2026 20:00",
-    itemsSummary: ["6 motores elétricos"],
+    itemsSummary: ["6 motores elétricos"]
   },
   {
     id: "OFT-9925",

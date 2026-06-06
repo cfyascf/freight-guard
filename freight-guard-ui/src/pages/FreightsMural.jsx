@@ -1,317 +1,128 @@
 import { useState } from "react"
-import { AlertCircle, Box, CheckCircle2, MapPin, Search, ShieldAlert, Truck, Calendar, Clock, Package, Route } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-
+import { Search, MapPin, Clock, Calendar, Box, Truck, ArrowRight, SlidersHorizontal, Filter, AlertCircle } from "lucide-react"
+import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { freightOffersMock } from "@/constants/logistics-mock"
 import { RISK } from "@/constants/risk"
 
-const getRiskBorderClass = (risk) => {
-  switch (risk) {
-    case RISK.NORMAL:
-      return "border-l-4 border-l-emerald-500"
-    case RISK.WARNING:
-      return "border-l-4 border-l-amber-500"
-    case RISK.CRITIC:
-      return "border-l-4 border-l-rose-600"
-    default:
-      return "border-l-4 border-l-slate-200"
-  }
-}
+const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
-const getRiskBadgeClass = (risk) => {
-  switch (risk) {
-    case RISK.NORMAL:
-      return "bg-emerald-100 text-emerald-800"
-    case RISK.WARNING:
-      return "bg-amber-100 text-amber-800"
-    case RISK.CRITIC:
-      return "bg-rose-100 text-rose-800"
-    default:
-      return "bg-slate-100 text-slate-700"
+const getRiskBadge = (risk) => {
+  const styles = {
+    [RISK.NORMAL]: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    [RISK.WARNING]: "bg-amber-50 text-amber-700 border-amber-200",
+    [RISK.CRITIC]: "bg-rose-50 text-rose-700 border-rose-200",
   }
+  return <Badge variant="outline" className={`rounded-full text-[10px] uppercase font-bold tracking-wider px-2 py-0 ${styles[risk] || "bg-slate-50"}`}>{risk}</Badge>
 }
 
 export default function FreightsMural() {
-  // Estados para controlar o Modal único
-  const [freteSelecionado, setFreteSelecionado] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [confirmado, setConfirmado] = useState(false);
-  const [veiculoSelecionado, setVeiculoSelecionado] = useState("");
-  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState("")
+  const ofertas = freightOffersMock
 
-  // Lista estática de dados
-  const ofertasDisponiveis = freightOffersMock
-
-  const minhaFrota = [
-    { placa: "ABC-1234", modelo: "Volvo FH 460", status: "Livre", capacidade: "50 m³" },
-    { placa: "XYZ-9876", modelo: "Volvo VM 270", status: "Em Trânsito", capacidade: "30 m³" }
-  ]
-
-  const formatarMoeda = (valor) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
-  }
-
-  // Função para abrir o modal de forma limpa
-  const abrirModalLance = (oferta) => {
-    setFreteSelecionado(oferta)
-    setIsModalOpen(true)
-  }
+  const filteredOfertas = ofertas.filter((o) => {
+    const term = searchTerm.toLowerCase()
+    return o.segmentName.toLowerCase().includes(term) || o.contractor.toLowerCase().includes(term)
+  })
 
   return (
-    <AppShell title="Mural de Trechos Disponíveis">
-      
-      {/* Barra de Busca */}
-      <div className="mb-6 flex flex-col items-start justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-          <Input 
-            type="text" 
-            placeholder="Buscar por trecho, parada ou contratante..." 
-            className="border-slate-200 bg-white pl-9 shadow-sm"
-          />
-        </div>
-      </div>
-
-      {/* Grid de Ofertas - Renderização Dinâmica e Enxuta */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {ofertasDisponiveis.map((oferta) => (
-          <Card key={oferta.id} className={`flex flex-col border-slate-200 transition-shadow hover:shadow-md ${getRiskBorderClass(oferta.risk)}`}>
-            
-            <CardHeader className="border-b border-slate-50 pb-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {oferta.contractor}
-                  </p>
-                  <CardTitle className="text-lg font-bold text-slate-800">
-                    {formatarMoeda(oferta.targetValue)}
-                  </CardTitle>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <Badge className={`border-none text-[10px] font-bold uppercase tracking-wide ${getRiskBadgeClass(oferta.risk)}`}>
-                    {oferta.risk}
-                  </Badge>
-                  {oferta.urgencia === "Alta" && (
-                    <Badge variant="destructive" className="bg-red-50 text-red-600 border-none hover:bg-red-100">
-                      Urgente ⚠
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className={oferta.availableVehicles > 0 ? "text-slate-600 bg-slate-50" : "text-red-600 bg-red-50 border-red-200"}>
-                    {oferta.availableVehicles} {oferta.availableVehicles === 1 ? 'veículo' : 'veículos'}
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="flex-1 pt-4">
-              <div className="space-y-4 text-sm">
-                
-                <div>
-                  <p className="font-semibold text-slate-800 text-base">{oferta.segmentName}</p>
-                  <div className="flex items-center text-slate-500 mt-1">
-                    <Route size={14} className="mr-1.5" />
-                    <span>{oferta.itemCount} itens • {oferta.legCount} pernas</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start rounded-md bg-slate-50 p-2">
-                  <MapPin size={16} className="mr-2 mt-0.5 text-blue-500 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-slate-700">{oferta.routeLabel}</p>
-                    <p className="text-xs text-slate-500">{oferta.segmentId}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-slate-500 flex items-center"><Clock size={12} className="mr-1" /> Retirar até</span>
-                    <span className="font-medium text-slate-700">{oferta.pickupLabel}</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-slate-500 flex items-center"><Calendar size={12} className="mr-1" /> Chegada Prev.</span>
-                    <span className="font-medium text-slate-700">{oferta.etaLabel}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start border-t border-slate-100 pt-3">
-                  <Box size={16} className="mr-2 mt-0.5 text-slate-400" />
-                  <div>
-                    <p className="font-medium text-slate-700">{oferta.totalWeight} • {oferta.totalVolume}</p>
-                    <div className="mt-2 space-y-1">
-                      {oferta.itemsSummary.map((itemSummary) => (
-                        <p key={itemSummary} className="text-xs text-slate-500">• {itemSummary}</p>
-                      ))}
-                    </div>
-                    <div className="mt-1 flex gap-1 flex-wrap">
-                      {oferta.requirements.map(req => (
-                        <Badge key={req} variant="secondary" className="bg-slate-100 text-[10px] font-normal text-slate-600">
-                          {req}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </CardContent>
-
-            <CardFooter className="bg-slate-50/50 pt-4 rounded-b-xl border-t border-slate-50">
-              {oferta.availableVehicles === 0 ? (
-                <Button disabled className="w-full bg-slate-200 text-slate-500 cursor-not-allowed">
-                  <Truck size={16} className="mr-2" />
-                  Sem frota disponível
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full bg-slate-900 text-white hover:bg-slate-800 transition-colors"
-                  onClick={() => abrirModalLance(oferta)}
-                >
-                  Dar lance ✓
-                </Button>
-              )}
-            </CardFooter>
-            
-          </Card>
-        ))}
-      </div>
-
-      {/* Modal Único no escopo global do AppShell */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <ShieldAlert size={18} className="mr-2 text-blue-600" />
-              Motor de Validação
-            </DialogTitle>
-
-            <DialogDescription>
-              Selecione o veículo para o trecho{" "}
-              <strong>
-                {freteSelecionado?.segmentName}
-              </strong>.
-              O sistema validará a disponibilidade, a cobertura das pernas e o volume consolidado.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            
-            {/* Seleção de caminhão */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700">
-                Selecione o Caminhão (Placa)
-              </p>
-
-              <Select
-                value={veiculoSelecionado}
-                onValueChange={setVeiculoSelecionado}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um veículo da frota..." />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {minhaFrota.map((veiculo) => (
-                    <SelectItem
-                      key={veiculo.placa}
-                      value={veiculo.placa}
-                    >
-                      <div className="flex items-center">
-                        <Truck
-                          size={14}
-                          className="mr-2 text-slate-500"
-                        />
-
-                        {veiculo.placa} ({veiculo.modelo}) -{" "}
-                        {veiculo.capacidade}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Aviso */}
-            <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 flex items-start">
-              <AlertCircle
-                size={16}
-                className="text-blue-600 mr-2 mt-0.5 flex-shrink-0"
+    <AppShell title="Mural de Fretes">
+      <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl flex-col gap-4 overflow-hidden">
+        
+        {/* BARRA DE TOPO */}
+        <div className="flex shrink-0 flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-3 pt-1">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">Mural de Oportunidades</h1>
+            <p className="text-xs text-slate-500">Encontre fretes compatíveis com sua frota</p>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por cliente ou rota..."
+                className="h-9 border-slate-200 bg-white pl-9 text-xs"
               />
-
-              <p className="text-xs text-blue-800">
-                Ao confirmar, o <strong>FreightGuard</strong>{" "}
-                verificará o limite de{" "}
-                <strong>{freteSelecionado?.volume}</strong>{" "}
-                usando heurísticas e consultará o
-                OpenRouteService para prevenir overbooking.
-              </p>
             </div>
+            <Button variant="outline" className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700">
+              <Filter size={14} className="mr-1.5 text-slate-500" /> Filtros
+            </Button>
+          </div>
+        </div>
 
-            {/* Checkbox de responsabilidade */}
-            <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
-              <div className="flex items-start">
-                <input
-                  id="freight-acceptance"
-                  type="checkbox"
-                  checked={confirmado}
-                  onChange={(e) =>
-                    setConfirmado(e.target.checked)
-                  }
-                  className="mt-1 mr-3 accent-amber-600"
-                />
+        {/* GRID DE OFERTAS */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-2 pb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              
+              {filteredOfertas.map((o) => (
+                <div key={o.id} className="group relative flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all">
+                  
+                  {/* HEADER DO CARD: Contratante + Budget */}
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-4 py-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">{o.contractor}</p>
+                      <p className="text-lg font-black text-slate-800">{formatCurrency(o.targetValue)}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {getRiskBadge(o.risk)}
+                      {o.urgencia === "Alta" && (
+                        <Badge variant="destructive" className="bg-rose-50 text-rose-600 border-rose-200 text-[9px]">Urgente</Badge>
+                      )}
+                    </div>
+                  </div>
 
-                <div>
-                  <label htmlFor="freight-acceptance" className="cursor-pointer text-sm font-medium text-amber-900">
-                    Declaro que este veículo possui capacidade adequada para realizar o transporte deste frete.
-                  </label>
+                  {/* CORPO DO CARD */}
+                  <div className="flex flex-col flex-1 p-4">
+                    <div className="mb-4">
+                      <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{o.segmentName}</h3>
+                      <p className="text-xs font-medium text-slate-500 mt-1 flex items-center gap-1.5">
+                        <MapPin size={12} className="text-blue-500" /> {o.routeLabel}
+                      </p>
+                    </div>
 
-                  <p className="text-xs text-amber-700 mt-1">
-                    O transportador é responsável por garantir que o veículo suporte o volume de{" "}
-                    <strong>{freteSelecionado?.volume}</strong>.
-                  </p>
+                    {/* DETALHES TÉCNICOS */}
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <div className="rounded bg-slate-50 p-2 border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Coleta</p>
+                        <p className="text-xs font-semibold text-slate-700">{o.pickupLabel}</p>
+                      </div>
+                      <div className="rounded bg-slate-50 p-2 border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Entrega</p>
+                        <p className="text-xs font-semibold text-slate-700">{o.etaLabel}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <Box size={14} className="text-slate-400" />
+                            <span>{o.totalWeight} • {o.totalVolume}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                            {o.requirements.map(req => (
+                                <Badge key={req} variant="secondary" className="bg-slate-100 text-[9px] font-medium text-slate-600">{req}</Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* AÇÃO PRINCIPAL */}
+                    <div className="mt-auto pt-4 border-t border-slate-100">
+                      <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs">
+                        <Link to={`/freight-bid/${o.id}`}>Analisar e Dar Lance <ArrowRight size={14} className="ml-2" /></Link>
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              className="border-slate-200"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-
-            <Button
-              disabled={!confirmado || !veiculoSelecionado}
-              className={`text-white transition-colors ${
-                confirmado && veiculoSelecionado
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-slate-400 cursor-not-allowed"
-              }`}
-            >
-            </Button>
-            <Button
-              className="bg-blue-600 text-white hover:bg-blue-700"
-              onClick={() => {
-                setIsModalOpen(false)
-                navigate("/transport-overview")
-              }}
-            >
-              <CheckCircle2 size={16} className="mr-2" />
-              Confirmar Alocação
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
+        </div>
+      </div>
     </AppShell>
   )
 }
