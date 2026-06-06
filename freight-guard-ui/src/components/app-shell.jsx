@@ -149,8 +149,9 @@ export default function AppShell({ title, children, contentClassName, innerClass
                 size="sm"
                 title={`Perfil atual: ${roleLabel}`}
                 className={cn(
-                  "border-transparent text-[10px] font-bold shadow-sm",
+                  "text-[10px] font-bold shadow-none",
                   isSidebarCollapsed ? "w-full justify-center px-0" : "w-full",
+                  brand.sidebarBorder,
                   brand.navHover,
                   brand.textMuted,
                   brand.footerBg

@@ -11,10 +11,10 @@ const kpis = [
 ]
 
 const auctionFinance = [
-  { id: "ROT-9921", label: "Curitiba → São Paulo", current: 4280, target: 4100, status: "ACIMA" },
-  { id: "ROT-9922", label: "Joinville → Campinas", current: 3680, target: 3600, status: "ACIMA" },
-  { id: "ROT-9923", label: "Londrina → Contagem", current: 3100, target: 3500, status: "ABAIXO" },
-  { id: "ROT-9924", label: "Maringá → Serra", current: 4050, target: 4400, status: "ABAIXO" },
+  { id: "ROT-9921", auctionId: "TRC-201", label: "Curitiba → São Paulo", current: 4280, target: 4100, status: "ACIMA" },
+  { id: "ROT-9922", auctionId: "TRC-202", label: "Joinville → Campinas", current: 3680, target: 3600, status: "ACIMA" },
+  { id: "ROT-9923", auctionId: "TRC-203", label: "Londrina → Contagem", current: 3100, target: 3500, status: "ABAIXO" },
+  { id: "ROT-9924", auctionId: "TRC-201", label: "Maringá → Serra", current: 4050, target: 4400, status: "ABAIXO" },
 ]
 
 const slaAlerts = [
@@ -128,7 +128,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/load-management")}
+                  onClick={() => navigate("/freights-panel")}
                 >
                   Ver Detalhes <ExternalLink size={12} />
                 </Button>
@@ -140,7 +140,12 @@ export default function Dashboard() {
                   const diff = Math.abs(item.current - item.target)
 
                   return (
-                    <div key={item.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => navigate(`/auction-bids/${item.auctionId}`)}
+                      className="flex w-full items-center justify-between rounded-lg py-3 text-left transition-colors first:pt-0 last:pb-0 hover:bg-slate-50/80"
+                    >
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-slate-400">{item.id}</span>
@@ -155,7 +160,7 @@ export default function Dashboard() {
                           <span>{formatCurrency(diff)} ({isAbove ? "+" : "-"})</span>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
