@@ -1,4 +1,5 @@
-import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, ShieldCheck, Trophy, ArrowDownRight, ExternalLink } from "lucide-react"
+import { useState } from "react"
+import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, ShieldCheck, Trophy, ArrowDownRight, ExternalLink, Calendar, ChevronDown, ChevronUp, Activity, FileCheck } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -8,26 +9,33 @@ import { auctionBidsMock, getSegmentById } from "@/constants/logistics-mock"
 
 export default function AuctionBids() {
   const { segmentId } = useParams()
-  
-  // Mock fallback
+  const [expandedBids, setExpandedBids] = useState([])
+
   const selectedSegment = segmentId ? getSegmentById(segmentId) : getSegmentById("TRC-1042")
   const visibleBids = (segmentId ? auctionBidsMock.filter((bid) => bid.segmentRef === segmentId) : auctionBidsMock) || []
-
-  // Lógica de Ranking
   const rankedBids = [...visibleBids].sort((a, b) => a.proposedValue - b.proposedValue)
 
-  // Simulação das balizas financeiras
   const targetFare = selectedSegment?.targetFare || 4200
   const anttFloorFare = targetFare * 0.72
 
   const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
+  const toggleExpand = (bidId) => {
+    setExpandedBids(prev => prev.includes(bidId) ? prev.filter(id => id !== bidId) : [...prev, bidId])
+  }
+
+  const getRiskData = (index) => ({
+    veiculos: 12 - index * 2,
+    seguro: index === 2 ? "Vence em 15 dias" : "Validado até Dez/2026",
+    seguroStatus: index === 2 ? "warning" : "ok",
+    otd: 98 - index * 3,
+  })
+
   return (
     <AppShell title="Análise de Lances">
-      {/* 1. MUDANÇA: Ajuste no calc() para 8.5rem e remoção de gap geral pesado */}
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
         
-        {/* HEADER LIMPO E TEXTUAL (Com shrink-0) */}
+        {/* HEADER */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1 mb-5">
           <Link to="/freights-panel">
             <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
@@ -44,42 +52,77 @@ export default function AuctionBids() {
           </div>
         </div>
 
-        {/* CONTEXTO DA ROTA E BALIZAS FINANCEIRAS (Com shrink-0 para não amassar) */}
+        {/* CONTEXTO DA ROTA - A TRÍPLICE RESTRIÇÃO (Escopo, Tempo, Custo) */}
         {selectedSegment && (
-          <div className="flex shrink-0 flex-col md:flex-row gap-0 rounded-xl border border-slate-200 bg-white mb-5">
+          <div className="flex shrink-0 flex-col md:flex-row rounded-xl border border-slate-200 bg-white mb-5 divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-hidden">
             
-            {/* Bloco 1: A Rota */}
-            <div className="flex-1 p-5 border-b md:border-b-0 md:border-r border-slate-100">
-              <div className="flex items-center justify-between mb-3">
+            {/* Bloco 1: O Escopo (Físico) */}
+            <div className="flex-1 p-5 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-2">
                 <Badge className="bg-slate-100 text-slate-600 border-none text-[10px] font-bold uppercase tracking-wider">{selectedSegment.id}</Badge>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{selectedSegment.itemCount} Itens</span>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{selectedSegment.itemCount || 3} Itens</span>
               </div>
-              <h2 className="text-sm font-bold text-slate-900 mb-1">{selectedSegment.name}</h2>
-              <p className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                <MapPin size={13} className="text-blue-500" /> {selectedSegment.stops.join(" ➔ ")}
+              <h2 className="text-sm font-bold text-slate-900 mb-1.5 truncate">{selectedSegment.name || "Carga Frigorificada Especial"}</h2>
+              <p className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                <MapPin size={14} className="text-blue-500 shrink-0" /> <span className="truncate">{selectedSegment.stops?.join(" ➔ ") || "Curitiba, PR ➔ São Paulo, SP"}</span>
               </p>
             </div>
 
-            {/* Bloco 2: O Piso (Legal) */}
-            <div className="w-full md:w-56 p-5 bg-slate-50/50 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
-                <ShieldCheck size={12} /> Piso Legal ANTT
+            {/* Bloco 2: O Tempo (Janelas de SLA com Destaque Máximo) */}
+            <div className="w-full md:w-[340px] p-5 bg-blue-50/30 flex flex-col justify-center border-b-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+                <Clock size={12} className="text-blue-500" /> Janelas de SLA Acordadas
               </p>
-              <p className="text-lg font-black text-slate-700 font-mono">{formatCurrency(anttFloorFare)}</p>
-              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Lances abaixo deste valor são bloqueados.</p>
+              <div className="space-y-2.5">
+                {/* Card Coleta */}
+                <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-2">
+                        <Calendar size={14} className="text-amber-500" />
+                        <span className="text-xs font-bold text-slate-700">Primeira Coleta</span>
+                    </div>
+                    <span className="text-xs font-black text-slate-800">Hoje, 18:00</span>
+                </div>
+                {/* Card Entrega */}
+                <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-emerald-500" />
+                        <span className="text-xs font-bold text-slate-700">Última Entrega</span>
+                    </div>
+                    <span className="text-xs font-black text-slate-800">08/06, 12:00</span>
+                </div>
+              </div>
             </div>
 
-            {/* Bloco 3: O Teto (Orçamento) */}
-            <div className="w-full md:w-56 p-5 bg-slate-50/50 flex flex-col justify-center">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Orçamento Teto</p>
-              <p className="text-lg font-black text-slate-700 font-mono">{formatCurrency(targetFare)}</p>
-              <p className="text-[10px] text-slate-400 mt-1 leading-tight">Meta de custo estipulada pelo embarcador.</p>
+            {/* Bloco 3: O Custo (Piso e Teto unificados) */}
+            <div className="w-full md:w-[280px] p-5 bg-slate-50/50 flex flex-col justify-center gap-4">
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Orçamento Teto</p>
+                  <p className="text-lg font-black text-slate-700 font-mono leading-none">{formatCurrency(targetFare)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center justify-end gap-1"><ShieldCheck size={10}/> Piso ANTT</p>
+                  <p className="text-sm font-bold text-slate-500 font-mono leading-none">{formatCurrency(anttFloorFare)}</p>
+                </div>
+              </div>
+              
+              {/* Barra de Progresso da Janela de Negociação */}
+              <div className="space-y-1.5">
+                  <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden flex">
+                    <div className="bg-slate-300" style={{ width: '72%' }} title="Valor Piso" />
+                    <div className="bg-emerald-400 flex-1" title="Margem de Negociação" />
+                  </div>
+                  <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                      <span>Bloqueado</span>
+                      <span className="text-emerald-600">Margem Válida</span>
+                  </div>
+              </div>
             </div>
 
           </div>
         )}
 
-        {/* 2. MUDANÇA: Double Div (Container Blindado para o Ranking) */}
+        {/* CONTAINER DO RANKING */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto pr-2 pb-6">
             
@@ -93,79 +136,118 @@ export default function AuctionBids() {
               ) : (
                 rankedBids.map((bid, index) => {
                   const isWinner = index === 0
+                  const isExpanded = expandedBids.includes(bid.id)
                   const savings = targetFare - bid.proposedValue
                   const savingsPercent = ((savings / targetFare) * 100).toFixed(1)
+                  const riskData = getRiskData(index)
 
                   return (
                     <div 
                       key={bid.id} 
-                      className={`relative flex items-center justify-between rounded-xl border p-4 transition-all ${
+                      className={`relative flex flex-col rounded-xl border p-4 transition-all ${
                         isWinner 
                           ? "border-emerald-300 bg-emerald-50/20 ring-1 ring-emerald-100" 
                           : "border-slate-200 bg-white"
                       }`}
                     >
                       
-                      {/* Destaque Ouro para o Menor Preço */}
                       {isWinner && (
                         <div className="absolute -top-2.5 left-4 flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 shadow-sm">
                           <Trophy size={10} /> Melhor Oferta
                         </div>
                       )}
 
-                      <div className="flex items-center gap-5 w-1/2">
-                        {/* Posição no Ranking */}
-                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
-                          isWinner ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
-                        }`}>
-                          #{index + 1}
-                        </div>
+                      {/* LINHA PRINCIPAL VISÍVEL */}
+                      <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-5 w-[45%]">
+                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                              isWinner ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-400"
+                            }`}>
+                              #{index + 1}
+                            </div>
 
-                        {/* Dados da Transportadora */}
-                        <div className="min-w-0">
-                          <h4 className="text-sm font-bold text-slate-800 truncate">{bid.carrier}</h4>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="flex items-center text-[11px] font-semibold text-slate-500">
-                              <Truck size={12} className="mr-1.5 text-slate-400" /> {bid.vehicle}
-                            </span>
-                            <span className="flex items-center text-[11px] font-semibold text-slate-500">
-                              <Clock size={12} className="mr-1.5 text-slate-400" /> ETA: {bid.eta}
-                            </span>
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-bold text-slate-800 truncate">{bid.carrier}</h4>
+                              <div className="flex items-center gap-3 mt-1">
+                                <span className="flex items-center text-[11px] font-semibold text-slate-500">
+                                  <Truck size={12} className="mr-1.5 text-slate-400" /> {bid.vehicle}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+
+                          <div className="flex items-center justify-end gap-6 w-[55%]">
+                            <div className="text-right">
+                              <p className={`text-lg font-black font-mono ${isWinner ? "text-emerald-700" : "text-slate-700"}`}>
+                                {formatCurrency(bid.proposedValue)}
+                              </p>
+                              {savings > 0 ? (
+                                <p className="flex items-center justify-end text-[10px] font-bold text-emerald-600 mt-0.5">
+                                  <ArrowDownRight size={12} className="mr-0.5" /> 
+                                  Economia de {formatCurrency(savings)} ({savingsPercent}%)
+                                </p>
+                              ) : (
+                                <p className="text-[10px] font-bold text-rose-500 mt-0.5">
+                                  Acima do Teto Orçamentário
+                                </p>
+                              )}
+                            </div>
+
+                            <Button 
+                              className={`h-9 px-5 text-xs font-bold tracking-wide transition-colors ${
+                                isWinner 
+                                  ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                              }`}
+                            >
+                              {isWinner ? <><CheckCircle2 size={14} className="mr-1.5" /> Adjudicar Vencedor</> : "Selecionar Lance"}
+                            </Button>
+
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 shrink-0"
+                                onClick={() => toggleExpand(bid.id)}
+                            >
+                                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                            </Button>
+                          </div>
                       </div>
 
-                      <div className="flex items-center gap-8 justify-end w-1/2">
-                        
-                        {/* Lógica Financeira e Economia */}
-                        <div className="text-right">
-                          <p className={`text-lg font-black font-mono ${isWinner ? "text-emerald-700" : "text-slate-700"}`}>
-                            {formatCurrency(bid.proposedValue)}
-                          </p>
-                          {savings > 0 ? (
-                            <p className="flex items-center justify-end text-[10px] font-bold text-emerald-600 mt-0.5">
-                              <ArrowDownRight size={12} className="mr-0.5" /> 
-                              Economia de {formatCurrency(savings)} ({savingsPercent}%)
-                            </p>
-                          ) : (
-                            <p className="text-[10px] font-bold text-rose-500 mt-0.5">
-                              Acima do Teto Orçamentário
-                            </p>
-                          )}
-                        </div>
+                      {/* PAINEL RETRAÍVEL (ANÁLISE DE RISCO) */}
+                      {isExpanded && (
+                          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                                      <Truck size={12} /> Compliance de Frota
+                                  </div>
+                                  <p className="text-xs font-semibold text-slate-800">Garante {bid.vehicle}</p>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">Possui {riskData.veiculos} veículos compatíveis ativos na frota.</p>
+                              </div>
 
-                        {/* Botão de Decisão Final */}
-                        <Button 
-                          className={`h-9 px-6 text-xs font-bold tracking-wide transition-colors ${
-                            isWinner 
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          }`}
-                        >
-                          {isWinner ? <><CheckCircle2 size={14} className="mr-1.5" /> Adjudicar Vencedor</> : "Selecionar Lance"}
-                        </Button>
-                        
-                      </div>
+                              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                                      <FileCheck size={12} /> Validação de Seguro
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <div className={`h-2 w-2 rounded-full ${riskData.seguroStatus === 'ok' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    <p className="text-xs font-semibold text-slate-800">Apólice Ativa</p>
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">{riskData.seguro}</p>
+                              </div>
+
+                              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                                      <Activity size={12} /> Rating de Performance (OTD)
+                                  </div>
+                                  <p className="text-xs font-semibold text-slate-800">
+                                    <span className={riskData.otd >= 95 ? "text-emerald-600" : "text-amber-600"}>{riskData.otd}%</span> de entregas no prazo
+                                  </p>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">Baseado nas últimas 50 viagens.</p>
+                              </div>
+                          </div>
+                      )}
+
                     </div>
                   )
                 })
