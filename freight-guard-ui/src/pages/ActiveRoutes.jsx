@@ -18,7 +18,7 @@ export default function ActiveRoutesDashboard() {
   ])
 
   return (
-    <AppShell title="Monitoramento de Operações">
+    <AppShell title="Rotas Ativas">
       <div className="mx-auto max-w-5xl space-y-6">
         
         {/* HEADER */}

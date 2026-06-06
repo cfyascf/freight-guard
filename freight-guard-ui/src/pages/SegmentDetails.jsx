@@ -62,7 +62,7 @@ export default function SegmentDetails() {
   const anttFloor = route.targetFare * 0.75 // Piso da Rota
 
   return (
-    <AppShell title={`Raio-X da Rota ${route.id}`}>
+    <AppShell title={`Detalhes da Rota`}>
       {/* Container com scroll blindado e altura calculada em 8.5rem (Sem overflow!) */}
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
         

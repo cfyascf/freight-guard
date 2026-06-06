@@ -38,7 +38,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   return (
-    <AppShell title="Operações" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
+    <AppShell title="Visão Geral" contentClassName="overflow-hidden" innerClassName="h-full min-h-0">
       {/* Container mestre rígido na viewport para eliminar scroll da página */}
       <div className="flex h-full min-h-0 flex-col overflow-hidden">
         

@@ -76,7 +76,7 @@ export const ROUTES = [
   {
     path: "/freights-panel",
     element: <FreightsPanel />,
-    label: "Leilões de Trechos",
+    label: "Painel de Leilões",
     icon: Truck,
     access: [ROLES.CONTRACTOR],
     nav: true,
@@ -84,7 +84,7 @@ export const ROUTES = [
   {
     path: "/load-management",
     element: <LoadManagement />,
-    label: "Trechos De Rota",
+    label: "Gestão de Trechos",
     icon: Box,
     access: [ROLES.CONTRACTOR],
     nav: true,
@@ -111,7 +111,7 @@ export const ROUTES = [
   {
     path: "/products-management",
     element: <ProductManagement />,
-    label: "Gestão de Produtos",
+    label: "Catálogo de Produtos",
     icon: Package,
     access: [ROLES.CONTRACTOR],
     nav: true,

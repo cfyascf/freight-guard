@@ -107,7 +107,7 @@ export default function ProductManagement() {
   }
 
   return (
-    <AppShell title="Master Data: Catálogo de Produtos">
+    <AppShell title="Catálogo de Produtos">
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl gap-6 overflow-hidden">
         
         {/* =========================================================

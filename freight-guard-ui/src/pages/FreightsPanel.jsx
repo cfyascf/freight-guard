@@ -22,7 +22,7 @@ export default function FreightsPanel() {
   const leiloesAtivos = segmentPlansMock.filter((s) => s.status !== "Em montagem")
 
   return (
-    <AppShell title="Mesa de Leilões">
+    <AppShell title="Painel de Leilões">
       {/* 1. MUDANÇA: Ajuste no calc() para 8.5rem garantindo que a tela nunca ultrapasse o monitor */}
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl flex-col gap-4 overflow-hidden">
         
