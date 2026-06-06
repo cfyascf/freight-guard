@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Search, Box, SlidersHorizontal, TrendingDown, Clock, ArrowRight } from "lucide-react"
+import { Search, Box, SlidersHorizontal, TrendingDown, Clock } from "lucide-react"
 import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -77,13 +77,13 @@ export default function FreightsMural() {
                       <div className="flex justify-between items-center mb-1">
                           <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider truncate">{o.contractor}</p>
                           <div className="flex gap-1.5 items-center">
+                             {getRiskBadge(o.risk)}
                              {/* Badge de Lance Ativo */}
                              {hasBid && (
                                 <Badge className="bg-blue-600 text-white text-[9px] font-bold border-none uppercase shadow-none">
                                     Lance Ativo
                                 </Badge>
                              )}
-                             {getRiskBadge(o.risk)}
                           </div>
                       </div>
                       <p className="text-sm font-bold text-slate-800 leading-tight">{o.routeLabel}</p>
@@ -139,7 +139,7 @@ export default function FreightsMural() {
                       <Button asChild variant={hasBid ? "outline" : "default"} className={`w-full font-bold h-8 text-xs ${
                           hasBid ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "bg-slate-900 hover:bg-slate-800 text-white"
                       }`}>
-                        <Link to={`/freight-bid/${o.id}`}>
+                        <Link to={`/freight-bid/${o.segmentId}`}>
                             {hasBid ? "Ver Detalhes do Lance" : "Analisar e Dar Lance"}
                         </Link>
                       </Button>

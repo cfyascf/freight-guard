@@ -41,6 +41,7 @@ import CreateProduct from "@/pages/CreateProduct"
 import CreateFreightAuction from "@/pages/CreateFreightAuction"
 import AuctionBids from "@/pages/AuctionBids"
 import FreightsPanel from "@/pages/FreightsPanel"
+import BidAnalysis from "@/pages/BidAnalysis"
 import ProductManagement from "@/pages/ProductsManagement"
 import TransporterManagement from "@/pages/TransporterManagement"
 import CarrierManagement from "@/pages/CarrierManagement"
@@ -131,6 +132,7 @@ export const ROUTES = [
     nav: true,
   },
   { path: "/carrier-portal", element: <CarrierPortal />, access: [ROLES.CARRIER], nav: false },
+  { path: "/freight-bid/:segmentId", element: <BidAnalysis />, access: [ROLES.CARRIER], nav: false },
   {
     path: "/freight-management",
     element: <FreightManagement />,
