@@ -117,9 +117,9 @@ export default function ProductManagement() {
           
           <div className="flex shrink-0 flex-col gap-3 border-b border-slate-100 p-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-slate-800">Catálogo de SKUs ({produtos.length})</h2>
+              <h2 className="text-sm font-bold text-slate-800">Catálogo de Produtos ({produtos.length})</h2>
               <Button size="sm" onClick={() => navigate("/create-product")} className="h-8 bg-blue-600 text-xs font-bold text-white hover:bg-blue-700">
-                <Plus size={14} className="mr-1.5" /> Novo SKU
+                <Plus size={14} className="mr-1.5" /> Novo Produto
               </Button>
             </div>
             <div className="relative">

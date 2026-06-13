@@ -7,7 +7,7 @@ const AUTH_STORAGE_KEY = "sigloc_auth"
 const USER_STORAGE_KEY = "sigloc_user"
 
 const defaultUser = {
-  name: "Pedro Netto",
+  name: "Usuário",
   role: ROLES.DEVELOPER,
 }
 

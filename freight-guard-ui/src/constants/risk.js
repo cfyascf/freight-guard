@@ -1,5 +1,5 @@
 export const RISK = {
   NORMAL: "NORMAL",
-  WARNING: "WARNING",
-  CRITIC: "CRITIC",
+  WARNING: "ATENÇÃO",
+  CRITIC: "CRÍTICO",
 }
