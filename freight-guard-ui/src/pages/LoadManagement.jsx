@@ -80,7 +80,7 @@ export const availableRouteSegments = [
     loadType: "Isotérmico",
     origin: "Ribeirão Preto, SP",
     destination: "Uberlândia, MG",
-    risk: RISK.CRICIC,
+    risk: RISK.CRITIC,
     pickupWindow: "Hoje urgente até às 16:30h",
     weightKg: 3200,
     volumeM3: 18,
@@ -118,23 +118,17 @@ export default function LoadManagement() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // 1. Define o tipo inicial com base na navegação externa (se houver)
-  const initialType = location.state?.isSelectingForAuction ? "auction" : null
+  // Detecta se a intenção de abertura veio orientada a Leilão
+  const isForAuction = location.state?.isSelectingForAuction || false
 
   const [searchTerm, setSearchTerm] = useState("")
-
-  // 2. Controla o tipo de seleção ativa: null (nenhuma), "route" (criar rota) ou "auction" (criar leilão)
-  const [selectionType, setSelectionType] = useState(initialType)
+  const [isSelectionMode, setIsSelectionMode] = useState(isForAuction)
   const [selectedSegmentIds, setSelectedSegmentIds] = useState([])
 
   const [segments, setSegments] = useState(availableRouteSegments)
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
-
-  // Atalhos lógicos para legibilidade do código
-  const isSelectionMode = selectionType !== null
-  const isForAuction = selectionType === "auction"
 
   const visibleSegments = segments.filter((segment) => {
     const term = searchTerm.trim().toLowerCase()
@@ -160,18 +154,18 @@ export default function LoadManagement() {
   }
 
   const handleCancelSelection = () => {
-    setSelectionType(null)
+    setIsSelectionMode(false)
     setSelectedSegmentIds([])
   }
 
   const handleProceed = () => {
     if (isForAuction) {
-      // Direciona para a configuração do leilão
+      // Avança para a criação de leilão passando o item escolhido
       navigate("/create-freight-auction", {
         state: { selectedSegmentId: selectedSegmentIds[0] },
       })
     } else {
-      // Direciona para a roteirização conjunta tradicional
+      // Avança para a tela de montagem de rota padrão
       navigate("/create-route-workspace", {
         state: { selectedIds: selectedSegmentIds },
       })
@@ -203,30 +197,25 @@ export default function LoadManagement() {
     )
   }
 
-  // Define dinamicamente o título do cabeçalho master do AppShell
-  const getPageTitle = () => {
-    if (selectionType === "auction") return "Selecione o Trecho para o Leilão"
-    if (selectionType === "route")
-      return "Selecione os Trechos para Roteirização"
-    return "Gestão de Trechos"
-  }
-
   return (
-    <AppShell title={getPageTitle()}>
+    <AppShell
+      title={
+        isForAuction ? "Selecione o Trecho para o Leilão" : "Gestão de Trechos"
+      }
+    >
       <div className="mx-auto max-w-7xl space-y-4">
         {/* BARRA DE TOPO */}
         <div className="flex flex-col justify-between gap-4 border-b border-slate-100 pb-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900">
-              {selectionType === "auction" && "Trechos Disponíveis para Leilão"}
-              {selectionType === "route" &&
-                "Trechos Disponíveis para Roteirização"}
-              {selectionType === null && "Trechos Disponíveis"}
+              {isForAuction
+                ? "Trechos Disponíveis para Leilão"
+                : "Trechos Disponíveis"}
             </h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative w-64">
+            <div className="relative w-72">
               <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
               <Input
                 value={searchTerm}
@@ -236,41 +225,26 @@ export default function LoadManagement() {
               />
             </div>
 
-            {/* Alternância inteligente dos botões com base no modo ativo */}
-            {selectionType === "route" ? (
-              <Button
-                variant="secondary"
-                className="h-9 border-blue-200 bg-blue-50 text-xs font-semibold text-blue-700 hover:bg-blue-100"
-                onClick={handleCancelSelection}
-              >
-                <X size={14} className="mr-1.5" /> Cancelar Seleção
-              </Button>
-            ) : selectionType === "auction" ? (
-              <Button
-                variant="secondary"
-                className="h-9 border-amber-200 bg-amber-50 text-xs font-semibold text-amber-700 hover:bg-amber-100"
-                onClick={handleCancelSelection}
-              >
-                <X size={14} className="mr-1.5" /> Cancelar Leilão
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                  onClick={() => setSelectionType("route")}
-                >
-                  <Layers size={14} className="mr-1.5" /> Criar Rota
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
-                  onClick={() => setSelectionType("auction")}
-                >
-                  <Gavel size={14} className="mr-1.5" /> Criar Leilão
-                </Button>
-              </>
-            )}
+            {/* O mesmo botão apenas troca o texto e a cor com base no contexto */}
+            <Button
+              variant={isSelectionMode ? "secondary" : "outline"}
+              className={
+                isSelectionMode
+                  ? "h-9 border-blue-200 bg-blue-50 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                  : "h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              }
+              onClick={() =>
+                isSelectionMode
+                  ? handleCancelSelection()
+                  : setIsSelectionMode(true)
+              }
+            >
+              <Gavel size={14} className="mr-1.5" />
+              {isSelectionMode
+                ? "Cancelar"
+                : "Criar Leilão"
+                  }
+            </Button>
 
             <Button
               asChild
@@ -289,39 +263,29 @@ export default function LoadManagement() {
             className={`flex animate-in flex-col justify-between rounded-xl border p-3 px-4 text-sm duration-200 fade-in md:flex-row md:items-center ${
               selectedSegmentIds.length > 0
                 ? "border-emerald-200 bg-emerald-50"
-                : isForAuction
-                  ? "border-amber-100 bg-amber-50/60"
-                  : "border-blue-100 bg-blue-50"
+                : "border-blue-100 bg-blue-50"
             }`}
           >
             <div
-              className={`flex items-center gap-2.5 ${selectedSegmentIds.length > 0 ? "text-emerald-900" : isForAuction ? "text-amber-900" : "text-blue-900"}`}
+              className={`flex items-center gap-2.5 ${selectedSegmentIds.length > 0 ? "text-emerald-900" : "text-blue-900"}`}
             >
               {selectedSegmentIds.length > 0 ? (
                 <>
-                  <span
-                    className={`flex h-5 w-5 items-center justify-center rounded-md text-[10px] font-black tracking-wider text-white ${isForAuction ? "bg-amber-600" : "bg-emerald-600"}`}
-                  >
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-600 text-[10px] font-black tracking-wider text-white">
                     {selectedSegmentIds.length}
                   </span>
                   <span className="text-xs font-medium text-slate-700">
-                    {isForAuction
-                      ? "Trecho selecionado para o leilão! Clique ao lado para prosseguir com os dados comerciais."
-                      : "Trecho selecionado com sucesso! Clique ao lado para prosseguir com a roteirização."}
+                    Trecho selecionado! Clique ao lado para prosseguir com as
+                    configurações.
                   </span>
                 </>
               ) : (
                 <>
-                  <AlertCircle
-                    size={18}
-                    className={
-                      isForAuction ? "text-amber-600" : "text-blue-600"
-                    }
-                  />
+                  <AlertCircle size={18} className="text-blue-600" />
                   <span className="text-xs font-medium text-slate-700">
                     {isForAuction
-                      ? "Modo Leilão Ativo: Selecione o trecho que deseja enviar para leilão marcando a caixa correspondente abaixo."
-                      : "Modo Roteirização Ativo: Selecione os trechos marcando as caixas correspondentes abaixo."}
+                      ? "Por favor, escolha o trecho que deseja enviar para o leilão marcando a caixa correspondente na lista abaixo."
+                      : "Por favor, selecione os trechos desejados marcando as caixas de seleção na lista abaixo."}
                   </span>
                 </>
               )}
@@ -330,11 +294,7 @@ export default function LoadManagement() {
             {selectedSegmentIds.length > 0 && (
               <button
                 onClick={handleProceed}
-                className={`mt-3 flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold text-white transition-colors md:mt-0 ${
-                  isForAuction
-                    ? "bg-amber-600 hover:bg-amber-700"
-                    : "bg-emerald-600 hover:bg-emerald-700"
-                }`}
+                className="mt-3 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700 md:mt-0"
               >
                 {isForAuction ? "Configurar Leilão" : "Avançar Roteirização"}{" "}
                 <ArrowRight size={14} className="animate-pulse" />
@@ -388,9 +348,7 @@ export default function LoadManagement() {
                 key={segment.id}
                 className={`group relative flex w-full flex-col rounded-xl border transition-all ${
                   isChecked
-                    ? isForAuction
-                      ? "border-amber-300 bg-amber-50/30 ring-1 ring-amber-200"
-                      : "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200"
+                    ? "border-blue-300 bg-blue-50/40 ring-1 ring-blue-200"
                     : isEditingThis
                       ? "border-blue-300 bg-white"
                       : "border-slate-200 bg-white"
@@ -404,7 +362,7 @@ export default function LoadManagement() {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleToggleSegment(segment.id)}
-                        className={`h-4 w-4 cursor-pointer rounded border-slate-300 ${isForAuction ? "accent-amber-600" : "accent-blue-600"}`}
+                        className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-blue-600"
                       />
                     </div>
                   )}
