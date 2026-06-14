@@ -11,9 +11,7 @@ import {
   PackageOpen,
   Snowflake,
   AlertTriangle,
-  AlertCircle,
   CheckCircle2,
-  XCircle,
 } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
@@ -153,30 +151,30 @@ export default function SegmentDetails() {
 
   const [bidValue, setBidValue] = useState(route.targetFare)
   const [selectedVehicleId, setSelectedVehicleId] = useState("")
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
-  // Funções de ação rápida para o input de lance
   const applyLeaderBid = () => setBidValue(route.auctionInfo.bestBid - 50)
   const applyFloorBid = () => setBidValue(anttFloor)
 
   // ==========================================
-  // ENGENHARIA DA TRAVA SISTÊMICA
+  // FILTRO INTELIGENTE E TRAVA DE NEGÓCIO
   // ==========================================
-  const selectedVehicle = mockFleet.find((v) => v.id === selectedVehicleId)
+  const compatibleFleet = mockFleet.filter(
+    (v) =>
+      v.maxWeightKg >= route.totalWeightKg &&
+      v.maxVolumeM3 >= route.totalVolumeM3 &&
+      v.bodyType === route.bodyType
+  )
 
-  const weightOverflow =
-    selectedVehicle && route.totalWeightKg > selectedVehicle.maxWeightKg
-  const volumeOverflow =
-    selectedVehicle && route.totalVolumeM3 > selectedVehicle.maxVolumeM3
-  const bodyMatch =
-    selectedVehicle && route.bodyType === selectedVehicle.bodyType
-
-  const isBidBlocked =
-    !selectedVehicle || weightOverflow || volumeOverflow || !bodyMatch
+  const selectedVehicle = compatibleFleet.find(
+    (v) => v.id === selectedVehicleId
+  )
+  const isBidBlocked = !selectedVehicle || !termsAccepted
 
   return (
     <AppShell title={`Detalhes da Rota`}>
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
-        {/* HEADER LIMPO */}
+        {/* HEADER */}
         <div className="mb-4 flex shrink-0 items-center justify-between border-b border-slate-200 pt-1 pb-2">
           <Button
             variant="ghost"
@@ -190,7 +188,7 @@ export default function SegmentDetails() {
 
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full space-y-4 overflow-y-auto pr-2 pb-6">
-            {/* CABEÇALHO E SLA CRÍTICO */}
+            {/* CABEÇALHO E SLA */}
             <div className="flex flex-col gap-4">
               <div>
                 <div className="mb-1.5 flex items-center gap-2">
@@ -207,7 +205,6 @@ export default function SegmentDetails() {
                 </h1>
               </div>
 
-              {/* BANNER DE SLA */}
               <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 md:flex-row">
                 <div className="flex flex-1 items-center gap-3 border-b border-slate-200 bg-amber-50 p-3 md:border-r md:border-b-0">
                   <div className="rounded-lg bg-amber-100 p-1.5 text-amber-700">
@@ -238,181 +235,152 @@ export default function SegmentDetails() {
               </div>
             </div>
 
-            {/* PAINEL DE AÇÃO (LANCE) E ESTRATÉGIA */}
+            {/* LAYOUT PRINCIPAL: 2 COLUNAS DE MESMA ALTURA */}
+            {/* Removido o items-start para que ambas as colunas estiquem igual */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* 1. LANCE E VALIDAÇÃO DE ALOCAÇÃO VISUAL */}
-              <div className="flex flex-col justify-between rounded-xl border border-blue-200 bg-blue-50/30 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 text-xs font-bold text-slate-900">
-                    <Gavel size={14} className="text-blue-600" /> Formulário de
-                    Lance
-                  </h3>
-                  <Badge
-                    variant="outline"
-                    className="border-blue-200 bg-white text-[9px] text-blue-700"
-                  >
-                    Teto: {formatCurrency(route.targetFare)}
-                  </Badge>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Seleção do Veículo */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                      Selecione o Veículo para a Viagem
-                    </label>
-                    <Select
-                      value={selectedVehicleId}
-                      onValueChange={setSelectedVehicleId}
+              {/* ========================================================= */}
+              {/* COLUNA ESQUERDA: FORMULÁRIO DE LANCE (Altura Total: h-full) */}
+              {/* ========================================================= */}
+              <div className="flex h-full flex-col rounded-xl border border-blue-200 bg-blue-50/30 p-4">
+                {/* PARTE SUPERIOR DO FORMULÁRIO */}
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 text-xs font-bold text-slate-900">
+                      <Gavel size={14} className="text-blue-600" /> Formulário
+                      de Lance
+                    </h3>
+                    <Badge
+                      variant="outline"
+                      className="border-blue-200 bg-white text-[9px] text-blue-700"
                     >
-                      <SelectTrigger
-                        className={`h-9 bg-white text-xs ${isBidBlocked && selectedVehicle ? "border-rose-300 ring-rose-100 focus:ring-rose-200" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500"}`}
-                      >
-                        <SelectValue placeholder="Escolha um caminhão da frota..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockFleet.map((v) => (
-                          <SelectItem
-                            key={v.id}
-                            value={v.id}
-                            className="text-xs"
-                          >
-                            {v.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      Teto: {formatCurrency(route.targetFare)}
+                    </Badge>
                   </div>
 
-                  {/* DASHBOARD VISUAL DE COMPATIBILIDADE */}
-                  {selectedVehicle ? (
-                    <div
-                      className={`animate-in space-y-3 rounded-lg border p-3 duration-200 zoom-in-95 fade-in ${isBidBlocked ? "border-rose-200 bg-rose-50/50" : "border-emerald-200 bg-emerald-50/80"}`}
-                    >
-                      <div className="mb-1 flex items-center gap-1.5">
-                        {isBidBlocked ? (
-                          <AlertCircle size={14} className="text-rose-500" />
-                        ) : (
+                  <div className="space-y-4">
+                    {/* Seleção do Veículo */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
+                        Selecione um Veículo Compatível da Frota
+                      </label>
+                      <Select
+                        value={selectedVehicleId}
+                        onValueChange={setSelectedVehicleId}
+                      >
+                        <SelectTrigger className="h-9 border-slate-200 bg-white text-xs focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue
+                            placeholder={
+                              compatibleFleet.length > 0
+                                ? "Escolha um caminhão..."
+                                : "Nenhum compatível."
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {compatibleFleet.map((v) => (
+                            <SelectItem
+                              key={v.id}
+                              value={v.id}
+                              className="text-xs"
+                            >
+                              {v.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Dashboard Visual de Validação */}
+                    {selectedVehicle ? (
+                      <div className="animate-in space-y-2 rounded-lg border border-emerald-200 bg-emerald-50/80 p-2.5 duration-200 zoom-in-95 fade-in">
+                        <div className="mb-1 flex items-center gap-1.5">
                           <CheckCircle2
                             size={14}
-                            className="text-emerald-500"
+                            className="text-emerald-600"
                           />
-                        )}
-                        <p
-                          className={`text-[10px] font-bold tracking-wider uppercase ${isBidBlocked ? "text-rose-700" : "text-emerald-700"}`}
-                        >
-                          {isBidBlocked
-                            ? "Alocação Inválida para o Trecho"
-                            : "Veículo Aprovado para o Trecho"}
+                          <p className="text-[10px] font-bold tracking-wider text-emerald-800 uppercase">
+                            Equipamento Validado pelo Sistema
+                          </p>
+                        </div>
+
+                        <div className="rounded border border-emerald-100 bg-white p-2.5">
+                          <div className="mb-2.5 flex items-start justify-between border-b border-slate-100 pb-2.5">
+                            <div className="flex flex-col pr-2">
+                              <span className="mb-0.5 text-[9px] font-bold text-slate-400 uppercase">
+                                Carroceria
+                              </span>
+                              <span className="text-xs leading-snug font-bold whitespace-normal text-slate-700">
+                                {selectedVehicle.bodyType}
+                              </span>
+                            </div>
+                            <Badge className="mt-0.5 shrink-0 border-none bg-emerald-100 px-1.5 py-0 text-[9px] text-emerald-700 hover:bg-emerald-100">
+                              OK
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <div className="mb-1 flex items-end justify-between">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase">
+                                Peso da Carga
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-700">
+                                {formatWeight(route.totalWeightKg)}{" "}
+                                <span className="font-normal text-slate-400">
+                                  / Cap:{" "}
+                                  {formatWeight(selectedVehicle.maxWeightKg)}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                              <div
+                                className="h-full bg-emerald-500"
+                                style={{
+                                  width: `${(route.totalWeightKg / selectedVehicle.maxWeightKg) * 100}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-slate-300 bg-white/50 p-4 text-center">
+                        <Truck
+                          size={20}
+                          className="mx-auto mb-1 text-slate-300"
+                        />
+                        <p className="text-[10px] leading-normal font-semibold text-slate-500">
+                          Selecione um veículo compatível acima para
+                          <br /> prosseguir com a oferta do lance.
                         </p>
                       </div>
+                    )}
 
-                      {/* Comparativo Carroceria */}
-                      <div className="flex items-center justify-between rounded border border-slate-100 bg-white p-2">
-                        <div className="flex flex-col">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">
-                            Carroceria
-                          </span>
-                          <span
-                            className="max-w-[150px] truncate text-xs font-semibold text-slate-700"
-                            title={selectedVehicle.bodyType}
-                          >
-                            {selectedVehicle.bodyType}
-                          </span>
-                        </div>
-                        {bodyMatch ? (
-                          <Badge className="border-none bg-emerald-100 px-1.5 py-0 text-[9px] text-emerald-700 hover:bg-emerald-100">
-                            OK
-                          </Badge>
-                        ) : (
-                          <Badge className="flex items-center gap-1 border-none bg-rose-100 px-1.5 py-0 text-[9px] text-rose-700 hover:bg-rose-100">
-                            <XCircle size={10} /> Exigido: {route.bodyType}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Comparativo Peso */}
-                      <div className="space-y-1.5 rounded border border-slate-100 bg-white p-2">
-                        <div className="flex items-end justify-between">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">
-                              Peso (Carga / Cap. Veículo)
-                            </span>
-                            <span className="text-xs font-bold text-slate-700">
-                              {formatWeight(route.totalWeightKg)}{" "}
-                              <span className="text-[10px] font-normal text-slate-400">
-                                / {formatWeight(selectedVehicle.maxWeightKg)}
-                              </span>
-                            </span>
-                          </div>
-                          {weightOverflow && (
-                            <span className="rounded border border-rose-100 bg-rose-50 px-1 text-[9px] font-bold text-rose-600">
-                              +
-                              {formatWeight(
-                                route.totalWeightKg -
-                                  selectedVehicle.maxWeightKg
-                              )}{" "}
-                              excesso
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className={`h-full ${weightOverflow ? "bg-rose-500" : "bg-emerald-500"}`}
-                            style={{
-                              width: `${Math.min((route.totalWeightKg / selectedVehicle.maxWeightKg) * 100, 100)}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Comparativo Volume */}
-                      <div className="space-y-1.5 rounded border border-slate-100 bg-white p-2">
-                        <div className="flex items-end justify-between">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">
-                              Cubagem (Carga / Cap. Veículo)
-                            </span>
-                            <span className="text-xs font-bold text-slate-700">
-                              {formatVolume(route.totalVolumeM3)}{" "}
-                              <span className="text-[10px] font-normal text-slate-400">
-                                / {formatVolume(selectedVehicle.maxVolumeM3)}
-                              </span>
-                            </span>
-                          </div>
-                          {volumeOverflow && (
-                            <span className="rounded border border-rose-100 bg-rose-50 px-1 text-[9px] font-bold text-rose-600">
-                              Falta espaço
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className={`h-full ${volumeOverflow ? "bg-rose-500" : "bg-emerald-500"}`}
-                            style={{
-                              width: `${Math.min((route.totalVolumeM3 / selectedVehicle.maxVolumeM3) * 100, 100)}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-dashed border-slate-300 bg-white/50 p-4 text-center">
-                      <Truck
-                        size={20}
-                        className="mx-auto mb-1 text-slate-300"
+                    {/* Termo de Responsabilidade */}
+                    <div
+                      className={`flex items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${termsAccepted ? "border-blue-200 bg-blue-50/50" : "border-slate-200 bg-white"}`}
+                    >
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-blue-600"
                       />
-                      <p className="text-[10px] font-semibold text-slate-500">
-                        Selecione um veículo acima para que o sistema
-                        <br />
-                        verifique a viabilidade da carga.
-                      </p>
+                      <label
+                        htmlFor="terms"
+                        className="cursor-pointer text-[10px] leading-snug font-semibold text-slate-600"
+                      >
+                        Declaro que o veículo possui todas as especificações
+                        técnicas e condições necessárias para o transporte.
+                      </label>
                     </div>
-                  )}
+                  </div>
+                </div>
 
-                  {/* Input Valor */}
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
+                {/* PARTE INFERIOR DO FORMULÁRIO (Empurrada para alinhar no fundo da coluna) */}
+                <div className="mt-auto space-y-2.5 pt-6">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                       Valor da Proposta
                     </label>
                     <div
@@ -433,7 +401,6 @@ export default function SegmentDetails() {
                     </div>
                   </div>
 
-                  {/* Botões de Ação */}
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
@@ -461,143 +428,147 @@ export default function SegmentDetails() {
                   >
                     {!selectedVehicle
                       ? "Selecione um Veículo"
-                      : isBidBlocked
-                        ? "Veículo Incompatível"
+                      : !termsAccepted
+                        ? "Aceite o Termo para Continuar"
                         : "Confirmar Lance Oficial"}
                   </Button>
                 </div>
               </div>
 
-              {/* 2. ESTRATÉGIA E RANKING */}
-              <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4">
-                <h3 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-900">
-                  <Activity size={14} className="text-slate-500" /> Mercado &
-                  Concorrência
-                </h3>
+              {/* ========================================================= */}
+              {/* COLUNA DIREITA: INFORMAÇÕES DE CONTEXTO EMPILHADAS          */}
+              {/* ========================================================= */}
+              <div className="flex flex-col space-y-4">
+                {/* 1. Mercado & Concorrência */}
+                <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4">
+                  <h3 className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-900">
+                    <Activity size={14} className="text-slate-500" /> Mercado &
+                    Concorrência
+                  </h3>
 
-                <div className="mb-3 grid grid-cols-2 gap-3">
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p className="mb-0.5 text-[9px] font-bold text-slate-400 uppercase">
-                      Seu Rank Atual
-                    </p>
-                    <p className="text-xl font-black text-slate-800">#4</p>
+                  <div className="mb-3 grid grid-cols-2 gap-3">
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-3">
+                      <p className="mb-0.5 text-[9px] font-bold text-slate-400 uppercase">
+                        Seu Rank Atual
+                      </p>
+                      <p className="text-xl font-black text-slate-800">#4</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-3">
+                      <p className="mb-0.5 text-[9px] font-bold text-slate-400 uppercase">
+                        Lances Ativos
+                      </p>
+                      <p className="text-xl font-black text-blue-600">
+                        {route.auctionInfo.bids}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-3">
-                    <p className="mb-0.5 text-[9px] font-bold text-slate-400 uppercase">
-                      Lances Ativos
-                    </p>
-                    <p className="text-xl font-black text-blue-600">
-                      {route.auctionInfo.bids}
-                    </p>
+
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">
+                        Melhor Oferta (Líder)
+                      </p>
+                      <p className="font-mono text-xs font-black text-emerald-600">
+                        {formatCurrency(route.auctionInfo.bestBid)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">
+                        Distância P/ Líder
+                      </p>
+                      <p className="font-mono text-xs font-bold text-rose-500">
+                        - R$ 300
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                {/* 2. Especificações da Carga */}
+                <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                    <PackageOpen size={14} className="text-blue-600" />
+                    <h2 className="text-[11px] font-bold tracking-wider text-slate-700 uppercase">
+                      Especificações da Carga
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        Embalagem Base
+                      </p>
+                      <p className="mt-0.5 text-xs font-bold text-slate-800">
+                        {route.productDetails.packaging}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        Tipo de Produto
+                      </p>
+                      <p className="mt-0.5 text-xs font-bold text-slate-800">
+                        {route.productDetails.type}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        <Snowflake size={10} /> Temperatura
+                      </p>
+                      <p className="mt-0.5 text-xs font-bold text-blue-600">
+                        {route.productDetails.temperature}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        <AlertTriangle size={10} /> Manuseio
+                      </p>
+                      <p className="mt-0.5 text-xs font-bold text-rose-600">
+                        {route.productDetails.handling}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Resumo da Rota e Equipamento */}
+                <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                    <Truck size={14} className="text-blue-600" />
+                    <h2 className="text-[11px] font-bold tracking-wider text-slate-700 uppercase">
+                      Resumo da Rota e Equipamento
+                    </h2>
+                  </div>
                   <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase">
-                      Melhor Oferta (Líder)
+                    <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                      Frota Recomendada
                     </p>
-                    <p className="font-mono text-xs font-black text-emerald-600">
-                      {formatCurrency(route.auctionInfo.bestBid)}
+                    <p className="mt-0.5 text-xs leading-snug font-bold whitespace-normal text-slate-800">
+                      {route.bodyType}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase">
-                      Distância P/ Líder
-                    </p>
-                    <p className="font-mono text-xs font-bold text-rose-500">
-                      - R$ 300
-                    </p>
+                  <div className="mt-auto grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        Peso Consolidado
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 font-mono text-xs font-black text-slate-800">
+                        <Scale size={12} className="text-slate-400" />{" "}
+                        {formatWeight(route.totalWeightKg)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                        Cubagem (Volume)
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 font-mono text-xs font-black text-slate-800">
+                        <Box size={12} className="text-slate-400" />{" "}
+                        {formatVolume(route.totalVolumeM3)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* PAINEL TÉCNICO: PRODUTO E EQUIPAMENTO */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                  <PackageOpen size={14} className="text-blue-600" />
-                  <h2 className="text-[11px] font-bold tracking-wider text-slate-700 uppercase">
-                    Especificações da Carga
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-                  <div>
-                    <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      Embalagem Base
-                    </p>
-                    <p className="mt-0.5 text-xs font-bold text-slate-800">
-                      {route.productDetails.packaging}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      Tipo de Produto
-                    </p>
-                    <p className="mt-0.5 text-xs font-bold text-slate-800">
-                      {route.productDetails.type}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      <Snowflake size={10} /> Temperatura
-                    </p>
-                    <p className="mt-0.5 text-xs font-bold text-blue-600">
-                      {route.productDetails.temperature}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      <AlertTriangle size={10} /> Manuseio
-                    </p>
-                    <p className="mt-0.5 text-xs font-bold text-rose-600">
-                      {route.productDetails.handling}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                  <Truck size={14} className="text-blue-600" />
-                  <h2 className="text-[11px] font-bold tracking-wider text-slate-700 uppercase">
-                    Resumo da Rota e Equipamento
-                  </h2>
-                </div>
-                <div>
-                  <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                    Frota Recomendada
-                  </p>
-                  <p className="mt-0.5 text-xs font-bold text-slate-800">
-                    {route.bodyType}
-                  </p>
-                </div>
-                <div className="mt-auto grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
-                  <div>
-                    <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      Peso Consolidado
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1 font-mono text-xs font-black text-slate-800">
-                      <Scale size={12} className="text-slate-400" />{" "}
-                      {formatWeight(route.totalWeightKg)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                      Cubagem (Volume)
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1 font-mono text-xs font-black text-slate-800">
-                      <Box size={12} className="text-slate-400" />{" "}
-                      {formatVolume(route.totalVolumeM3)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ITINERÁRIO */}
+            {/* ITINERÁRIO (LARGURA TOTAL) */}
             <div className="rounded-xl border border-slate-200 bg-white">
               <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                 <MapPinned size={14} className="text-slate-600" />
@@ -632,7 +603,7 @@ export default function SegmentDetails() {
               </div>
             </div>
 
-            {/* TRECHOS COMPOSIÇÃO */}
+            {/* TRECHOS COMPOSIÇÃO (LARGURA TOTAL) */}
             <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div className="flex items-center gap-2">
