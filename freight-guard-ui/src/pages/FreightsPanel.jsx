@@ -1,5 +1,17 @@
 import { useState } from "react"
-import { Search, Clock, TrendingDown, ArrowRight, SlidersHorizontal, Pencil, Trash2, Check, X, AlertCircle } from "lucide-react"
+import {
+  Search,
+  Clock,
+  TrendingDown,
+  ArrowRight,
+  SlidersHorizontal,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  AlertCircle,
+  Plus,
+} from "lucide-react"
 import { Link } from "react-router-dom"
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
@@ -50,15 +62,16 @@ export default function FreightsPanel() {
   return (
     <AppShell title="Painel de Leilões">
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-7xl flex-col gap-4 overflow-hidden">
-        
-        <div className="flex shrink-0 flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-3 pt-1">
+        <div className="flex shrink-0 flex-col justify-between gap-4 border-b border-slate-100 pt-1 pb-3 md:flex-row md:items-center">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">Leilões em Andamento</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              Leilões em Andamento
+            </h1>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative w-72">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -66,44 +79,83 @@ export default function FreightsPanel() {
                 className="h-9 border-slate-200 bg-white pl-9 text-xs"
               />
             </div>
-            <Button variant="outline" className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50">
-              <SlidersHorizontal size={14} className="mr-1.5 text-slate-500" /> Filtros
+            <Button
+              variant="outline"
+              className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <SlidersHorizontal size={14} className="mr-1.5 text-slate-500" />{" "}
+              Filtros
+            </Button>
+            <Button
+              asChild
+              className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700"
+            >
+              <Link
+                to="/load-management"
+                state={{ isSelectingForAuction: true }}
+              >
+                <Plus size={14} className="mr-1.5" /> Criar Leilão
+              </Link>
             </Button>
           </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto pr-2 pb-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               {filteredLeiloes.map((l) => {
                 const isEditing = editingId === l.id
                 const isDeleting = deletingId === l.id
 
                 return (
-                  <div key={l.id} className="group relative flex flex-col rounded-xl border border-slate-200 bg-white transition-all overflow-hidden">
-                    
+                  <div
+                    key={l.id}
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all"
+                  >
                     {/* CABEÇALHO DO CARD - Azulado no Edit Mode */}
-                    <div className={`flex items-center justify-between border-b px-4 py-3 min-h-[44px] ${isEditing ? "border-blue-100 bg-blue-50/50" : "border-slate-100 bg-slate-50/50"}`}>
-                      
+                    <div
+                      className={`flex min-h-[44px] items-center justify-between border-b px-4 py-3 ${isEditing ? "border-blue-100 bg-blue-50/50" : "border-slate-100 bg-slate-50/50"}`}
+                    >
                       <div className="relative h-5 w-full">
                         {isDeleting ? (
-                          <div className="absolute inset-0 flex items-center gap-2 animate-in fade-in">
-                            <span className="text-[10px] font-bold text-rose-600">Excluir?</span>
-                            <button onClick={() => setDeletingId(null)} className="text-slate-400 hover:text-slate-600"><X size={14}/></button>
-                            <button onClick={() => handleDelete(l.id)} className="text-rose-600 hover:text-rose-700 font-bold text-[10px]">Sim</button>
+                          <div className="absolute inset-0 flex animate-in items-center gap-2 fade-in">
+                            <span className="text-[10px] font-bold text-rose-600">
+                              Excluir?
+                            </span>
+                            <button
+                              onClick={() => setDeletingId(null)}
+                              className="text-slate-400 hover:text-slate-600"
+                            >
+                              <X size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(l.id)}
+                              className="text-[10px] font-bold text-rose-600 hover:text-rose-700"
+                            >
+                              Sim
+                            </button>
                           </div>
                         ) : (
                           <>
-                            <span className="absolute inset-0 flex items-center font-mono text-[10px] font-bold text-slate-500 opacity-100 group-hover:opacity-0 transition-opacity duration-200">
+                            <span className="absolute inset-0 flex items-center font-mono text-[10px] font-bold text-slate-500 opacity-100 transition-opacity duration-200 group-hover:opacity-0">
                               {l.id}
                             </span>
-                            
-                            <div className="absolute inset-0 hidden group-hover:flex items-center gap-1 transition-opacity duration-200">
-                              <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-600 hover:bg-blue-100" onClick={() => startEditing(l)}>
+
+                            <div className="absolute inset-0 hidden items-center gap-1 transition-opacity duration-200 group-hover:flex">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-blue-600 hover:bg-blue-100"
+                                onClick={() => startEditing(l)}
+                              >
                                 <Pencil size={12} />
                               </Button>
-                              <Button size="icon" variant="ghost" className="h-6 w-6 text-rose-600 hover:bg-rose-100" onClick={() => setDeletingId(l.id)}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-rose-600 hover:bg-rose-100"
+                                onClick={() => setDeletingId(l.id)}
+                              >
                                 <Trash2 size={12} />
                               </Button>
                             </div>
@@ -115,55 +167,114 @@ export default function FreightsPanel() {
                     </div>
 
                     {/* CORPO DO CARD - Altura mínima fixa para estabilidade */}
-                    <div className="flex-1 min-h-[220px] flex flex-col">
+                    <div className="flex min-h-[220px] flex-1 flex-col">
                       {isDeleting ? (
-                        <div className="flex-1 p-6 flex items-center justify-center text-rose-500 bg-rose-50/30">
+                        <div className="flex flex-1 items-center justify-center bg-rose-50/30 p-6 text-rose-500">
                           <AlertCircle size={32} />
                         </div>
                       ) : isEditing ? (
-                        <div className="p-4 space-y-3 bg-white animate-in fade-in duration-200 h-full flex flex-col">
+                        <div className="flex h-full animate-in flex-col space-y-3 bg-white p-4 duration-200 fade-in">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-500">Nome do Leilão</label>
-                            <Input value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="h-8 text-xs border-slate-200" />
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">
+                              Nome do Leilão
+                            </label>
+                            <Input
+                              value={editForm.name}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  name: e.target.value,
+                                })
+                              }
+                              className="h-8 border-slate-200 text-xs"
+                            />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-500">Prazo (Deadline)</label>
-                            <Input value={editForm.bidDeadline} onChange={(e) => setEditForm({...editForm, bidDeadline: e.target.value})} className="h-8 text-xs border-slate-200" />
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">
+                              Prazo (Deadline)
+                            </label>
+                            <Input
+                              value={editForm.bidDeadline}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  bidDeadline: e.target.value,
+                                })
+                              }
+                              className="h-8 border-slate-200 text-xs"
+                            />
                           </div>
-                          <div className="flex gap-2 justify-end mt-auto pt-4 border-t border-slate-100">
-                            <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-8 text-xs">Cancelar</Button>
-                            <Button size="sm" onClick={saveEdit} className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
+                          <div className="mt-auto flex justify-end gap-2 border-t border-slate-100 pt-4">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingId(null)}
+                              className="h-8 text-xs"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={saveEdit}
+                              className="h-8 bg-blue-600 text-xs text-white hover:bg-blue-700"
+                            >
+                              Salvar
+                            </Button>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col flex-1 p-4">
+                        <div className="flex flex-1 flex-col p-4">
                           <div className="mb-4">
-                            <h3 className="text-sm font-bold text-slate-800 line-clamp-1">{l.name}</h3>
-                            <p className="text-xs font-medium text-slate-500 mt-1 truncate">{l.stops.join(" ➔ ")}</p>
+                            <h3 className="line-clamp-1 text-sm font-bold text-slate-800">
+                              {l.name}
+                            </h3>
+                            <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                              {l.stops.join(" ➔ ")}
+                            </p>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="mb-4 grid grid-cols-2 gap-3">
                             <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Melhor Lance</p>
+                              <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                                Melhor Lance
+                              </p>
                               <p className="mt-0.5 font-mono text-sm font-black text-emerald-600">
-                                {l.bestBid ? formatCurrency(l.bestBid) : "Sem ofertas"}
+                                {l.bestBid
+                                  ? formatCurrency(l.bestBid)
+                                  : "Sem ofertas"}
                               </p>
                             </div>
                             <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total de Lances</p>
-                              <div className="flex items-center mt-0.5">
-                                <TrendingDown size={14} className="text-blue-500 mr-1.5" />
-                                <p className="text-sm font-bold text-slate-700">{l.totalBids}</p>
+                              <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                                Total de Lances
+                              </p>
+                              <div className="mt-0.5 flex items-center">
+                                <TrendingDown
+                                  size={14}
+                                  className="mr-1.5 text-blue-500"
+                                />
+                                <p className="text-sm font-bold text-slate-700">
+                                  {l.totalBids}
+                                </p>
                               </div>
                             </div>
                           </div>
 
-                          <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                            <div className="flex items-center text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                              <Clock size={12} className="mr-1.5" /> {l.bidDeadline}
+                          <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+                            <div className="flex items-center rounded bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-600">
+                              <Clock size={12} className="mr-1.5" />{" "}
+                              {l.bidDeadline}
                             </div>
-                            <Button asChild size="sm" variant="ghost" className="h-8 text-xs font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2">
-                              <Link to={`/auction-bids/${l.id}`}>Analisar <ArrowRight size={14} className="ml-1" /></Link>
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2 text-xs font-bold text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            >
+                              <Link to={`/auction-bids/${l.id}`}>
+                                Analisar{" "}
+                                <ArrowRight size={14} className="ml-1" />
+                              </Link>
                             </Button>
                           </div>
                         </div>
