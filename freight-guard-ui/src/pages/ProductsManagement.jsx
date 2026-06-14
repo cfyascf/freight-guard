@@ -207,7 +207,7 @@ export default function ProductManagement() {
               <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/50 p-4">
                 <div className="flex items-center gap-2">
                   <Box size={16} className="text-blue-600" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Raio-X do SKU</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Raio-X do Produto</h2>
                   {!isEditing && <Badge variant="outline" className="ml-2 bg-white text-[9px] text-slate-400">Somente Leitura</Badge>}
                 </div>
                 
@@ -241,7 +241,7 @@ export default function ProductManagement() {
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Código SKU</label>
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Código do Produto</label>
                         <Input 
                           disabled={!isEditing}
                           value={activeProduct.sku} 

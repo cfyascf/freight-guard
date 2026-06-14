@@ -34,7 +34,7 @@ export default function CreateProduct() {
   const [acomodacao, setAcomodacao] = useState("")
 
   return (
-    <AppShell title="Novo Cadastro de Produto">
+    <AppShell title="Cadastro de Produto">
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
         {/* HEADER */}
         <div className="mb-5 flex shrink-0 items-center justify-between border-b border-slate-200 pt-1 pb-3">
