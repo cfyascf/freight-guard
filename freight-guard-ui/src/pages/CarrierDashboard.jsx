@@ -1,4 +1,11 @@
-import { ArrowDownRight, ExternalLink, Scale, Trophy, Truck, Clock } from "lucide-react"
+import {
+  ArrowDownRight,
+  ExternalLink,
+  Scale,
+  Trophy,
+  Truck,
+  Clock,
+} from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -9,9 +16,9 @@ import { Badge } from "@/components/ui/badge"
 // MOCKS ADAPTADOS PARA TRANSPORTADORA
 // ==========================================
 const kpis = [
-  { title: "Veículos Livres", value: "4", style: "text-amber-600"},
+  { title: "Veículos Livres", value: "4", style: "text-amber-600" },
   { title: "Lances Ativos", value: "12", style: "text-blue-600" },
-  { title: "Em Trânsito", value: "38", style: "text-emerald-600"},
+  { title: "Em Trânsito", value: "38", style: "text-emerald-600" },
 ]
 
 const carrierPerformance = {
@@ -21,21 +28,77 @@ const carrierPerformance = {
 }
 
 const activeBidsTracker = [
-  { id: "ROT-9921", auctionId: "TRC-201", label: "Curitiba → São Paulo", myBid: 4200, bestBid: 4200, status: "VENCENDO" },
-  { id: "ROT-9922", auctionId: "TRC-202", label: "Joinville → Campinas", myBid: 3680, bestBid: 3600, status: "PERDENDO" },
-  { id: "ROT-9923", auctionId: "TRC-203", label: "Londrina → Contagem", myBid: 3500, bestBid: 3200, status: "PERDENDO" },
-  { id: "ROT-9924", auctionId: "TRC-204", label: "Maringá → Serra", myBid: 4050, bestBid: 4050, status: "VENCENDO" },
+  {
+    id: "ROT-9921",
+    auctionId: "TRC-201",
+    label: "Curitiba → São Paulo",
+    myBid: 4200,
+    bestBid: 4200,
+    status: "VENCENDO",
+  },
+  {
+    id: "ROT-9922",
+    auctionId: "TRC-202",
+    label: "Joinville → Campinas",
+    myBid: 3680,
+    bestBid: 3600,
+    status: "PERDENDO",
+  },
+  {
+    id: "ROT-9923",
+    auctionId: "TRC-203",
+    label: "Londrina → Contagem",
+    myBid: 3500,
+    bestBid: 3200,
+    status: "PERDENDO",
+  },
+  {
+    id: "ROT-9924",
+    auctionId: "TRC-204",
+    label: "Maringá → Serra",
+    myBid: 4050,
+    bestBid: 4050,
+    status: "VENCENDO",
+  },
 ]
 
 const operationAlerts = [
-  { id: "TRC-1042", truck: "ABC-1234", action: "ATRASO NA COLETA", time: "- 15 min", critical: true },
-  { id: "TRC-1045", truck: "XYZ-9876", action: "PROX. COLETA", time: "1h 10m", critical: false },
-  { id: "TRC-1043", truck: "QWE-5544", action: "DESCARGA SLA", time: "2h 20m", critical: false },
-  { id: "TRC-1051", truck: "ASD-9988", action: "FIM DE JORNADA", time: "3h 00m", critical: false },
+  {
+    id: "TRC-1042",
+    truck: "ABC-1234",
+    action: "ATRASO NA COLETA",
+    time: "- 15 min",
+    critical: true,
+  },
+  {
+    id: "TRC-1045",
+    truck: "XYZ-9876",
+    action: "PROX. COLETA",
+    time: "1h 10m",
+    critical: false,
+  },
+  {
+    id: "TRC-1043",
+    truck: "QWE-5544",
+    action: "DESCARGA SLA",
+    time: "2h 20m",
+    critical: false,
+  },
+  {
+    id: "TRC-1051",
+    truck: "ASD-9988",
+    action: "FIM DE JORNADA",
+    time: "3h 00m",
+    critical: false,
+  },
 ]
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(value)
 }
 
 export default function Dashboard() {
@@ -242,7 +305,7 @@ export default function Dashboard() {
                   variant="ghost"
                   size="sm"
                   className="h-7 gap-1 px-2 text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  onClick={() => navigate("/my-trips")}
+                  onClick={() => navigate("/freight-management")}
                 >
                   Ver Frota <ExternalLink size={12} />
                 </Button>
