@@ -307,7 +307,7 @@ export default function Dashboard() {
                   className="h-7 gap-1 px-2 text-xs font-semibold text-blue-600 hover:text-blue-700"
                   onClick={() => navigate("/freight-management")}
                 >
-                  Ver Frota <ExternalLink size={12} />
+                  Ver Frota<ExternalLink size={12} />
                 </Button>
               </div>
 
