@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function VehicleForm() {
+export default function RegisterVehicle() {
   const navigate = useNavigate()
   
   // Estado espelhado aos campos do modo "update" da tela anterior

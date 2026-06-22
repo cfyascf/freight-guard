@@ -33,7 +33,7 @@ const getRiskTextStyle = (risk) => {
   return "text-slate-400"
 }
 
-export default function LoadManagement() {
+export default function RouteSegmentManagement() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState("")
   const [isSelectionMode, setIsSelectionMode] = useState(false)
@@ -57,7 +57,7 @@ export default function LoadManagement() {
     setIsSelectionMode(false)
     setSelectedSegmentIds([])
   }
-  const handleProceedToWorkspace = () => navigate("/create-route-workspace", { state: { selectedIds: selectedSegmentIds } })
+  const handleProceedToWorkspace = () => navigate("/offer-freight", { state: { selectedIds: selectedSegmentIds } })
 
   const startEditing = (segment) => {
     setEditingId(segment.id)
@@ -103,7 +103,7 @@ export default function LoadManagement() {
             </Button>
 
             <Button asChild className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700">
-              <Link to="/create-load"><Plus size={14} className="mr-1.5" /> Novo Trecho</Link>
+              <Link to="/create-route-segment"><Plus size={14} className="mr-1.5" /> Novo Trecho</Link>
             </Button>
           </div>
         </div>

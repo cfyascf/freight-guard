@@ -19,7 +19,7 @@ const getRiskBadge = (risk) => {
   return <Badge variant="outline" className={`rounded-full text-[10px] uppercase font-bold tracking-wider px-2 py-0 ${styles[risk] || "bg-slate-50"}`}>{risk}</Badge>
 }
 
-export default function FreightsPanel() {
+export default function FreightsOfferedOverview() {
   const [leiloes, setLeiloes] = useState(segmentPlansMock.filter((s) => s.status !== "Em montagem"))
   const [deletingId, setDeletingId] = useState(null)
   const [editingId, setEditingId] = useState(null)

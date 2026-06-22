@@ -256,5 +256,210 @@ export const freightOffersMock = [
   },
 ]
 
+// ==========================================
+// FROTA DE VEÍCULOS DA TRANSPORTADORA
+// ==========================================
+export const vehicleFleetMock = [
+  {
+    id: "VHC-001",
+    plate: "ABC-1234",
+    type: "Carreta Frigorífica",
+    capacity: "28 ton",
+    volumeM3: 90,
+    driver: "João Silva",
+    driverPhone: "+55 (41) 99888-7766",
+    status: "AVAILABLE", // AVAILABLE | IN_TRANSIT | LOCKED | MAINTENANCE
+    currentLocation: "Curitiba, PR",
+    
+    // Bloqueios (rotas confirmadas com período de lock)
+    lockedPeriods: [],
+    
+    // Características técnicas
+    features: ["Refrigeração -25ºC", "Rastreamento GPS", "Seguro Vigente"],
+    lastMaintenance: "01/06/2026",
+    nextMaintenance: "01/12/2026",
+  },
+  {
+    id: "VHC-002",
+    plate: "XYZ-9876",
+    type: "Carreta Frigorífica",
+    capacity: "28 ton",
+    volumeM3: 90,
+    driver: "Maria Santos",
+    driverPhone: "+55 (41) 99777-5544",
+    status: "LOCKED",
+    currentLocation: "São Paulo, SP",
+    
+    lockedPeriods: [
+      {
+        routeId: "TRC-201",
+        routeName: "Curitiba → São Paulo → Salvador",
+        startDate: "2026-05-18T08:00:00",
+        endDate: "2026-05-21T12:00:00",
+        bidId: "BID-5521"
+      }
+    ],
+    
+    features: ["Refrigeração -25ºC", "Rastreamento GPS", "Seguro Vigente"],
+    lastMaintenance: "15/05/2026",
+    nextMaintenance: "15/11/2026",
+  },
+  {
+    id: "VHC-003",
+    plate: "JKL-4421",
+    type: "Carreta Sider",
+    capacity: "25 ton",
+    volumeM3: 85,
+    driver: "Carlos Pereira",
+    driverPhone: "+55 (41) 99666-3322",
+    status: "AVAILABLE",
+    currentLocation: "Joinville, SC",
+    
+    lockedPeriods: [],
+    
+    features: ["Rastreamento GPS", "Seguro Vigente", "Lona Reforçada"],
+    lastMaintenance: "10/05/2026",
+    nextMaintenance: "10/11/2026",
+  },
+  {
+    id: "VHC-004",
+    plate: "MNO-7788",
+    type: "Carreta Frigorífica",
+    capacity: "28 ton",
+    volumeM3: 90,
+    driver: "Ana Costa",
+    driverPhone: "+55 (41) 99555-1100",
+    status: "IN_TRANSIT",
+    currentLocation: "Rodovia BR-116, KM 245",
+    
+    lockedPeriods: [
+      {
+        routeId: "TRC-150",
+        routeName: "Porto Alegre → Curitiba",
+        startDate: "2026-06-10T14:00:00",
+        endDate: "2026-06-11T18:00:00",
+        bidId: "BID-5400"
+      }
+    ],
+    
+    features: ["Refrigeração -25ºC", "Rastreamento GPS", "Seguro Vigente"],
+    lastMaintenance: "05/06/2026",
+    nextMaintenance: "05/12/2026",
+  },
+  {
+    id: "VHC-005",
+    plate: "PQR-3344",
+    type: "Carreta Baú",
+    capacity: "20 ton",
+    volumeM3: 75,
+    driver: "Roberto Lima",
+    driverPhone: "+55 (41) 99444-9988",
+    status: "AVAILABLE",
+    currentLocation: "Curitiba, PR",
+    
+    lockedPeriods: [],
+    
+    features: ["Rastreamento GPS", "Seguro Vigente"],
+    lastMaintenance: "20/05/2026",
+    nextMaintenance: "20/11/2026",
+  },
+  {
+    id: "VHC-006",
+    plate: "STU-5566",
+    type: "Carreta Frigorífica",
+    capacity: "28 ton",
+    volumeM3: 90,
+    driver: "Fernando Alves",
+    driverPhone: "+55 (41) 99333-7766",
+    status: "MAINTENANCE",
+    currentLocation: "Oficina - Curitiba, PR",
+    
+    lockedPeriods: [],
+    
+    features: ["Refrigeração -25ºC", "Rastreamento GPS"],
+    lastMaintenance: "10/06/2026",
+    nextMaintenance: "10/07/2026",
+    maintenanceReason: "Revisão do sistema de refrigeração",
+  },
+]
+
+// ==========================================
+// FUNÇÕES AUXILIARES PARA GESTÃO DE FROTA
+// ==========================================
+
+/**
+ * Verifica se um veículo está disponível para uma rota em um período específico
+ */
+export const isVehicleAvailableForRoute = (vehicleId, routeStartDate, routeEndDate) => {
+  const vehicle = vehicleFleetMock.find((v) => v.id === vehicleId)
+  if (!vehicle) return false
+  
+  // Se está em manutenção, não está disponível
+  if (vehicle.status === "MAINTENANCE") return false
+  
+  // Converte datas para comparação
+  const routeStart = new Date(routeStartDate)
+  const routeEnd = new Date(routeEndDate)
+  
+  // Verifica se há conflito com períodos bloqueados
+  const hasConflict = vehicle.lockedPeriods.some((period) => {
+    const periodStart = new Date(period.startDate)
+    const periodEnd = new Date(period.endDate)
+    
+    // Verifica sobreposição de períodos
+    return (routeStart < periodEnd && routeEnd > periodStart)
+  })
+  
+  return !hasConflict
+}
+
+/**
+ * Retorna todos os veículos disponíveis para uma rota
+ */
+export const getAvailableVehiclesForRoute = (routeStartDate, routeEndDate, requiredType = null) => {
+  return vehicleFleetMock.filter((vehicle) => {
+    const isAvailable = isVehicleAvailableForRoute(vehicle.id, routeStartDate, routeEndDate)
+    const matchesType = !requiredType || vehicle.type.includes(requiredType)
+    return isAvailable && matchesType
+  })
+}
+
+/**
+ * Bloqueia um veículo para uma rota específica
+ */
+export const lockVehicleForRoute = (vehicleId, routeId, routeName, startDate, endDate, bidId) => {
+  const vehicle = vehicleFleetMock.find((v) => v.id === vehicleId)
+  if (!vehicle) return false
+  
+  // Adiciona o período de bloqueio
+  vehicle.lockedPeriods.push({
+    routeId,
+    routeName,
+    startDate,
+    endDate,
+    bidId,
+  })
+  
+  vehicle.status = "LOCKED"
+  return true
+}
+
+/**
+ * Libera um veículo de uma rota específica
+ */
+export const unlockVehicleFromRoute = (vehicleId, routeId) => {
+  const vehicle = vehicleFleetMock.find((v) => v.id === vehicleId)
+  if (!vehicle) return false
+  
+  vehicle.lockedPeriods = vehicle.lockedPeriods.filter((period) => period.routeId !== routeId)
+  
+  // Se não há mais bloqueios, marca como disponível
+  if (vehicle.lockedPeriods.length === 0) {
+    vehicle.status = "AVAILABLE"
+  }
+  
+  return true
+}
+
 export const getCargoItemById = (cargoId) => cargoItemsMock.find((item) => item.id === cargoId)
 export const getSegmentById = (segmentId) => segmentPlansMock.find((segment) => segment.id === segmentId)

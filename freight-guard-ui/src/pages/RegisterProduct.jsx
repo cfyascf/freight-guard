@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export default function CreateProduct() {
+export default function RegisterProduct() {
   const navigate = useNavigate()
   
   // Estados para controlar os campos dinâmicos

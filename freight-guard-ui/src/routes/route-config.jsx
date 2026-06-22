@@ -24,30 +24,24 @@ import {
 } from "lucide-react"
 
 import AuthPage from "@/pages/Auth"
-import Dashboard from "@/pages/Dashboard"
+import ContractorDashboard from "@/pages/ContractorDashboard"
 import CarrierDashboard from "@/pages/CarrierDashboard"
 import ActiveRoutes from "@/pages/ActiveRoutes"
 import ControlTower from "@/pages/ControlTower"
-import RouteOverview from "@/pages/RouteOverview"
-import TransportOverview from "@/pages/TransportOverview"
-import VehicleForm from "@/pages/VehicleForm"
-import CarrierPortal from "@/pages/CarrierPortal"
-import LoadManagement from "@/pages/LoadManagement"
-import CreateLoad from "@/pages/CreateLoad"
-import LoadDetails from "@/pages/LoadDetails"
+import RegisterVehicle from "@/pages/RegisterVehicle"
+import FreightsOffersOverview from "@/pages/FreightsOffersOverview"
+import RouteSegmentManagement from "@/pages/RouteSegmentManagement"
+import CreateRouteSegment from "@/pages/CreateRouteSegment"
+import RouteSegmentDetails from "@/pages/RouteSegmentDetails"
 import ActiveRouteTracking from "@/pages/ActiveRouteTracking"
-import SegmentDetails from "@/pages/SegmentDetails"
-import CreateRoute from "@/pages/CreateRoute"
-import CreateRouteWorkspace from "@/pages/CreateRouteWorkspace"
-import CreateProduct from "@/pages/CreateProduct"
-import CreateFreightAuction from "@/pages/CreateFreightAuction"
+import OfferFreight from "@/pages/OfferFreight"
+import RegisterProduct from "@/pages/RegisterProduct"
 import AuctionBids from "@/pages/AuctionBids"
-import FreightsPanel from "@/pages/FreightsPanel"
+import FreightsOfferedOverview from "@/pages/FreightsOfferedOverview"
 import BidAnalysis from "@/pages/BidAnalysis"
-import ProductManagement from "@/pages/ProductsManagement"
-import TransporterManagement from "@/pages/TransporterManagement"
-import CarrierManagement from "@/pages/CarrierManagement"
+import ProductManagement from "@/pages/ProductManagement"
 import FreightManagement from "@/pages/FreightManagement"
+import FleetManagement from "@/pages/FleetManagement"
 import PartnerNetwork from "@/pages/PartnerNetwork"
 
 import { ROLES } from "@/constants/roles"
@@ -61,10 +55,10 @@ export const ROUTES = [
   { path: "/register",element: <AuthPage />,  access: AuthAccess.PUBLIC, nav: false },
 
 
-  // Shared dashboards by role
+  // Dashboards by role
   {
-    path: "/dashboard",
-    element: <Dashboard />,
+    path: "/contractor-dashboard",
+    element: <ContractorDashboard />,
     label: "Visão Geral",
     icon: ChartBar,
     access: [ROLES.DEVELOPER, ROLES.CONTRACTOR],
@@ -73,7 +67,7 @@ export const ROUTES = [
   {
     path: "/carrier-dashboard",
     element: <CarrierDashboard />,
-    label: "Dashboard da Transportadora",
+    label: "Visão Geral",
     icon: ChartBar,
     access: [ROLES.DEVELOPER, ROLES.CARRIER],
     nav: true,
@@ -81,9 +75,7 @@ export const ROUTES = [
 
   // Authenticated only (all roles)
   { path: "/control-tower", element: <ControlTower />, access: AuthAccess.AUTHENTICATED, nav: false },
-  { path: "/route-overview",     element: <RouteOverview />,     access: AuthAccess.AUTHENTICATED, nav: false },
-  { path: "/transport-overview", element: <TransportOverview />, access: AuthAccess.AUTHENTICATED, nav: false },
-  { path: "/vehicle-form",       element: <VehicleForm />,       access: AuthAccess.AUTHENTICATED, nav: false },
+  { path: "/register-vehicle",       element: <RegisterVehicle />,       access: AuthAccess.AUTHENTICATED, nav: false },
   {
     path: "/partner-network",
     element: <PartnerNetwork />,
@@ -96,25 +88,25 @@ export const ROUTES = [
 
   // Contractor only
   {
-    path: "/freights-panel",
-    element: <FreightsPanel />,
+    path: "/freights-offered-overview",
+    element: <FreightsOfferedOverview />,
     label: "Painel de Leilões",
     icon: Truck,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
   {
-    path: "/load-management",
-    element: <LoadManagement />,
+    path: "/route-segment-management",
+    element: <RouteSegmentManagement />,
     label: "Gestão de Trechos",
     icon: Box,
     access: [ROLES.CONTRACTOR],
     nav: true,
   },
-  { path: "/create-load", element: <CreateLoad />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/load-details/:loadId", element: <LoadDetails />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/create-route-segment", element: <CreateRouteSegment />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/route-segment-details/:loadId", element: <RouteSegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
   {
-    path: "/active-route-tracking",
+    path: "/active-routes",
     element: <ActiveRoutes />,
     label: "Rotas Ativas",
     icon: Truck,
@@ -122,47 +114,38 @@ export const ROUTES = [
     nav: true,
   },
   { path: "/active-route-tracking/:routeId", element: <ActiveRouteTracking />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/segment-details/:segmentId", element: <SegmentDetails />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-route", element: <CreateRoute />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-route-workspace", element: <CreateRouteWorkspace />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-product", element: <CreateProduct />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/create-freight-auction", element: <CreateFreightAuction />, access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/auction-bids", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/offer-freight", element: <OfferFreight />, access: [ROLES.CONTRACTOR], nav: false },
+  { path: "/register-product", element: <RegisterProduct />, access: [ROLES.CONTRACTOR], nav: false },
   { path: "/auction-bids/:segmentId", element: <AuctionBids />, access: [ROLES.CONTRACTOR], nav: false },
-  
-  {
-    path: "/products-management",
-    element: <ProductManagement />,
-    label: "Catálogo de Produtos",
-    icon: Package,
-    access: [ROLES.CONTRACTOR],
-    nav: true,
-  },
   { path: "/product-management",      element: <ProductManagement />,      access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/transporters-management", element: <TransporterManagement />,  access: [ROLES.CONTRACTOR], nav: false },
-  { path: "/carrier-management",      element: <CarrierManagement />,      access: [ROLES.CONTRACTOR], nav: false },
 
   
   // Carrier only
   {
-    path: "/freights-mural",
-    element: <CarrierPortal />,
+    path: "/freights-offers-overview",
+    element: <FreightsOffersOverview />,
     label: "Oportunidades de Frete",
     icon: Truck,
     access: [ROLES.CARRIER],
     nav: true,
   },
-  { path: "/carrier-portal", element: <CarrierPortal />, access: [ROLES.CARRIER], nav: false },
-  { path: "/freight-bid/:segmentId", element: <BidAnalysis />, access: [ROLES.CARRIER], nav: false },
+  { path: "/bid-analysis/:segmentId", element: <BidAnalysis />, access: [ROLES.CARRIER], nav: false },
+  {
+    path: "/fleet-management",
+    element: <FleetManagement />,
+    label: "Gestão de Frota",
+    icon: Truck,
+    access: [ROLES.CARRIER],
+    nav: true,
+  },
   {
     path: "/freight-management",
     element: <FreightManagement />,
     label: "Gestão de Veículos",
     icon: Package,
     access: [ROLES.CARRIER],
-    nav: true,
+    nav: false,
   },
-  { path: "/fleet-management", element: <FreightManagement />, access: [ROLES.CARRIER], nav: false },
 ]
 
 /**

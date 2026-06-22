@@ -33,7 +33,7 @@ const getStatusTextStyle = (status) => {
   return "text-slate-400"
 }
 
-export default function FleetManagement() {
+export default function FreightManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   
   const [vehicles, setVehicles] = useState(availableVehicles)
@@ -90,7 +90,7 @@ export default function FleetManagement() {
             </Button>
 
             <Button asChild className="h-9 bg-blue-600 text-xs font-semibold text-white hover:bg-blue-700">
-              <Link to="/vehicle-form"><Plus size={14} className="mr-1.5" /> Novo Veículo</Link>
+              <Link to="/register-vehicle"><Plus size={14} className="mr-1.5" /> Novo Veículo</Link>
             </Button>
           </div>
         </div>

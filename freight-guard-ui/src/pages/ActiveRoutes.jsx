@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-export default function ActiveRoutesDashboard() {
+export default function ActiveRoutes() {
   const navigate = useNavigate()
   
   // Mock das rotas ativas

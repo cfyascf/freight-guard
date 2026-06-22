@@ -7,8 +7,11 @@ export function getDefaultRouteForRole(role) {
   if (role === "carrier") {
     return "/carrier-dashboard"
   }
-
-  return "/dashboard"
+  if (role === "contractor") {
+    return "/contractor-dashboard"
+  }
+  // Developer ou qualquer outra role vai para contractor dashboard como fallback
+  return "/contractor-dashboard"
 }
 
 export const AUTH_OPTIONS = [

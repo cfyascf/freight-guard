@@ -1,11 +1,12 @@
-import { ArrowLeft, MapPinned, DollarSign, Truck, Scale, Box, Gavel, Layers, Activity, CalendarClock, PackageOpen, Snowflake, AlertTriangle } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { ArrowLeft, MapPinned, Truck, Scale, Box, Gavel, Layers, Activity, CalendarClock, PackageOpen, Snowflake, AlertTriangle, CheckCircle2, Lock, User } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { getAvailableVehiclesForRoute } from "@/constants/logistics-mock"
 
 // ==========================================
 // MOCKS DA ROTA CONSOLIDADA 
@@ -63,16 +64,30 @@ function getStopBadgeClass(index, totalStops) {
   return "bg-blue-500"
 }
 
-export default function SegmentDetails() {
+export default function BidAnalysis() {
   const navigate = useNavigate()
   const route = mockRoute 
   const anttFloor = route.targetFare * 0.75 
 
   const [bidValue, setBidValue] = useState(route.targetFare)
+  const [selectedVehicle, setSelectedVehicle] = useState(null)
 
   // Funções de ação rápida para o input de lance
   const applyLeaderBid = () => setBidValue(route.auctionInfo.bestBid - 50)
   const applyFloorBid = () => setBidValue(anttFloor)
+  
+  // Calcula veículos disponíveis para esta rota
+  // Usando as datas do mock (hoje 14h até amanhã 12h)
+  const routeStartDate = "2026-06-11T14:00:00" 
+  const routeEndDate = "2026-06-12T12:00:00"
+  const availableVehicles = getAvailableVehiclesForRoute(routeStartDate, routeEndDate, "Frigorífica")
+  
+  const getVehicleStatusBadge = (vehicle) => {
+    if (vehicle.status === "MAINTENANCE") return { text: "Manutenção", class: "bg-slate-500" }
+    if (vehicle.status === "LOCKED") return { text: "Bloqueado", class: "bg-rose-500" }
+    if (vehicle.status === "IN_TRANSIT") return { text: "Em Trânsito", class: "bg-amber-500" }
+    return { text: "Disponível", class: "bg-emerald-500" }
+  }
 
   return (
     <AppShell title={`Detalhes da Rota`}>
@@ -123,10 +138,10 @@ export default function SegmentDetails() {
             </div>
 
             {/* PAINEL DE AÇÃO (LANCE) E ESTRATÉGIA */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
                 
-                {/* 1. LANCE */}
-                <div className="rounded-xl border border-blue-200 bg-blue-50/30 p-4 flex flex-col justify-between">
+                {/* 1. LANCE E SELEÇÃO DE VEÍCULO */}
+                <div className="rounded-xl border border-blue-200 bg-blue-50/30 p-4 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="font-bold text-slate-900 flex items-center gap-2 text-xs">
                             <Gavel size={14} className="text-blue-600" /> Formulário de Lance
@@ -134,17 +149,22 @@ export default function SegmentDetails() {
                         <Badge variant="outline" className="border-blue-200 bg-white text-blue-700 text-[9px]">Teto: {formatCurrency(route.targetFare)}</Badge>
                     </div>
                     
-                    <div className="space-y-3">
-                        {/* Input Estruturado */}
-                        <div className="bg-white border border-slate-300 rounded-lg p-1 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
-                            <div className="flex items-center px-2">
-                                <span className="text-xs font-bold text-slate-400">R$</span>
-                                <Input 
-                                    type="number" 
-                                    value={bidValue}
-                                    onChange={(e) => setBidValue(e.target.value)}
-                                    className="border-0 shadow-none focus-visible:ring-0 text-xl font-black font-mono text-slate-800 h-10" 
-                                />
+                    <div className="space-y-4">
+                        {/* Input de Valor */}
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Valor da Proposta
+                            </p>
+                            <div className="bg-white border border-slate-300 rounded-lg p-1 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                                <div className="flex items-center px-2">
+                                    <span className="text-xs font-bold text-slate-400">R$</span>
+                                    <Input 
+                                        type="number" 
+                                        value={bidValue}
+                                        onChange={(e) => setBidValue(e.target.value)}
+                                        className="border-0 shadow-none focus-visible:ring-0 text-xl font-black font-mono text-slate-800 h-10" 
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -157,9 +177,96 @@ export default function SegmentDetails() {
                                 Piso ANTT
                             </Button>
                         </div>
+                        
+                        {/* SELETOR DE VEÍCULO */}
+                        <div className="border-t border-slate-200/50 pt-4">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2 flex items-center gap-1.5">
+                                <Truck size={12} className="text-blue-600" /> 
+                                Veículo Alocado para Esta Rota
+                            </p>
+                            <p className="text-[9px] text-slate-500 mb-3">
+                                Ao confirmar o lance, o veículo selecionado será bloqueado para este período
+                            </p>
+                            
+                            <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                                {availableVehicles.length === 0 ? (
+                                    <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-center">
+                                        <Lock size={16} className="text-rose-500 mx-auto mb-1" />
+                                        <p className="text-[10px] font-bold text-rose-700">Nenhum veículo disponível para este período</p>
+                                    </div>
+                                ) : (
+                                    availableVehicles.map((vehicle) => {
+                                        const statusBadge = getVehicleStatusBadge(vehicle)
+                                        const isSelected = selectedVehicle?.id === vehicle.id
+                                        
+                                        return (
+                                            <button
+                                                key={vehicle.id}
+                                                type="button"
+                                                onClick={() => setSelectedVehicle(vehicle)}
+                                                className={`w-full text-left border rounded-lg p-3 transition-all ${
+                                                    isSelected 
+                                                        ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' 
+                                                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-600' : 'bg-slate-100'}`}>
+                                                            {isSelected ? (
+                                                                <CheckCircle2 size={16} className="text-white" />
+                                                            ) : (
+                                                                <Truck size={14} className="text-slate-400" />
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-mono text-sm font-black text-slate-900">{vehicle.plate}</p>
+                                                            <p className="text-[9px] font-semibold text-slate-500">{vehicle.type}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Badge className={`${statusBadge.class} text-white text-[8px] font-bold border-none hover:${statusBadge.class}`}>
+                                                        {statusBadge.text}
+                                                    </Badge>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 gap-2 text-[9px]">
+                                                    <div className="flex items-center gap-1 text-slate-600">
+                                                        <User size={10} className="text-slate-400" />
+                                                        <span className="font-semibold">{vehicle.driver}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="font-mono font-bold text-slate-700">{vehicle.capacity}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {vehicle.lockedPeriods.length > 0 && (
+                                                    <div className="mt-2 pt-2 border-t border-slate-100">
+                                                        <p className="text-[8px] font-bold text-amber-700 flex items-center gap-1">
+                                                            <Lock size={9} /> Bloqueios ativos: {vehicle.lockedPeriods.length}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </button>
+                                        )
+                                    })
+                                )}
+                            </div>
+                            
+                            {!selectedVehicle && availableVehicles.length > 0 && (
+                                <p className="text-[9px] font-semibold text-amber-600 mt-2 flex items-center gap-1">
+                                    <AlertTriangle size={10} /> Selecione um veículo para prosseguir
+                                </p>
+                            )}
+                        </div>
 
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs">
-                            Confirmar Lance Oficial
+                        <Button 
+                            disabled={!selectedVehicle}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {selectedVehicle 
+                                ? `Confirmar Lance com ${selectedVehicle.plate}` 
+                                : "Selecione um Veículo para Confirmar"
+                            }
                         </Button>
                     </div>
                 </div>
@@ -254,10 +361,10 @@ export default function SegmentDetails() {
                     <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-700">Plano de Viagem (Milking Run)</h2>
                 </div>
                 <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-                    {route.itinerary.map((stop, index) => (
-                        <div key={index} className="flex md:flex-col gap-3 md:gap-0 items-center text-center">
-                             <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black text-white ${getStopBadgeClass(index, route.itinerary.length)}`}>
-                                {index + 1}
+                    {route.itinerary.map((stop) => (
+                        <div key={stop.city} className="flex md:flex-col gap-3 md:gap-0 items-center text-center">
+                             <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black text-white ${getStopBadgeClass(route.itinerary.indexOf(stop), route.itinerary.length)}`}>
+                                {route.itinerary.indexOf(stop) + 1}
                              </div>
                              <div className="md:mt-2 text-left md:text-center">
                                 <p className="text-xs font-bold text-slate-900">{stop.city}</p>

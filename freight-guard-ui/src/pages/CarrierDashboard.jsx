@@ -38,7 +38,7 @@ function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
 }
 
-export default function Dashboard() {
+export default function CarrierDashboard() {
   const navigate = useNavigate()
 
   return (
@@ -134,7 +134,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/freights-mural")}
+                  onClick={() => navigate("/freights-offers-overview")}
                 >
                   Ir para Mural <ExternalLink size={12} />
                 </Button>
@@ -149,7 +149,7 @@ export default function Dashboard() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => navigate(`/freight-bid/${item.auctionId}`)}
+                      onClick={() => navigate(`/bid-analysis/${item.auctionId}`)}
                       className="flex w-full items-center justify-between rounded-lg py-3 px-2 text-left transition-colors hover:bg-slate-50"
                     >
                       <div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/my-trips")}
+                  onClick={() => navigate("/fleet-management")}
                 >
                   Ver Frota <ExternalLink size={12} />
                 </Button>

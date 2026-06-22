@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 
 // Importa os trechos para cruzamento
-import { availableRouteSegments } from "./LoadManagement"
+import { availableRouteSegments } from "./RouteSegmentManagement"
 
 const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} kg`
 const formatVolume = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} m³`
@@ -50,7 +50,7 @@ function getRestrictiveRequirement(requirements) {
   return "Carga Seca Padrão"
 }
 
-export default function CreateRouteWorkspace() {
+export default function OfferFreight() {
   const location = useLocation()
   const [auctionDeadline, setAuctionDeadline] = useState("")
   const [isAutoAwardEnabled, setIsAutoAwardEnabled] = useState(true)
@@ -79,7 +79,7 @@ export default function CreateRouteWorkspace() {
         <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-center">
           <p className="text-sm font-semibold text-slate-500">Nenhum trecho foi selecionado para montagem.</p>
           <Button asChild className="mt-4 h-9 bg-slate-900 text-xs text-white">
-            <Link to="/load-management">Voltar para listagem</Link>
+            <Link to="/route-segment-management">Voltar para listagem</Link>
           </Button>
         </div>
       </AppShell>
@@ -92,7 +92,7 @@ export default function CreateRouteWorkspace() {
         
         {/* HEADER DA TELA REESTRUTURADO (Visual limpo integrado com Link/Button) */}
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-          <Link to="/load-management">
+          <Link to="/route-segment-management">
             <Button variant="ghost" className="text-slate-500 hover:text-slate-900 h-auto p-0 font-medium text-sm">
               <ArrowLeft size={16} className="mr-2" /> Voltar para Gestão de Trechos
             </Button>

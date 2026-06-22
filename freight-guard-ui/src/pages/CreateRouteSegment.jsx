@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { productOptionsMock } from "@/constants/products-mock"
 
-export default function CreateSegment() {
+export default function CreateRouteSegment() {
   const navigate = useNavigate()
   const [selectedProduct, setSelectedProduct] = useState("")
   const [productSearch, setProductSearch] = useState("")
@@ -30,7 +30,7 @@ export default function CreateSegment() {
         
         {/* HEADER LIMPO E TEXTUAL (Com shrink-0 e mb-5 para isolar o layout) */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1 mb-5">
-          <Link to="/load-management">
+          <Link to="/route-segment-management">
             <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
               <ArrowLeft size={16} className="mr-2" /> Voltar para Gestão de Trechos
             </Button>
@@ -38,7 +38,7 @@ export default function CreateSegment() {
 
           <div className="flex items-center gap-3">
             <Button asChild variant="outline" className="h-9 border-slate-200 text-xs font-semibold text-slate-700 bg-white">
-              <Link to="/load-management"><X size={14} className="mr-1.5" /> Cancelar</Link>
+              <Link to="/route-segment-management"><X size={14} className="mr-1.5" /> Cancelar</Link>
             </Button>
             <Button className="h-9 bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700">
               <Save size={14} className="mr-1.5" /> Salvar Trecho Operacional
@@ -122,7 +122,7 @@ export default function CreateSegment() {
 
                   <div className="flex items-center justify-between rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 py-2.5">
                     <p className="text-[11px] font-medium text-slate-500">Nao encontrou o produto na lista?</p>
-                    <Button type="button" variant="outline" size="sm" onClick={() => navigate("/create-product")} className="h-8 border-slate-200 bg-white text-[11px] font-semibold text-slate-700 hover:bg-slate-100">
+                    <Button type="button" variant="outline" size="sm" onClick={() => navigate("/register-product")} className="h-8 border-slate-200 bg-white text-[11px] font-semibold text-slate-700 hover:bg-slate-100">
                       <Plus size={13} className="mr-1.5" /> Cadastrar produto
                     </Button>
                   </div>

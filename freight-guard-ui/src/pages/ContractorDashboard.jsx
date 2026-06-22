@@ -34,7 +34,7 @@ function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value)
 }
 
-export default function Dashboard() {
+export default function ContractorDashboard() {
   const navigate = useNavigate()
 
   return (
@@ -128,7 +128,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/freights-panel")}
+                  onClick={() => navigate("/freights-offered-overview")}
                 >
                   Ver Detalhes <ExternalLink size={12} />
                 </Button>
@@ -173,7 +173,7 @@ export default function Dashboard() {
                 <Button 
                   variant="ghost" size="sm" 
                   className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold gap-1 px-2"
-                  onClick={() => navigate("/load-management")}
+                  onClick={() => navigate("/route-segment-management")}
                 >
                   Gerenciar Trechos <ExternalLink size={12} />
                 </Button>

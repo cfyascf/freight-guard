@@ -37,7 +37,7 @@ export default function ActiveRouteTracking() {
         
         {/* HEADER */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <Link to="/active-route-tracking">
+          <Link to="/active-routes">
             <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent">
               <ArrowLeft size={16} className="mr-2" /> Voltar para Rotas Ativas
             </Button>

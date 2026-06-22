@@ -26,7 +26,7 @@ const getRequirementBadge = (req) => {
   return "bg-slate-100 text-slate-600 border-slate-200";
 }
 
-export default function FreightsMural() {
+export default function FreightsOffersOverview() {
   const [searchParams] = useSearchParams()
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get("partner") || "")
   const ofertas = freightOffersMock
@@ -140,7 +140,7 @@ export default function FreightsMural() {
                       <Button asChild variant={hasBid ? "outline" : "default"} className={`w-full font-bold h-8 text-xs ${
                           hasBid ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "bg-slate-900 hover:bg-slate-800 text-white"
                       }`}>
-                        <Link to={`/freight-bid/${o.segmentId}`}>
+                        <Link to={`/bid-analysis/${o.segmentId}`}>
                             {hasBid ? "Ver Detalhes do Lance" : "Analisar e Dar Lance"}
                         </Link>
                       </Button>

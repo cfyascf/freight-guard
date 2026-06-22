@@ -81,7 +81,7 @@ function PartnerCard({ partner, isCarrierView }) {
         <div className="mt-auto pt-1">
           {isCarrierView ? (
             <Button asChild className="h-9 w-full bg-slate-900 text-xs font-bold text-white hover:bg-slate-800">
-              <Link to={`/freights-mural?partner=${encodeURIComponent(partner.name)}`}>
+              <Link to={`/freights-offers-overview?partner=${encodeURIComponent(partner.name)}`}>
                 Ver Ofertas Disponíveis <ArrowRight size={14} className="ml-1.5" />
               </Link>
             </Button>

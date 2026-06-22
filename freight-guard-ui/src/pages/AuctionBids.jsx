@@ -37,7 +37,7 @@ export default function AuctionBids() {
         
         {/* HEADER */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1 mb-5">
-          <Link to="/freights-panel">
+          <Link to="/freights-offered-overview">
             <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
               <ArrowLeft size={16} className="mr-2" /> Voltar à Mesa de Leilões
             </Button>
@@ -45,7 +45,7 @@ export default function AuctionBids() {
 
           <div className="flex items-center gap-3">
             <Button asChild variant="outline" className="h-9 border-slate-200 text-xs font-semibold text-slate-700 bg-white">
-              <Link to={`/segment-details/${selectedSegment?.id}`}>
+              <Link to={`/route-segment-details/${selectedSegment?.id}`}>
                 <ExternalLink size={14} className="mr-1.5" /> Detalhes da Rota
               </Link>
             </Button>
