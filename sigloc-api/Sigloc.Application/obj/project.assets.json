@@ -1,11 +1,30 @@
 {
   "version": 4,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "Sigloc.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Sigloc.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sigloc.Domain.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Sigloc.Domain/1.0.0": {
+      "type": "project",
+      "path": "../Sigloc.Domain/Sigloc.Domain.csproj",
+      "msbuildProject": "../Sigloc.Domain/Sigloc.Domain.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "Sigloc.Domain >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\yas1c\\.nuget\\packages\\": {}
@@ -32,7 +51,11 @@
         "net10.0": {
           "framework": "net10.0",
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Projects\\freight-guard\\sigloc-api\\Sigloc.Domain\\Sigloc.Domain.csproj": {
+              "projectPath": "C:\\Projects\\freight-guard\\sigloc-api\\Sigloc.Domain\\Sigloc.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
