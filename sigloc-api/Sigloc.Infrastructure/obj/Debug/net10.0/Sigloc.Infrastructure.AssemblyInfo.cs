@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sigloc.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c6a3747b6e93cc285ed40999cc56a8db94673850")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5471faab284b1158196723f7e50d333ba591d610")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sigloc.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sigloc.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
