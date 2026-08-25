@@ -40,7 +40,6 @@ import AuctionBids from "@/pages/AuctionBids"
 import FreightsOfferedOverview from "@/pages/FreightsOfferedOverview"
 import BidAnalysis from "@/pages/BidAnalysis"
 import ProductManagement from "@/pages/ProductManagement"
-import FreightManagement from "@/pages/FreightManagement"
 import FleetManagement from "@/pages/FleetManagement"
 import PartnerNetwork from "@/pages/PartnerNetwork"
 
@@ -137,15 +136,7 @@ export const ROUTES = [
     icon: Truck,
     access: [ROLES.CARRIER],
     nav: true,
-  },
-  {
-    path: "/freight-management",
-    element: <FreightManagement />,
-    label: "Gestão de Veículos",
-    icon: Package,
-    access: [ROLES.CARRIER],
-    nav: false,
-  },
+  }
 ]
 
 /**
