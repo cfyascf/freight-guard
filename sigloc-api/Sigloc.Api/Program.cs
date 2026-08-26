@@ -1,4 +1,7 @@
 using Sigloc.Api.Extensions;
+using Sigloc.Api.Middleware;
+using Sigloc.Application;
+using Sigloc.Infrastructure;
 using Scalar.AspNetCore;
 using Serilog;
 using Microsoft.OpenApi; // Required for logging
@@ -48,6 +51,7 @@ try
             };
 
             document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
             document.Components.SecuritySchemes.Add("Bearer", jwtScheme);
 
             return Task.CompletedTask;
@@ -56,6 +60,8 @@ try
 
     // 4. Custom Auth & Controllers
     builder.Services.AddSiglocAuthentication(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplication();
     builder.Services.AddControllers();
 
     // 5. CORS setup for your React Frontend
@@ -75,7 +81,10 @@ try
     var app = builder.Build();
 
     // --- MIDDLEWARE PIPELINE ---
-    
+
+    // Catch unhandled exceptions and return a consistent JSON error payload
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
     // Log all incoming HTTP requests automatically
     app.UseSerilogRequestLogging();
 
