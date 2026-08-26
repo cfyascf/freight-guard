@@ -1,53 +1,62 @@
 import { useState } from "react"
-import { ArrowLeft, Save, X, PackageOpen, Box, AlertTriangle, FileText, Layers, Scale } from "lucide-react"
+import {
+  ArrowLeft,
+  Save,
+  X,
+  PackageOpen,
+  AlertTriangle,
+  Layers,
+  Scale,
+} from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-export default function RegisterProduct() {
+export default function CreateProduct() {
   const navigate = useNavigate()
-  
+
   // Estados para controlar os campos dinâmicos
-  const [categoria, setCategoria] = useState("")
+  const [temperatura, setTemperatura] = useState("Ambiente")
+  const [perigosa, setPerigosa] = useState(false)
   const [fragil, setFragil] = useState(false)
+  const [empilhavel, setEmpilhavel] = useState(true)
   const [isTemplate, setIsTemplate] = useState(false)
   const [acomodacao, setAcomodacao] = useState("")
 
-  // `perigosa` e a exigência de veículo são derivadas da categoria escolhida,
-  // não são campos independentes (evita divergência entre categoria e flags manuais)
-  const perigosa = categoria === "Perigosa"
-  const exigeRefrigeracao = categoria === "Refrigerada"
-  const exigenciaVeiculo = {
-    Geral: "Baú / Sider",
-    Refrigerada: "Frigorífico / Isotérmico",
-    Perigosa: "Veículo e motorista com habilitação MOPP",
-    GranelSolido: "Graneleiro / Basculante",
-    GranelLiquido: "Tanque",
-    Fragil: "Baú com implemento de fixação",
-  }[categoria]
-
   return (
-    <AppShell title="Novo Cadastro de SKU">
+    <AppShell title="Cadastro de Produto">
       <div className="mx-auto flex h-[calc(100vh-8.5rem)] max-w-5xl flex-col overflow-hidden">
-        
         {/* HEADER */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 pb-3 pt-1 mb-5">
+        <div className="mb-5 flex shrink-0 items-center justify-between border-b border-slate-200 pt-1 pb-3">
           <Link to="/product-management">
-            <Button variant="ghost" className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900">
+            <Button
+              variant="ghost"
+              className="h-auto p-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-slate-900"
+            >
               <ArrowLeft size={16} className="mr-2" /> Voltar ao Catálogo
             </Button>
           </Link>
 
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-9 border-slate-200 text-xs font-semibold text-slate-700 bg-white" onClick={() => navigate("/product-management")}>
+            <Button
+              variant="outline"
+              className="h-9 border-slate-200 bg-white text-xs font-semibold text-slate-700"
+              onClick={() => navigate("/product-management")}
+            >
               <X size={14} className="mr-1.5" /> Cancelar
             </Button>
             <Button className="h-9 bg-blue-600 text-xs font-bold tracking-wide text-white hover:bg-blue-700">
-              <Save size={14} className="mr-1.5" /> Salvar Novo SKU
+              <Save size={14} className="mr-1.5" /> Salvar Novo Produto
             </Button>
           </div>
         </div>
@@ -55,38 +64,43 @@ export default function RegisterProduct() {
         {/* CONTAINER COM SCROLL BLINDADO */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto pr-2 pb-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
-              
+            <div className="grid grid-cols-1 gap-6 pb-10 md:grid-cols-2">
               {/* Bloco: Identificação */}
               <div className="rounded-xl border border-slate-200 bg-white">
-                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                <div className="flex h-[52px] items-center gap-2 rounded-t-xl border-b border-slate-100 bg-slate-50/50 px-5">
                   <PackageOpen size={16} className="text-blue-600" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Identificação do SKU</h2>
+                  <h2 className="text-xs font-bold tracking-wider text-slate-700 uppercase">
+                    Identificação do Produto
+                  </h2>
                 </div>
-                <div className="p-5 space-y-4">
+                <div className="space-y-4 p-5">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-600">Nome do Produto</label>
-                    <Input placeholder="Ex: Peito de Frango Congelado" className="h-10 border-slate-200 text-sm" />
+                    <label className="text-xs font-bold text-slate-600">
+                      Nome do Produto
+                    </label>
+                    <Input
+                      placeholder="Ex: Peito de Frango Congelado"
+                      className="h-10 border-slate-200 text-sm"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-600">Código SKU</label>
-                      <Input placeholder="Ex: FRG-001" className="h-10 border-slate-200 text-sm font-mono" />
+                      <label className="text-xs font-bold text-slate-600">
+                        Código
+                      </label>
+                      <Input
+                        placeholder="Ex: FRG-001"
+                        className="h-10 border-slate-200 font-mono text-sm"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-600">Categoria</label>
-                      <Select onValueChange={setCategoria} value={categoria}>
-                        <SelectTrigger className="h-10 border-slate-200 text-sm"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Geral">Carga Geral (Seca)</SelectItem>
-                          <SelectItem value="Refrigerada">Refrigerada / Perecível</SelectItem>
-                          <SelectItem value="Perigosa">Carga Perigosa</SelectItem>
-                          <SelectItem value="GranelSolido">Granel Sólido</SelectItem>
-                          <SelectItem value="GranelLiquido">Granel Líquido</SelectItem>
-                          <SelectItem value="Fragil">Frágil / Especial</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <label className="text-xs font-bold text-slate-600">
+                        Categoria
+                      </label>
+                      <Input
+                        placeholder="Ex: Congelados"
+                        className="h-10 border-slate-200 text-sm"
+                      />
                     </div>
                   </div>
                 </div>
@@ -94,25 +108,44 @@ export default function RegisterProduct() {
 
               {/* Bloco: Dimensões e Acomodação */}
               <div className="rounded-xl border border-slate-200 bg-white">
-                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                <div className="flex h-[52px] items-center gap-2 rounded-t-xl border-b border-slate-100 bg-slate-50/50 px-5">
                   <Scale size={16} className="text-slate-600" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Dimensões e Acomodação</h2>
+                  <h2 className="text-xs font-bold tracking-wider text-slate-700 uppercase">
+                    Dimensões e Acomodação
+                  </h2>
                 </div>
-                <div className="p-5 space-y-4">
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-600">Peso Base (Kg)</label>
-                       <Input type="number" placeholder="0" className="h-10 border-slate-200 text-sm font-mono" />
-                     </div>
-                     <div className="space-y-2">
-                       <label className="text-xs font-bold text-slate-600">Volume (m³)</label>
-                       <Input type="number" step="0.01" placeholder="0" className="h-10 border-slate-200 text-sm font-mono" />
-                     </div>
-                   </div>
-                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-600">Formato de Acomodação</label>
+                <div className="space-y-4 p-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-600">
+                        Peso Base (Kg)
+                      </label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="h-10 border-slate-200 font-mono text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-600">
+                        Volume (m³)
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0"
+                        className="h-10 border-slate-200 font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-600">
+                      Formato de Acomodação
+                    </label>
                     <Select onValueChange={setAcomodacao} value={acomodacao}>
-                      <SelectTrigger className="h-10 border-slate-200 text-sm"><SelectValue placeholder="Selecione o formato..." /></SelectTrigger>
+                      <SelectTrigger className="h-10 border-slate-200 text-sm">
+                        <SelectValue placeholder="Selecione o formato..." />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="paletizado">Paletizado</SelectItem>
                         <SelectItem value="caixas">Caixas Master</SelectItem>
@@ -126,62 +159,145 @@ export default function RegisterProduct() {
 
               {/* BLOCO: REGRAS DE RISCO OPERACIONAL */}
               <div className="rounded-xl border border-slate-200 bg-white md:col-span-2">
-                <div className="flex h-[52px] items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 rounded-t-xl">
+                <div className="flex h-[52px] items-center gap-2 rounded-t-xl border-b border-slate-100 bg-slate-50/50 px-5">
                   <AlertTriangle size={16} className="text-amber-600" />
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Regras de Risco Operacional</h2>
+                  <h2 className="text-xs font-bold tracking-wider text-slate-700 uppercase">
+                    Regras de Risco Operacional
+                  </h2>
                 </div>
-                
-                <div className="p-5 space-y-4">
-                  {/* Exigência de veículo — derivada da categoria escolhida acima, não editável */}
-                  {categoria && (
-                    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500">Exigência de Veículo (calculada)</p>
-                      <p className="text-sm font-bold text-blue-800 mt-1">{exigenciaVeiculo}</p>
-                    </div>
-                  )}
 
-                  {/* Controle de Temperatura — só aparece quando a categoria exige refrigeração */}
-                  {exigeRefrigeracao && (
-                    <div className="rounded-xl border border-sky-300 bg-sky-50/30 p-4 animate-in fade-in zoom-in duration-200">
-                      <p className="text-xs font-bold text-slate-600 mb-3">Faixa de Temperatura Exigida</p>
-                      <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 p-5">
+                  {/* Controle de Temperatura */}
+                  <div
+                    className={`rounded-xl border p-4 transition-all ${temperatura !== "Ambiente" ? "border-sky-300 bg-sky-50/30" : "border-slate-200 bg-white"}`}
+                  >
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-600">
+                        Ambiente de Transporte
+                      </label>
+                      <Select
+                        onValueChange={setTemperatura}
+                        value={temperatura}
+                      >
+                        <SelectTrigger className="h-10 border-slate-200 text-sm">
+                          <SelectValue placeholder="Ambiente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Ambiente">
+                            Seco / Ambiente
+                          </SelectItem>
+                          <SelectItem value="Refrigerado">
+                            Refrigerado (Positivo)
+                          </SelectItem>
+                          <SelectItem value="Congelado">
+                            Congelado (Negativo)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {temperatura !== "Ambiente" && (
+                      <div className="mt-4 grid animate-in grid-cols-2 gap-4 duration-200 fade-in zoom-in">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-sky-600">Temp. Mínima (°C)</label>
-                          <Input type="number" placeholder="0" className="h-10 border-sky-200 bg-sky-50 text-sm font-mono text-sky-800" />
+                          <label className="text-[11px] font-bold tracking-wider text-sky-600 uppercase">
+                            Temp. Mínima (°C)
+                          </label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="h-10 border-sky-200 bg-sky-50 font-mono text-sm text-sky-800"
+                          />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Temp. Máxima (°C)</label>
-                          <Input type="number" placeholder="0" className="h-10 border-rose-200 bg-rose-50 text-sm font-mono text-rose-800" />
+                          <label className="text-[11px] font-bold tracking-wider text-rose-600 uppercase">
+                            Temp. Máxima (°C)
+                          </label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="h-10 border-rose-200 bg-rose-50 font-mono text-sm text-rose-800"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Toggles (Hazmat, Fragil, Empilhavel) */}
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div
+                      className={`rounded-xl border p-4 transition-all ${perigosa ? "border-amber-300 bg-amber-50/40" : "border-slate-200 bg-white"}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setPerigosa(!perigosa)}
+                          className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded border ${perigosa ? "border-amber-600 bg-amber-500" : "border-slate-300"}`}
+                        >
+                          {perigosa && (
+                            <svg
+                              className="h-3 w-3 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={3}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-slate-800">
+                            Carga Perigosa (Hazmat)
+                          </p>
                         </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* Aviso Hazmat — booleano simples, derivado da categoria (sem subclasses ONU) */}
-                  {perigosa && (
-                    <div className="rounded-xl border border-amber-300 bg-amber-50/40 p-4 flex items-start gap-3">
-                      <AlertTriangle size={16} className="text-amber-600 mt-0.5" />
-                      <p className="text-sm font-bold text-amber-800">Carga Perigosa: exige veículo e motorista com habilitação MOPP</p>
-                    </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setFragil(!fragil)}
+                      className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-slate-300"
+                    >
+                      <div
+                        className={`flex h-4 w-4 items-center justify-center rounded border ${fragil ? "border-rose-600 bg-rose-500" : "border-slate-300"} `}
+                      >
+                        {fragil && (
+                          <svg
+                            className="h-3 w-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <p className="text-sm font-bold text-slate-800">
+                        Carga Frágil
+                      </p>
+                    </button>
 
-                  {/* Frágil — flag independente, não determina veículo, só entra no cálculo de risco operacional */}
-                  <button type="button" onClick={() => setFragil(!fragil)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-slate-300">
-                    <div className={`flex h-4 w-4 items-center justify-center rounded border ${fragil ? "border-rose-600 bg-rose-500" : "border-slate-300"}`}>
-                      {fragil && (
-                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
-                    <p className="text-sm font-bold text-slate-800">Carga Frágil (afeta risco operacional)</p>
-                  </button>
-
-                  <div className="pt-4 border-t border-slate-100">
-                    <label className="text-xs font-bold text-slate-600 mb-2 block">Observações de Manuseio</label>
-                    <Textarea placeholder="Instruções para pátio ou carga..." className="border-slate-200 text-sm min-h-[80px]" />
                   </div>
-                  
+
+                  <div className="border-t border-slate-100 pt-4">
+                    <label className="mb-2 block text-xs font-bold text-slate-600">
+                      Observações de Manuseio
+                    </label>
+                    <Textarea
+                      placeholder="Instruções para pátio ou carga..."
+                      className="min-h-[80px] border-slate-200 text-sm"
+                    />
+                  </div>
+
                   <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                     <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
                       <Layers size={14} /> Salvar como Modelo Frequente
@@ -189,14 +305,15 @@ export default function RegisterProduct() {
                     <button
                       type="button"
                       onClick={() => setIsTemplate(!isTemplate)}
-                      className={`h-6 w-11 rounded-full relative transition-colors duration-200 ${isTemplate ? 'bg-blue-600' : 'bg-slate-200'}`}
+                      className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${isTemplate ? "bg-blue-600" : "bg-slate-200"}`}
                     >
-                      <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all duration-200 ${isTemplate ? 'left-6' : 'left-1'}`} />
+                      <div
+                        className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all duration-200 ${isTemplate ? "left-6" : "left-1"}`}
+                      />
                     </button>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
