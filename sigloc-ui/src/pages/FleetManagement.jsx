@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export const availableVehicles = [
-  { id: "FRO-1042", plate: "ABC-1234", model: "Volvo FH 540", bodyType: "Frigorífico", driver: "Carlos Mendes", location: "Curitiba, PR", status: "Livre", weightKg: 25000, volumeM3: 90 },
-  { id: "FRO-1043", plate: "XYZ-9876", model: "Scania R460", bodyType: "Baú Sider", driver: "Roberto Silva", location: "São Paulo, SP", status: "Em Trânsito", weightKg: 27000, volumeM3: 105 },
-  { id: "FRO-1044", plate: "QWE-5544", model: "DAF XF 530", bodyType: "Refrigerado", driver: "Não Alocado", location: "Campinas, SP", status: "Manutenção", weightKg: 25000, volumeM3: 85 },
-  { id: "FRO-1045", plate: "ASD-9988", model: "Mercedes Actros 2651", bodyType: "Carga Seca", driver: "João Pedro", location: "Ribeirão Preto, SP", status: "Livre", weightKg: 30000, volumeM3: 110 },
+  { id: "FRO-1042", plate: "ABC-1234", model: "Volvo FH 540", bodyType: "Frigorífico", driver: "Carlos Mendes", location: "Curitiba, PR", status: "Livre", weightKg: 25000, volumeM3: 90, axles: 5, refrigeration: "Resfriado", mopp: false },
+  { id: "FRO-1043", plate: "XYZ-9876", model: "Scania R460", bodyType: "Baú Sider", driver: "Roberto Silva", location: "São Paulo, SP", status: "Em Trânsito", weightKg: 27000, volumeM3: 105, axles: 6, refrigeration: "Nenhuma", mopp: true },
+  { id: "FRO-1044", plate: "QWE-5544", model: "DAF XF 530", bodyType: "Refrigerado", driver: "Não Alocado", location: "Campinas, SP", status: "Manutenção", weightKg: 25000, volumeM3: 85, axles: 5, refrigeration: "Congelado", mopp: false },
+  { id: "FRO-1045", plate: "ASD-9988", model: "Mercedes Actros 2651", bodyType: "Carga Seca", driver: "João Pedro", location: "Ribeirão Preto, SP", status: "Livre", weightKg: 30000, volumeM3: 110, axles: 3, refrigeration: "Nenhuma", mopp: false },
 ]
 
 const formatWeight = (value) => `${new Intl.NumberFormat("pt-BR").format(value)} kg`
@@ -163,10 +163,26 @@ export default function FleetManagement() {
                       <div className="text-right mr-2">
                         <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">Capacidade Total</span>
                       </div>
-                      <div className="flex gap-1.5 text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-100">
-                        <span className="flex items-center gap-1"><Scale size={12} className="text-slate-400"/> {formatWeight(vehicle.weightKg)}</span>
-                        <span className="text-slate-300">•</span>
-                        <span className="flex items-center gap-1"><Box size={12} className="text-slate-400"/> {formatVolume(vehicle.volumeM3)}</span>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex gap-1.5 text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-100">
+                          <span className="flex items-center gap-1"><Scale size={12} className="text-slate-400"/> {formatWeight(vehicle.weightKg)}</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="flex items-center gap-1"><Box size={12} className="text-slate-400"/> {formatVolume(vehicle.volumeM3)}</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="flex items-center gap-1">{vehicle.axles} eixos</span>
+                        </div>
+                        <div className="flex gap-1">
+                          {vehicle.refrigeration !== "Nenhuma" && (
+                            <Badge variant="secondary" className="bg-sky-100 text-sky-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider">
+                              {vehicle.refrigeration}
+                            </Badge>
+                          )}
+                          {vehicle.mopp && (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider">
+                              MOPP
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -236,6 +252,38 @@ export default function FleetManagement() {
                             <SelectItem value="Carreta Prancha">Carreta Prancha</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+
+                      {/* LINHA 2b: Eixos, Refrigeração e MOPP — usados no cálculo de piso ANTT e compatibilidade */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Nº de Eixos</label>
+                        <Input type="number" value={editForm.axles} onChange={(e) => setEditForm({...editForm, axles: Number(e.target.value)})} className="h-9 text-xs bg-white focus:border-blue-500 focus:ring-blue-500" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Capacidade de Refrigeração</label>
+                        <Select value={editForm.refrigeration} onValueChange={(v) => setEditForm({...editForm, refrigeration: v})}>
+                          <SelectTrigger className="h-9 border-slate-200 text-xs bg-white focus:border-blue-500 focus:ring-blue-500">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Nenhuma">Nenhuma</SelectItem>
+                            <SelectItem value="Resfriado">Resfriado</SelectItem>
+                            <SelectItem value="Congelado">Congelado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Habilitação MOPP</label>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm({...editForm, mopp: !editForm.mopp})}
+                          className={`flex h-9 w-full items-center gap-2 rounded-md border px-3 text-left transition-colors ${editForm.mopp ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}
+                        >
+                          <div className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${editForm.mopp ? "border-amber-600 bg-amber-500" : "border-slate-300"}`}>
+                            {editForm.mopp && <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </div>
+                          <span className="text-xs font-semibold text-slate-700">{editForm.mopp ? "Habilitado" : "Não habilitado"}</span>
+                        </button>
                       </div>
 
                       {/* LINHA 3: Status e Localização */}

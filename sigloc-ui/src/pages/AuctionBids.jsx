@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, ShieldCheck, Trophy, ArrowDownRight, ExternalLink, Calendar, ChevronDown, ChevronUp, Activity, FileCheck } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Truck, MapPin, Clock, ShieldCheck, Trophy, ArrowDownRight, ExternalLink, Calendar, ChevronDown, ChevronUp, Activity, FileCheck, Star, AlertTriangle, Lock } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { auctionBidsMock, getSegmentById } from "@/constants/logistics-mock"
+import { auctionBidsMock, getSegmentById, calculateAnttFloor } from "@/constants/logistics-mock"
 
 export default function AuctionBids() {
   const { segmentId } = useParams()
@@ -13,10 +13,22 @@ export default function AuctionBids() {
 
   const selectedSegment = segmentId ? getSegmentById(segmentId) : getSegmentById("TRC-1042")
   const visibleBids = (segmentId ? auctionBidsMock.filter((bid) => bid.segmentRef === segmentId) : auctionBidsMock) || []
-  const rankedBids = [...visibleBids].sort((a, b) => a.proposedValue - b.proposedValue)
+
+  // Piso ANTT calculado por lance (categoria do trecho + distância + eixos do veículo ofertado) —
+  // ver docs/business-rules-decisions.md, seção 5. Lances abaixo do piso são desqualificados.
+  const bidsWithCompliance = visibleBids.map((bid) => {
+    const anttFloor = selectedSegment
+      ? calculateAnttFloor(selectedSegment.category, selectedSegment.totalDistanceKm, bid.axles)
+      : null
+    const compatible = anttFloor == null || bid.proposedValue >= anttFloor
+    return { ...bid, anttFloor, compatible }
+  })
+  const rankedBids = [...bidsWithCompliance].sort((a, b) => a.proposedValue - b.proposedValue)
+  const firstCompatibleId = rankedBids.find((bid) => bid.compatible)?.id
+  const isAutomatic = selectedSegment?.tipoAdjudicacao === "Automática"
 
   const targetFare = selectedSegment?.targetFare || 4200
-  const anttFloorFare = targetFare * 0.72
+  const referenceFloor = rankedBids.find((bid) => bid.anttFloor != null)?.anttFloor
 
   const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
 
@@ -101,8 +113,8 @@ export default function AuctionBids() {
                   <p className="text-lg font-black text-slate-700 font-mono leading-none">{formatCurrency(targetFare)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center justify-end gap-1"><ShieldCheck size={10}/> Piso ANTT</p>
-                  <p className="text-sm font-bold text-slate-500 font-mono leading-none">{formatCurrency(anttFloorFare)}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center justify-end gap-1"><ShieldCheck size={10}/> Piso ANTT (lance líder)</p>
+                  <p className="text-sm font-bold text-slate-500 font-mono leading-none">{referenceFloor != null ? formatCurrency(referenceFloor) : "—"}</p>
                 </div>
               </div>
               
@@ -122,6 +134,18 @@ export default function AuctionBids() {
           </div>
         )}
 
+        {/* MODO DE ADJUDICAÇÃO — definido na criação do leilão (OfferFreight) */}
+        {selectedSegment && (
+          <div className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 mb-4 text-xs font-semibold ${
+            isAutomatic ? "border-blue-200 bg-blue-50/60 text-blue-700" : "border-slate-200 bg-slate-50/60 text-slate-600"
+          }`}>
+            <Lock size={14} />
+            {isAutomatic
+              ? "Adjudicação Automática: ao encerrar o leilão, o sistema seleciona sozinho o menor lance compatível. A escolha manual abaixo está desabilitada."
+              : "Adjudicação Manual: você pode escolher qualquer lance compatível, não apenas o mais barato."}
+          </div>
+        )}
+
         {/* CONTAINER DO RANKING */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto pr-2 pb-6">
@@ -135,7 +159,7 @@ export default function AuctionBids() {
                 </div>
               ) : (
                 rankedBids.map((bid, index) => {
-                  const isWinner = index === 0
+                  const isWinner = bid.id === firstCompatibleId
                   const isExpanded = expandedBids.includes(bid.id)
                   const savings = targetFare - bid.proposedValue
                   const savingsPercent = ((savings / targetFare) * 100).toFixed(1)
@@ -145,13 +169,15 @@ export default function AuctionBids() {
                     <div 
                       key={bid.id} 
                       className={`relative flex flex-col rounded-xl border p-4 transition-all ${
-                        isWinner 
+                        !bid.compatible
+                          ? "border-rose-200 bg-rose-50/20 opacity-90"
+                          : isWinner 
                           ? "border-emerald-300 bg-emerald-50/20 ring-1 ring-emerald-100" 
                           : "border-slate-200 bg-white"
                       }`}
                     >
                       
-                      {isWinner && (
+                      {isWinner && bid.compatible && (
                         <div className="absolute -top-2.5 left-4 flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-200 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 shadow-sm">
                           <Trophy size={10} /> Melhor Oferta
                         </div>
@@ -168,20 +194,38 @@ export default function AuctionBids() {
 
                             <div className="min-w-0">
                               <h4 className="text-sm font-bold text-slate-800 truncate">{bid.carrier}</h4>
-                              <div className="flex items-center gap-3 mt-1">
+                              <div className="flex items-center gap-3 mt-1 flex-wrap">
                                 <span className="flex items-center text-[11px] font-semibold text-slate-500">
                                   <Truck size={12} className="mr-1.5 text-slate-400" /> {bid.vehicle}
                                 </span>
+                                {bid.carrierRating != null && (
+                                  <span className="flex items-center text-[11px] font-semibold text-amber-600">
+                                    <Star size={12} className="mr-1 fill-amber-400 text-amber-400" /> {bid.carrierRating.toFixed(1)}
+                                  </span>
+                                )}
+                                {bid.compatible ? (
+                                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider">
+                                    Compatível
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-rose-100 text-rose-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider flex items-center">
+                                    <AlertTriangle size={9} className="mr-1" /> Abaixo do Piso ANTT
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-end gap-6 w-[55%]">
                             <div className="text-right">
-                              <p className={`text-lg font-black font-mono ${isWinner ? "text-emerald-700" : "text-slate-700"}`}>
+                              <p className={`text-lg font-black font-mono ${isWinner && bid.compatible ? "text-emerald-700" : "text-slate-700"}`}>
                                 {formatCurrency(bid.proposedValue)}
                               </p>
-                              {savings > 0 ? (
+                              {!bid.compatible ? (
+                                <p className="text-[10px] font-bold text-rose-500 mt-0.5">
+                                  Piso mínimo: {bid.anttFloor != null ? formatCurrency(bid.anttFloor) : "—"}
+                                </p>
+                              ) : savings > 0 ? (
                                 <p className="flex items-center justify-end text-[10px] font-bold text-emerald-600 mt-0.5">
                                   <ArrowDownRight size={12} className="mr-0.5" /> 
                                   Economia de {formatCurrency(savings)} ({savingsPercent}%)
@@ -194,13 +238,15 @@ export default function AuctionBids() {
                             </div>
 
                             <Button 
-                              className={`h-9 px-5 text-xs font-bold tracking-wide transition-colors ${
-                                isWinner 
+                              disabled={!bid.compatible || isAutomatic}
+                              title={isAutomatic ? "Adjudicação automática habilitada para este leilão" : undefined}
+                              className={`h-9 px-5 text-xs font-bold tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                isWinner && bid.compatible
                                   ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
                                   : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                               }`}
                             >
-                              {isWinner ? <><CheckCircle2 size={14} className="mr-1.5" /> Adjudicar Vencedor</> : "Selecionar Lance"}
+                              {isWinner && bid.compatible ? <><CheckCircle2 size={14} className="mr-1.5" /> Adjudicar Vencedor</> : "Selecionar Lance"}
                             </Button>
 
                             <Button 

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { getAvailableVehiclesForRoute } from "@/constants/logistics-mock"
+import { getAvailableVehiclesForRoute, calculateAnttFloor } from "@/constants/logistics-mock"
 
 // ==========================================
 // MOCKS DA ROTA CONSOLIDADA 
@@ -21,6 +21,8 @@ const mockRoute = {
   totalDistanceKm: 854,
   targetFare: 12500,
   bodyType: "Frigorífico (Trailers/Carretas)",
+  // Categoria da carga, usada no cálculo do piso ANTT (ver docs/business-rules-decisions.md, seção 5)
+  category: "Refrigerada",
   
   // NOVOS DADOS: Especificações do Produto
   productDetails: {
@@ -67,14 +69,25 @@ function getStopBadgeClass(index, totalStops) {
 export default function BidAnalysis() {
   const navigate = useNavigate()
   const route = mockRoute 
-  const anttFloor = route.targetFare * 0.75 
 
   const [bidValue, setBidValue] = useState(route.targetFare)
   const [selectedVehicle, setSelectedVehicle] = useState(null)
 
+  // Piso ANTT só existe de fato quando há um veículo real ofertado (precisa do nº de eixos) —
+  // ver docs/business-rules-decisions.md, seção 5. Sem veículo selecionado, não há piso a aplicar.
+  const anttFloor = selectedVehicle
+    ? calculateAnttFloor(route.category, route.totalDistanceKm, selectedVehicle.axles)
+    : null
+
+  // Compatibilidade do lance (RF016 refinado): veículo precisa atender a refrigeração exigida
+  // pela categoria da carga, e o valor ofertado não pode ficar abaixo do piso legal.
+  const meetsRefrigeration = !selectedVehicle || route.category !== "Refrigerada" || selectedVehicle.refrigeration !== "Nenhuma"
+  const meetsFloor = anttFloor == null || Number(bidValue) >= anttFloor
+  const isBidCompatible = selectedVehicle && meetsRefrigeration && meetsFloor
+
   // Funções de ação rápida para o input de lance
   const applyLeaderBid = () => setBidValue(route.auctionInfo.bestBid - 50)
-  const applyFloorBid = () => setBidValue(anttFloor)
+  const applyFloorBid = () => anttFloor != null && setBidValue(anttFloor)
   
   // Calcula veículos disponíveis para esta rota
   // Usando as datas do mock (hoje 14h até amanhã 12h)
@@ -173,8 +186,8 @@ export default function BidAnalysis() {
                             <Button variant="outline" size="sm" onClick={applyLeaderBid} className="text-[10px] font-bold border-slate-200 bg-white text-slate-600 h-7">
                                 Cobrir Líder
                             </Button>
-                            <Button variant="outline" size="sm" onClick={applyFloorBid} className="text-[10px] font-bold border-slate-200 bg-white text-slate-600 h-7">
-                                Piso ANTT
+                            <Button variant="outline" size="sm" onClick={applyFloorBid} disabled={anttFloor == null} className="text-[10px] font-bold border-slate-200 bg-white text-slate-600 h-7 disabled:opacity-50">
+                                {anttFloor != null ? `Piso ANTT (${formatCurrency(anttFloor)})` : "Piso ANTT (selecione o veículo)"}
                             </Button>
                         </div>
                         
@@ -238,6 +251,22 @@ export default function BidAnalysis() {
                                                         <span className="font-mono font-bold text-slate-700">{vehicle.capacity}</span>
                                                     </div>
                                                 </div>
+
+                                                <div className="flex items-center gap-1 mt-1.5">
+                                                    <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-none px-1 py-0 text-[8px] font-bold">
+                                                        {vehicle.axles} eixos
+                                                    </Badge>
+                                                    {vehicle.refrigeration !== "Nenhuma" ? (
+                                                        <Badge variant="secondary" className="bg-sky-100 text-sky-700 border-none px-1 py-0 text-[8px] font-bold">
+                                                            {vehicle.refrigeration}
+                                                        </Badge>
+                                                    ) : null}
+                                                    {vehicle.mopp && (
+                                                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-none px-1 py-0 text-[8px] font-bold">
+                                                            MOPP
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                                 
                                                 {vehicle.lockedPeriods.length > 0 && (
                                                     <div className="mt-2 pt-2 border-t border-slate-100">
@@ -257,15 +286,27 @@ export default function BidAnalysis() {
                                     <AlertTriangle size={10} /> Selecione um veículo para prosseguir
                                 </p>
                             )}
+                            {selectedVehicle && !meetsRefrigeration && (
+                                <p className="text-[9px] font-semibold text-rose-600 mt-2 flex items-center gap-1">
+                                    <AlertTriangle size={10} /> Este veículo não possui refrigeração compatível com a carga
+                                </p>
+                            )}
+                            {selectedVehicle && meetsRefrigeration && !meetsFloor && (
+                                <p className="text-[9px] font-semibold text-rose-600 mt-2 flex items-center gap-1">
+                                    <AlertTriangle size={10} /> Valor abaixo do piso ANTT ({formatCurrency(anttFloor)}) para este veículo
+                                </p>
+                            )}
                         </div>
 
                         <Button 
-                            disabled={!selectedVehicle}
+                            disabled={!isBidCompatible}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-9 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {selectedVehicle 
-                                ? `Confirmar Lance com ${selectedVehicle.plate}` 
-                                : "Selecione um Veículo para Confirmar"
+                            {!selectedVehicle
+                                ? "Selecione um Veículo para Confirmar"
+                                : !isBidCompatible
+                                ? "Lance Incompatível — Ajuste Veículo ou Valor"
+                                : `Confirmar Lance com ${selectedVehicle.plate}`
                             }
                         </Button>
                     </div>

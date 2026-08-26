@@ -215,8 +215,8 @@ export default function OfferFreight() {
                         <p className="text-xs font-semibold text-slate-800">Seleção automática do vencedor</p>
                         <p className="text-[11px] text-slate-500 leading-normal">
                           {isAutoAwardEnabled
-                            ? "O sistema adjudica o lance mais próximo do frete mínimo ao fim do cronômetro."
-                            : "O operador analisa a lista de propostas e seleciona manualmente o transportador."}
+                            ? "O sistema adjudica automaticamente o lance de menor valor entre os compatíveis (peso/volume, categoria e piso ANTT), sem considerar a nota do transportador."
+                            : "O operador vê todos os lances compatíveis, ordenados por preço, com nota do transportador e badges de compatibilidade, e escolhe manualmente qualquer um deles."}
                         </p>
                       </div>
                       <Switch checked={isAutoAwardEnabled} onCheckedChange={setIsAutoAwardEnabled} />

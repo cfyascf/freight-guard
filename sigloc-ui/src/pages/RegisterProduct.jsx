@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowLeft, Save, X, PackageOpen, Box, AlertTriangle, Snowflake, FileText, Layers, Scale } from "lucide-react"
+import { ArrowLeft, Save, X, PackageOpen, Box, AlertTriangle, FileText, Layers, Scale } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
 import AppShell from "@/components/app-shell"
@@ -12,12 +12,23 @@ export default function RegisterProduct() {
   const navigate = useNavigate()
   
   // Estados para controlar os campos dinâmicos
-  const [temperatura, setTemperatura] = useState("Ambiente")
-  const [perigosa, setPerigosa] = useState(false)
+  const [categoria, setCategoria] = useState("")
   const [fragil, setFragil] = useState(false)
-  const [empilhavel, setEmpilhavel] = useState(true)
   const [isTemplate, setIsTemplate] = useState(false)
   const [acomodacao, setAcomodacao] = useState("")
+
+  // `perigosa` e a exigência de veículo são derivadas da categoria escolhida,
+  // não são campos independentes (evita divergência entre categoria e flags manuais)
+  const perigosa = categoria === "Perigosa"
+  const exigeRefrigeracao = categoria === "Refrigerada"
+  const exigenciaVeiculo = {
+    Geral: "Baú / Sider",
+    Refrigerada: "Frigorífico / Isotérmico",
+    Perigosa: "Veículo e motorista com habilitação MOPP",
+    GranelSolido: "Graneleiro / Basculante",
+    GranelLiquido: "Tanque",
+    Fragil: "Baú com implemento de fixação",
+  }[categoria]
 
   return (
     <AppShell title="Novo Cadastro de SKU">
@@ -65,7 +76,17 @@ export default function RegisterProduct() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-600">Categoria</label>
-                      <Input placeholder="Ex: Congelados" className="h-10 border-slate-200 text-sm" />
+                      <Select onValueChange={setCategoria} value={categoria}>
+                        <SelectTrigger className="h-10 border-slate-200 text-sm"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Geral">Carga Geral (Seca)</SelectItem>
+                          <SelectItem value="Refrigerada">Refrigerada / Perecível</SelectItem>
+                          <SelectItem value="Perigosa">Carga Perigosa</SelectItem>
+                          <SelectItem value="GranelSolido">Granel Sólido</SelectItem>
+                          <SelectItem value="GranelLiquido">Granel Líquido</SelectItem>
+                          <SelectItem value="Fragil">Frágil / Especial</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -111,22 +132,19 @@ export default function RegisterProduct() {
                 </div>
                 
                 <div className="p-5 space-y-4">
-                  {/* Controle de Temperatura */}
-                  <div className={`rounded-xl border p-4 transition-all ${temperatura !== "Ambiente" ? "border-sky-300 bg-sky-50/30" : "border-slate-200 bg-white"}`}>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-600">Ambiente de Transporte</label>
-                      <Select onValueChange={setTemperatura} value={temperatura}>
-                        <SelectTrigger className="h-10 border-slate-200 text-sm"><SelectValue placeholder="Ambiente" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Ambiente">Seco / Ambiente</SelectItem>
-                          <SelectItem value="Refrigerado">Refrigerado (Positivo)</SelectItem>
-                          <SelectItem value="Congelado">Congelado (Negativo)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  {/* Exigência de veículo — derivada da categoria escolhida acima, não editável */}
+                  {categoria && (
+                    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500">Exigência de Veículo (calculada)</p>
+                      <p className="text-sm font-bold text-blue-800 mt-1">{exigenciaVeiculo}</p>
                     </div>
+                  )}
 
-                    {temperatura !== "Ambiente" && (
-                      <div className="mt-4 grid grid-cols-2 gap-4 animate-in fade-in zoom-in duration-200">
+                  {/* Controle de Temperatura — só aparece quando a categoria exige refrigeração */}
+                  {exigeRefrigeracao && (
+                    <div className="rounded-xl border border-sky-300 bg-sky-50/30 p-4 animate-in fade-in zoom-in duration-200">
+                      <p className="text-xs font-bold text-slate-600 mb-3">Faixa de Temperatura Exigida</p>
+                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-[11px] font-bold uppercase tracking-wider text-sky-600">Temp. Mínima (°C)</label>
                           <Input type="number" placeholder="0" className="h-10 border-sky-200 bg-sky-50 text-sm font-mono text-sky-800" />
@@ -136,65 +154,28 @@ export default function RegisterProduct() {
                           <Input type="number" placeholder="0" className="h-10 border-rose-200 bg-rose-50 text-sm font-mono text-rose-800" />
                         </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* Toggles (Hazmat, Fragil, Empilhavel) */}
-                  <div className="flex flex-col gap-3 pt-2">
-                      <div className={`rounded-xl border p-4 transition-all ${perigosa ? "border-amber-300 bg-amber-50/40" : "border-slate-200 bg-white"}`}>
-                        <div className="flex items-start gap-3">
-                          <button type="button" onClick={() => setPerigosa(!perigosa)} className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded border ${perigosa ? "border-amber-600 bg-amber-500" : "border-slate-300"}`}>
-                            {perigosa && (
-                              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </button>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-800">Carga Perigosa (Hazmat)</p>
-                            {perigosa && (
-                              <div className="mt-3 grid grid-cols-2 gap-2">
-                                <Input placeholder="ONU" className="h-8 text-xs font-mono" />
-                                <Input placeholder="Classe" className="h-8 text-xs font-mono" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                  {/* Aviso Hazmat — booleano simples, derivado da categoria (sem subclasses ONU) */}
+                  {perigosa && (
+                    <div className="rounded-xl border border-amber-300 bg-amber-50/40 p-4 flex items-start gap-3">
+                      <AlertTriangle size={16} className="text-amber-600 mt-0.5" />
+                      <p className="text-sm font-bold text-amber-800">Carga Perigosa: exige veículo e motorista com habilitação MOPP</p>
+                    </div>
+                  )}
 
-                      <button type="button" onClick={() => setFragil(!fragil)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-slate-300">
-                        <div className={`flex h-4 w-4 items-center justify-center rounded border ${fragil ? "border-rose-600 bg-rose-500" : "border-slate-300"}`}>
-                          {fragil && (
-                            <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                        <p className="text-sm font-bold text-slate-800">Carga Frágil</p>
-                      </button>
-
-                      <div className={`rounded-xl border p-4 transition-all ${empilhavel ? "border-blue-300 bg-blue-50/40" : "border-slate-200 bg-white"}`}>
-                        <div className="flex items-start gap-3">
-                          <button type="button" onClick={() => setEmpilhavel(!empilhavel)} className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded border ${empilhavel ? "border-blue-700 bg-blue-600" : "border-slate-300"}`}>
-                            {empilhavel && (
-                              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </button>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-800">Permite Empilhamento</p>
-
-                            {empilhavel && (
-                              <div className="mt-3 max-w-40 space-y-2 animate-in fade-in zoom-in duration-200">
-                                <label className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Max. Camadas</label>
-                                <Input type="number" placeholder="1" className="h-10 border-blue-200 bg-blue-50 text-sm font-mono text-blue-800" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                  </div>
+                  {/* Frágil — flag independente, não determina veículo, só entra no cálculo de risco operacional */}
+                  <button type="button" onClick={() => setFragil(!fragil)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-slate-300">
+                    <div className={`flex h-4 w-4 items-center justify-center rounded border ${fragil ? "border-rose-600 bg-rose-500" : "border-slate-300"}`}>
+                      {fragil && (
+                        <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">Carga Frágil (afeta risco operacional)</p>
+                  </button>
 
                   <div className="pt-4 border-t border-slate-100">
                     <label className="text-xs font-bold text-slate-600 mb-2 block">Observações de Manuseio</label>

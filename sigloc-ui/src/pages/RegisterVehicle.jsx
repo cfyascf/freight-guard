@@ -19,7 +19,10 @@ export default function RegisterVehicle() {
     weightKg: "",
     volumeM3: "",
     bodyType: "",
-    status: ""
+    status: "",
+    axles: "",
+    refrigeration: "Nenhuma",
+    mopp: false,
   })
 
   return (
@@ -142,7 +145,7 @@ export default function RegisterVehicle() {
                 </div>
                 
                 <div className="flex flex-1 flex-col p-5">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
                         <Scale size={13} className="text-slate-400" /> Peso Suportado
@@ -174,10 +177,22 @@ export default function RegisterVehicle() {
                         <span className="absolute right-3 top-2.5 text-xs font-semibold text-slate-400">m³</span>
                       </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-600">Nº de Eixos</label>
+                      <Input 
+                          type="number" 
+                          placeholder="Ex: 3" 
+                          value={formData.axles}
+                          onChange={(e) => setFormData({...formData, axles: e.target.value})}
+                          className="h-10 border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500" 
+                      />
+                      <p className="text-[10px] text-slate-400">Necessário para calcular o piso ANTT</p>
+                    </div>
                   </div>
 
                   {/* MT-AUTO espelhado: Força a Restrição pro exato fundo da caixa */}
-                  <div className="mt-auto border-t border-slate-100 pt-5">
+                  <div className="mt-auto border-t border-slate-100 pt-5 space-y-4">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-600">Tipo de Carroceria</label>
                       <Select value={formData.bodyType} onValueChange={(v) => setFormData({...formData, bodyType: v})}>
@@ -192,6 +207,33 @@ export default function RegisterVehicle() {
                           <SelectItem value="Carreta Prancha">Carreta Prancha / Aberta</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 items-end">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-600">Capacidade de Refrigeração</label>
+                        <Select value={formData.refrigeration} onValueChange={(v) => setFormData({...formData, refrigeration: v})}>
+                          <SelectTrigger className="h-10 border-slate-200 text-sm focus:ring-blue-500">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Nenhuma">Nenhuma</SelectItem>
+                            <SelectItem value="Resfriado">Resfriado</SelectItem>
+                            <SelectItem value="Congelado">Congelado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, mopp: !formData.mopp})}
+                        className={`flex h-10 items-center gap-2 rounded-lg border px-3 text-left transition-colors ${formData.mopp ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                      >
+                        <div className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${formData.mopp ? "border-amber-600 bg-amber-500" : "border-slate-300"}`}>
+                          {formData.mopp && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Habilitação MOPP</span>
+                      </button>
                     </div>
                   </div>
                 </div>

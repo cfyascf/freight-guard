@@ -9,6 +9,15 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+export const EXIGENCIA_VEICULO_POR_CATEGORIA = {
+  Geral: "Baú / Sider",
+  Refrigerada: "Frigorífico / Isotérmico",
+  Perigosa: "Veículo e motorista com habilitação MOPP",
+  GranelSolido: "Graneleiro / Basculante",
+  GranelLiquido: "Tanque",
+  Fragil: "Baú com implemento de fixação",
+}
+
 export default function ProductManagement() {
   const navigate = useNavigate()
   const [produtos, setProdutos] = useState([
@@ -17,18 +26,13 @@ export default function ProductManagement() {
       sku: "CBO-099",
       nome: "Cebola Roxa (Saca 20kg)",
       tipo: "Alimentício",
+      categoria: "Geral",
       pesoPadrao: 20,
       volumePadrao: 0.05,
       fragil: false,
-      empilhavel: true,
-      maxCamadas: 5,
       tipoHu: "paletizado",
-      temperatura: "Ambiente",
       tempMin: null,
       tempMax: null,
-      perigosa: false,
-      onu: "",
-      classeRisco: "",
       descricao: "Atenção: Necessita de baú ventilado (Sider ou Carga Seca sem lona esticada) para evitar apodrecimento por umidade.",
     },
     {
@@ -36,18 +40,13 @@ export default function ProductManagement() {
       sku: "VD-MED",
       nome: "Ampolas de Vacina (Lote)",
       tipo: "Medicamento",
+      categoria: "Refrigerada",
       pesoPadrao: 5,
       volumePadrao: 0.1,
       fragil: true,
-      empilhavel: false,
-      maxCamadas: 1,
       tipoHu: "caixas",
-      temperatura: "Refrigerado",
       tempMin: 2,
       tempMax: 8,
-      perigosa: false,
-      onu: "",
-      classeRisco: "",
       descricao: "Material biológico sensível. Exige registrador de temperatura (datalogger) ativado na viagem.",
     },
     {
@@ -55,18 +54,13 @@ export default function ProductManagement() {
       sku: "GL-SDA",
       nome: "Soda Cáustica Líquida (IBC)",
       tipo: "Químico",
+      categoria: "Perigosa",
       pesoPadrao: 1200,
       volumePadrao: 1.0,
       fragil: false,
-      empilhavel: true,
-      maxCamadas: 2,
       tipoHu: "caixas",
-      temperatura: "Ambiente",
       tempMin: null,
       tempMax: null,
-      perigosa: true,
-      onu: "1824",
-      classeRisco: "8",
       descricao: "Corrosivo grave. Obrigatório veículo com licença MOPP e kit de contenção de derramamento químico a bordo.",
     }
   ])
@@ -78,6 +72,9 @@ export default function ProductManagement() {
   const [isEditing, setIsEditing] = useState(false)
   
   const activeProduct = produtos.find(p => p.id === selectedId)
+  // `perigosa` e a exigência de veículo são derivadas da categoria — não são campos independentes
+  const activeExigeRefrigeracao = activeProduct?.categoria === "Refrigerada"
+  const activePerigosa = activeProduct?.categoria === "Perigosa"
 
   const filteredProdutos = produtos.filter(p => 
     p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -155,14 +152,14 @@ export default function ProductManagement() {
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="font-mono text-xs font-bold text-slate-500">{produto.sku}</span>
                           <div className="flex gap-1">
-                            {produto.perigosa && (
+                            {produto.categoria === "Perigosa" && (
                               <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider flex items-center">
                                 <Flame size={10} className="mr-1" /> Hazmat
                               </Badge>
                             )}
-                            {produto.temperatura !== "Ambiente" && (
+                            {produto.categoria === "Refrigerada" && (
                               <Badge variant="secondary" className="bg-sky-100 text-sky-700 border-none px-1.5 py-0 text-[9px] uppercase font-black tracking-wider flex items-center">
-                                <Snowflake size={10} className="mr-1" /> {produto.temperatura}
+                                <Snowflake size={10} className="mr-1" /> Refrigerada
                               </Badge>
                             )}
                             {produto.fragil && (
@@ -250,7 +247,7 @@ export default function ProductManagement() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Categoria</label>
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Segmento</label>
                         <Input 
                           disabled={!isEditing}
                           value={activeProduct.tipo} 
@@ -258,6 +255,27 @@ export default function ProductManagement() {
                           className="h-10 border-slate-200 text-sm text-slate-800 focus:border-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600" 
                         />
                       </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Categoria (define exigência de veículo)</label>
+                      <Select disabled={!isEditing} value={activeProduct.categoria} onValueChange={(v) => handleUpdateField("categoria", v)}>
+                        <SelectTrigger className="h-10 border-slate-200 text-sm font-semibold focus:ring-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600">
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Geral">Carga Geral (Seca)</SelectItem>
+                          <SelectItem value="Refrigerada">Refrigerada / Perecível</SelectItem>
+                          <SelectItem value="Perigosa">Carga Perigosa</SelectItem>
+                          <SelectItem value="GranelSolido">Granel Sólido</SelectItem>
+                          <SelectItem value="GranelLiquido">Granel Líquido</SelectItem>
+                          <SelectItem value="Fragil">Frágil / Especial</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {activeProduct.categoria && (
+                        <p className="text-[11px] font-semibold text-blue-600 pt-1">
+                          Exige: {EXIGENCIA_VEICULO_POR_CATEGORIA[activeProduct.categoria]}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -290,26 +308,12 @@ export default function ProductManagement() {
                     </div>
                   </div>
 
-                  {/* Bloco 3: Ambiente Logístico */}
-                  <div className="space-y-4 border-t border-slate-100 pt-6">
-                    <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Snowflake size={14} className="text-slate-400"/> Ambiente de Transporte</h3>
-                    <div className={`rounded-xl transition-all ${activeProduct.temperatura !== "Ambiente" ? "border border-sky-300 bg-sky-50/30 p-4" : "border-transparent bg-transparent p-0"} ${!isEditing && "opacity-80"}`}>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Controle de Temperatura</label>
-                        <Select disabled={!isEditing} value={activeProduct.temperatura} onValueChange={(v) => handleUpdateField("temperatura", v)}>
-                          <SelectTrigger className="h-10 border-slate-200 text-sm font-semibold focus:ring-blue-500 disabled:opacity-100 disabled:bg-slate-50 disabled:text-slate-600">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Ambiente">Seco / Ambiente</SelectItem>
-                            <SelectItem value="Refrigerado">Refrigerado (Positivo)</SelectItem>
-                            <SelectItem value="Congelado">Congelado (Negativo)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {activeProduct.temperatura !== "Ambiente" && (
-                        <div className="mt-4 grid grid-cols-2 gap-4 animate-in fade-in zoom-in duration-200">
+                  {/* Bloco 3: Ambiente Logístico — visível só quando a categoria exige refrigeração */}
+                  {activeExigeRefrigeracao && (
+                    <div className="space-y-4 border-t border-slate-100 pt-6">
+                      <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><Snowflake size={14} className="text-slate-400"/> Ambiente de Transporte</h3>
+                      <div className="rounded-xl border border-sky-300 bg-sky-50/30 p-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1.5">
                             <label className="text-[11px] font-bold uppercase tracking-wider text-sky-600">Temp. Mínima (°C)</label>
                             <Input disabled={!isEditing} type="number" value={activeProduct.tempMin || 0} onChange={(e) => handleUpdateField("tempMin", Number(e.target.value))} className="h-10 border-sky-200 bg-sky-50 text-sm font-mono text-sky-800 focus:border-sky-500 disabled:opacity-80" />
@@ -319,65 +323,30 @@ export default function ProductManagement() {
                             <Input disabled={!isEditing} type="number" value={activeProduct.tempMax || 0} onChange={(e) => handleUpdateField("tempMax", Number(e.target.value))} className="h-10 border-rose-200 bg-rose-50 text-sm font-mono text-rose-800 focus:border-rose-500 disabled:opacity-80" />
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Bloco 4: Restrições de Risco (Toggles) */}
+                  {/* Bloco 4: Restrições de Risco */}
                   <div className="space-y-4 border-t border-slate-100 pt-6">
                     <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5"><AlertTriangle size={14} className="text-slate-400"/> Regras de Risco Operacional</h3>
                     <div className="flex flex-col gap-3">
                       
-                      <div className={`rounded-xl border p-4 transition-all ${activeProduct.perigosa ? "border-amber-300 bg-amber-50/40" : "border-slate-200 bg-white"} ${!isEditing && "opacity-80"}`}>
-                        <div className="flex items-start gap-3">
-                          <button disabled={!isEditing} onClick={() => handleUpdateField("perigosa", !activeProduct.perigosa)} className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors disabled:cursor-not-allowed ${activeProduct.perigosa ? "border-amber-600 bg-amber-500" : "border-slate-300"}`}>
-                            {activeProduct.perigosa && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                          </button>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-800">Carga Perigosa (Hazmat)</p>
-                            
-                            {activeProduct.perigosa && (
-                              <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Número ONU</label>
-                                  <Input disabled={!isEditing} placeholder="Ex: 1203" value={activeProduct.onu} onChange={(e) => handleUpdateField("onu", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Classe de Risco</label>
-                                  <Input disabled={!isEditing} placeholder="Ex: 3" value={activeProduct.classeRisco} onChange={(e) => handleUpdateField("classeRisco", e.target.value)} className="h-9 border-slate-300 bg-white text-xs font-mono disabled:bg-slate-50 disabled:text-slate-600" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                      {activePerigosa && (
+                        <div className="rounded-xl border border-amber-300 bg-amber-50/40 p-4 flex items-start gap-3">
+                          <Flame size={16} className="text-amber-600 mt-0.5" />
+                          <p className="text-sm font-bold text-amber-800">Carga Perigosa: exige veículo e motorista com habilitação MOPP (derivado da categoria)</p>
                         </div>
-                      </div>
+                      )}
 
                       <button disabled={!isEditing} onClick={() => handleUpdateField("fragil", !activeProduct.fragil)} className={`flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-80 ${isEditing && "hover:border-slate-300"}`}>
                         <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${activeProduct.fragil ? "border-rose-500 bg-rose-500" : "border-slate-300"}`}>
                           {activeProduct.fragil && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-800">Carga Frágil</p>
+                          <p className="text-sm font-bold text-slate-800">Carga Frágil (afeta risco operacional)</p>
                         </div>
                       </button>
-
-                      <div className={`rounded-xl border p-4 transition-all ${activeProduct.empilhavel ? "border-blue-300 bg-blue-50/40" : "border-slate-200 bg-white"} ${!isEditing && "opacity-80"}`}>
-                        <div className="flex items-start gap-3">
-                          <button disabled={!isEditing} onClick={() => handleUpdateField("empilhavel", !activeProduct.empilhavel)} className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors disabled:cursor-not-allowed ${activeProduct.empilhavel ? "border-blue-600 bg-blue-600" : "border-slate-300"}`}>
-                            {activeProduct.empilhavel && <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                          </button>
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-slate-800">Permite Empilhamento</p>
-
-                            {activeProduct.empilhavel && (
-                              <div className="mt-4 max-w-40 space-y-1.5 animate-in fade-in zoom-in duration-200">
-                                <label className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Max. Camadas</label>
-                                <Input disabled={!isEditing} type="number" value={activeProduct.maxCamadas} onChange={(e) => handleUpdateField("maxCamadas", Number(e.target.value))} className="h-10 border-blue-200 bg-blue-50 text-sm font-mono text-blue-800 focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 

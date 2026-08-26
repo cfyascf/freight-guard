@@ -108,6 +108,11 @@ export const segmentPlansMock = [
     targetFare: 9800,
     totalWeight: "160 kg",
     totalVolume: "10 m³",
+    // Categoria mais restritiva entre os produtos do trecho (CRG-1042 Refrigerado + CRG-1043 Frágil) — usada no cálculo do piso ANTT
+    category: "Refrigerada",
+    totalDistanceKm: 2150,
+    // Define se o encerramento do leilão adjudica automaticamente o menor lance compatível, ou aguarda escolha manual
+    tipoAdjudicacao: "Manual",
     itemCount: 2,
     legCount: 2,
     risk: RISK.WARNING,
@@ -128,6 +133,9 @@ export const segmentPlansMock = [
     targetFare: 7200,
     totalWeight: "1.5 ton",
     totalVolume: "9 m³",
+    category: "Geral",
+    totalDistanceKm: 480,
+    tipoAdjudicacao: "Automática",
     itemCount: 1,
     legCount: 1,
     risk: RISK.CRITIC,
@@ -148,6 +156,9 @@ export const segmentPlansMock = [
     targetFare: 6300,
     totalWeight: "320 kg",
     totalVolume: "5 m³",
+    category: "Refrigerada",
+    totalDistanceKm: 1350,
+    tipoAdjudicacao: "Manual",
     itemCount: 1,
     legCount: 1,
     risk: RISK.WARNING,
@@ -162,12 +173,41 @@ export const segmentPlansMock = [
   },
 ]
 
+// Tabela de referência simplificada do piso mínimo de frete (Resolução ANTT).
+// piso = custoFixo + coeficientePorKm × distância, buscado por categoria de carga + faixa de eixos do veículo.
+export const pisoAnttTableMock = [
+  { categoria: "Geral", eixosMin: 2, eixosMax: 3, custoFixo: 380, coeficientePorKm: 3.2 },
+  { categoria: "Geral", eixosMin: 4, eixosMax: 9, custoFixo: 520, coeficientePorKm: 4.1 },
+  { categoria: "Refrigerada", eixosMin: 2, eixosMax: 3, custoFixo: 460, coeficientePorKm: 3.9 },
+  { categoria: "Refrigerada", eixosMin: 4, eixosMax: 9, custoFixo: 610, coeficientePorKm: 4.8 },
+  { categoria: "Perigosa", eixosMin: 2, eixosMax: 3, custoFixo: 520, coeficientePorKm: 4.4 },
+  { categoria: "Perigosa", eixosMin: 4, eixosMax: 9, custoFixo: 690, coeficientePorKm: 5.3 },
+  { categoria: "GranelSolido", eixosMin: 2, eixosMax: 9, custoFixo: 400, coeficientePorKm: 3.5 },
+  { categoria: "GranelLiquido", eixosMin: 2, eixosMax: 9, custoFixo: 470, coeficientePorKm: 4.0 },
+  { categoria: "Fragil", eixosMin: 2, eixosMax: 9, custoFixo: 420, coeficientePorKm: 3.7 },
+]
+
+/**
+ * Calcula o piso mínimo legal (ANTT) para um trecho, a partir da categoria da carga,
+ * da distância percorrida e do número de eixos do veículo ofertado no lance.
+ * Ver docs/business-rules-decisions.md, seção 5.
+ */
+export const calculateAnttFloor = (categoria, distanciaKm, qtdEixos) => {
+  const linha = pisoAnttTableMock.find(
+    (row) => row.categoria === categoria && qtdEixos >= row.eixosMin && qtdEixos <= row.eixosMax
+  )
+  if (!linha || !distanciaKm) return null
+  return linha.custoFixo + linha.coeficientePorKm * distanciaKm
+}
+
 export const auctionBidsMock = [
   {
     id: "BID-5521",
     segmentRef: "TRC-201",
     carrier: "Expresso Sul Ltda",
+    carrierRating: 4.7,
     vehicle: "ABC-1234",
+    axles: 5,
     proposedValue: 9150,
     eta: "18/05 19:30",
     status: "Em análise",
@@ -177,7 +217,9 @@ export const auctionBidsMock = [
     id: "BID-5522",
     segmentRef: "TRC-201",
     carrier: "Rota Norte Logística",
+    carrierRating: 4.1,
     vehicle: "XYZ-9876",
+    axles: 6,
     proposedValue: 9380,
     eta: "19/05 07:30",
     status: "Em análise",
@@ -187,7 +229,9 @@ export const auctionBidsMock = [
     id: "BID-5523",
     segmentRef: "TRC-202",
     carrier: "TransVale Transportes",
+    carrierRating: 3.9,
     vehicle: "JKL-4421",
+    axles: 3,
     proposedValue: 6880,
     eta: "20/05 17:40",
     status: "Em análise",
@@ -266,6 +310,9 @@ export const vehicleFleetMock = [
     type: "Carreta Frigorífica",
     capacity: "28 ton",
     volumeM3: 90,
+    axles: 6,
+    refrigeration: "Congelado",
+    mopp: false,
     driver: "João Silva",
     driverPhone: "+55 (41) 99888-7766",
     status: "AVAILABLE", // AVAILABLE | IN_TRANSIT | LOCKED | MAINTENANCE
@@ -285,6 +332,9 @@ export const vehicleFleetMock = [
     type: "Carreta Frigorífica",
     capacity: "28 ton",
     volumeM3: 90,
+    axles: 6,
+    refrigeration: "Congelado",
+    mopp: false,
     driver: "Maria Santos",
     driverPhone: "+55 (41) 99777-5544",
     status: "LOCKED",
@@ -310,6 +360,9 @@ export const vehicleFleetMock = [
     type: "Carreta Sider",
     capacity: "25 ton",
     volumeM3: 85,
+    axles: 5,
+    refrigeration: "Nenhuma",
+    mopp: false,
     driver: "Carlos Pereira",
     driverPhone: "+55 (41) 99666-3322",
     status: "AVAILABLE",
@@ -327,6 +380,9 @@ export const vehicleFleetMock = [
     type: "Carreta Frigorífica",
     capacity: "28 ton",
     volumeM3: 90,
+    axles: 6,
+    refrigeration: "Congelado",
+    mopp: false,
     driver: "Ana Costa",
     driverPhone: "+55 (41) 99555-1100",
     status: "IN_TRANSIT",
@@ -352,6 +408,9 @@ export const vehicleFleetMock = [
     type: "Carreta Baú",
     capacity: "20 ton",
     volumeM3: 75,
+    axles: 4,
+    refrigeration: "Nenhuma",
+    mopp: true,
     driver: "Roberto Lima",
     driverPhone: "+55 (41) 99444-9988",
     status: "AVAILABLE",
@@ -369,6 +428,9 @@ export const vehicleFleetMock = [
     type: "Carreta Frigorífica",
     capacity: "28 ton",
     volumeM3: 90,
+    axles: 6,
+    refrigeration: "Congelado",
+    mopp: false,
     driver: "Fernando Alves",
     driverPhone: "+55 (41) 99333-7766",
     status: "MAINTENANCE",
