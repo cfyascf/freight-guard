@@ -1,7 +1,10 @@
 using Sigloc.Api.Extensions;
+using Sigloc.Api.Middleware;
+using Sigloc.Application;
+using Sigloc.Infrastructure;
 using Scalar.AspNetCore;
 using Serilog;
-using Microsoft.OpenApi; // Required for logging
+using Microsoft.OpenApi;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -14,7 +17,6 @@ try
     Log.Information("Starting FreightGuard Web API...");
     var builder = WebApplication.CreateBuilder(args);
 
-    // 2. Tell the builder to use Serilog using your appsettings.json
     builder.Host.UseSerilog((context, services, configuration) => configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
@@ -23,7 +25,6 @@ try
 
     builder.Services.AddEndpointsApiExplorer();
 
-    // 3. Modern Native OpenAPI (The .NET 10 Way)
     builder.Services.AddOpenApi(options =>
     {
         options.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -37,7 +38,6 @@ try
             return Task.CompletedTask;
         });
 
-        // Add JWT Bearer Security Scheme
         options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
             var jwtScheme = new OpenApiSecurityScheme
@@ -50,17 +50,18 @@ try
             };
 
             document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
             document.Components.SecuritySchemes.Add("Bearer", jwtScheme);
 
             return Task.CompletedTask;
         });
     });
 
-    // 4. Custom Auth & Controllers
     builder.Services.AddSiglocAuthentication(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddApplication();
     builder.Services.AddControllers();
 
-    // 5. CORS setup for your React Frontend
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowFrontend", policy =>
@@ -76,15 +77,16 @@ try
 
     var app = builder.Build();
 
-    // --- MIDDLEWARE PIPELINE ---
-    
+
+    // Catch unhandled exceptions and return a consistent JSON error payload
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
     // Log all incoming HTTP requests automatically
     app.UseSerilogRequestLogging();
 
     // Generate the openapi.json file
     app.MapOpenApi();
     
-    // Map the beautiful Scalar UI to /scalar/v1
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("Sigloc API Hub")

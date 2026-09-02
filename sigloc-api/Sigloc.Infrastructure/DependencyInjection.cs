@@ -1,0 +1,29 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Sigloc.Application.Contracts;
+using Sigloc.Domain.Repositories;
+using Sigloc.Infrastructure.Authentication;
+using Sigloc.Infrastructure.Contexts;
+using Sigloc.Infrastructure.Repositories;
+
+namespace Sigloc.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+
+        services.AddDbContext<SiglocDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+        services.AddScoped<IJwtProvider, JwtProvider>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+
+        return services;
+    }
+}

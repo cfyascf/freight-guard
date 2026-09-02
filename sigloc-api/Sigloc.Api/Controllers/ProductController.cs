@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sigloc.Application.Contracts;
 using Sigloc.Application.DTOs;
-using Sigloc.Application.Services;
 using Sigloc.Domain.Constants;
 using System.Security.Claims;
 
@@ -12,9 +12,9 @@ namespace Sigloc.Api.Controllers;
 [Authorize] 
 public class ProductsController : ControllerBase
 {
-    private readonly ProductService _productService;
+    private readonly IProductService _productService;
 
-    public ProductsController(ProductService productService)
+    public ProductsController(IProductService productService)
     {
         _productService = productService;
     }
